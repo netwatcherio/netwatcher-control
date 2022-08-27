@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/gofiber/fiber/v2 v2.36.0
 	github.com/joho/godotenv v1.4.0
-	github.com/sagostin/netwatcher-agent v0.0.0-20220827021242-61d7cd87eb2b
+	github.com/sagostin/netwatcher-agent v0.0.0-20220827041537-e71ac729b963
 	github.com/sirupsen/logrus v1.9.0
 )
 

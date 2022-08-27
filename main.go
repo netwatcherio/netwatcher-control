@@ -1,8 +1,14 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
+	"github.com/joho/godotenv"
+	log "github.com/sirupsen/logrus"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 /*
@@ -16,23 +22,43 @@ post icmp & mtr check as agent
 */
 
 func main() {
+	var err error
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.SetFormatter(&log.TextFormatter{})
+
+	godotenv.Load()
+
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGTERM)
+	signal.Notify(signals, syscall.SIGKILL)
+	go func() {
+		s := <-signals
+		log.Fatal("Received Signal: %s", s)
+		shutdown()
+		os.Exit(1)
+	}()
+
 	app := fiber.New()
 
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("NetWatcher Control Server")
 	})
 
-	// verify agent / create hash and id
-	// GET /api/agent/verify
-	app.Get("/api/agent/check/mtr", func(c *fiber.Ctx) error {
-		msg := fmt.Sprintf("✋ %s", c.Params("pin"))
-		return c.SendString(msg) // => ✋ register
-	})
+	app.Post("/api/agent/update/icmp", func(c *fiber.Ctx) error {
+		msg := fmt.Sprintf("✋ %s", c.Params("data"))
 
-	app.Post("/api/agent/check/mtr", func(c *fiber.Ctx) error {
-		msg := fmt.Sprintf("✋ %s", c.Params("pin"))
+		err := json.Unmarshal(msg)
+
+		log.Infof(msg)
 		return c.SendString(msg) // => ✋ register
 	})
 
 	app.Listen(":3000")
+}
+
+func shutdown() {
+	log.Fatal("Shutting down NetWatcher Agent...")
 }

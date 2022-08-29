@@ -11,6 +11,10 @@ import (
 	"syscall"
 )
 
+var (
+	Debug = false
+)
+
 /*
 TODO
 
@@ -30,6 +34,9 @@ func main() {
 	log.SetFormatter(&log.TextFormatter{})
 
 	godotenv.Load()
+	if os.Getenv("DEBUG") == "true" {
+		Debug = true
+	}
 
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGTERM)
@@ -47,20 +54,37 @@ func main() {
 		return c.SendString("NetWatcher Control Server")
 	})
 
-	app.Post("/api/agent/update/icmp", func(c *fiber.Ctx) error {
+	app.Post("/v1/agent/update/mtr", func(c *fiber.Ctx) error {
 		c.Accepts("application/json") // "application/json"
-		//msg := fmt.Sprintf("%s", c.Params("data"))
+		respB := agent_models.ApiConfigResponse{}
+		respB.Response = 200
 
-		//log.Infof(string(c.Body()))
+		log.Warnf("%s", c.Body())
 
-		/*var res map[string]interface{}
-		reader := bytes.NewReader(c.Body())
+		var icmpData []*agent_models.MtrTarget
 
-		err := json.NewDecoder(reader).Decode(&res)
+		//fmt.Println(res["json"])
+
+		//log.Infof("%s", string(jMar))
+		err = json.Unmarshal(c.Body(), &icmpData)
 		if err != nil {
-			log.Errorf("%s", err)
-		}*/
+			log.Errorf("2 %s", err)
+			respB.Response = 500
+		}
 
+		jRespB, err := json.Marshal(respB)
+		if err != nil {
+			log.Errorf("3 Unable to marshal API response.")
+		} else {
+			log.Warnf("%s", string(jRespB))
+			return c.SendString(string(jRespB)) // => ✋ good
+		}
+
+		return c.SendString("Something went wrong...") // => ✋
+	})
+
+	app.Post("/v1/agent/update/icmp", func(c *fiber.Ctx) error {
+		c.Accepts("application/json") // "application/json"
 		respB := agent_models.ApiConfigResponse{}
 		respB.Response = 200
 
@@ -86,7 +110,7 @@ func main() {
 		return c.SendString("Something went wrong...") // => ✋
 	})
 
-	app.Listen(":3000")
+	app.Listen(os.Getenv("LISTEN"))
 }
 
 func shutdown() {

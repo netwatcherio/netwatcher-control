@@ -25,6 +25,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/sagostin/netwatcher-agent v0.0.0-20220827041537-e71ac729b963 h1:4h6l8J2tv3jqlKHcA5QHMQBSDgv7IIeXJrPdOnWbm3s=
 github.com/sagostin/netwatcher-agent v0.0.0-20220827041537-e71ac729b963/go.mod h1:V3BPlZUBdFKvwx0GUqLqGyNL+880C++OcaEUMgoUTvc=
+github.com/sagostin/netwatcher-agent v0.0.0-20220827080646-0a4534fab872 h1:bUhYd9Dq4SH8VUbgvhZo63DzDyLYkufZnhAKPG8BvJw=
+github.com/sagostin/netwatcher-agent v0.0.0-20220827080646-0a4534fab872/go.mod h1:V3BPlZUBdFKvwx0GUqLqGyNL+880C++OcaEUMgoUTvc=
 github.com/showwin/speedtest-go v1.1.5 h1:dud1cS2Qppbm50BrTKzrBj78wY78ORL5LIiRjKexmdY=
 github.com/showwin/speedtest-go v1.1.5/go.mod h1:dJugxvC/AQDt4HQQKZ9lKNa2+b1c8nzj9IL0a/F8l1U=
 github.com/sirupsen/logrus v1.9.0 h1:trlNQbNUG3OdDrDil03MCb1H2o9nJ1x4/5LYw7byDE0=

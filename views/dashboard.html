@@ -1,1 +1,197 @@
-<p>Test</p>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">agents</h4>
+                    <h6 class="card-subtitle">current site agent status</h6>
+                    <!--https://github.com/mattflor/chorddiag-->
+                    <div id="my_dataviz"></div>
+                </div>
+                <!--<div class="card-body">
+                    <div class="d-md-flex align-items-center">
+                        <div>
+                            <h4 class="card-title">Sales Summary</h4>
+                            <h6 class="card-subtitle">Ample admin Vs Pixel admin</h6>
+                        </div>
+                        <div class="ms-auto d-flex no-block align-items-center">
+                            <ul class="list-inline dl d-flex align-items-center m-r-15 m-b-0">
+                                <li class="list-inline-item d-flex align-items-center text-info"><i class="fa fa-circle font-10 me-1"></i> Ample
+                                </li>
+                                <li class="list-inline-item d-flex align-items-center text-primary"><i class="fa fa-circle font-10 me-1"></i> Pixel
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="amp-pxl mt-4" style="height: 350px;">
+                        <div class="chartist-tooltip"></div>
+                    </div>
+                </div>-->
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Weekly Stats</h4>
+                    <h6 class="card-subtitle">Average sales</h6>
+                    <div class="mt-5 pb-3 d-flex align-items-center">
+                                    <span class="btn btn-primary btn-circle d-flex align-items-center">
+                                        <i class="mdi mdi-cart-outline fs-4" ></i>
+                                    </span>
+                        <div class="ms-3">
+                            <h5 class="mb-0 fw-bold">Top Sales</h5>
+                            <span class="text-muted fs-6">Johnathan Doe</span>
+                        </div>
+                        <div class="ms-auto">
+                            <span class="badge bg-light text-muted">+68%</span>
+                        </div>
+                    </div>
+                    <div class="py-3 d-flex align-items-center">
+                                    <span class="btn btn-warning btn-circle d-flex align-items-center">
+                                        <i class="mdi mdi-star-circle fs-4" ></i>
+                                    </span>
+                        <div class="ms-3">
+                            <h5 class="mb-0 fw-bold">Best Seller</h5>
+                            <span class="text-muted fs-6">MaterialPro Admin</span>
+                        </div>
+                        <div class="ms-auto">
+                            <span class="badge bg-light text-muted">+68%</span>
+                        </div>
+                    </div>
+                    <div class="py-3 d-flex align-items-center">
+                                    <span class="btn btn-success btn-circle d-flex align-items-center">
+                                        <i class="mdi mdi-comment-multiple-outline text-white fs-4" ></i>
+                                    </span>
+                        <div class="ms-3">
+                            <h5 class="mb-0 fw-bold">Most Commented</h5>
+                            <span class="text-muted fs-6">Ample Admin</span>
+                        </div>
+                        <div class="ms-auto">
+                            <span class="badge bg-light text-muted">+68%</span>
+                        </div>
+                    </div>
+                    <div class="py-3 d-flex align-items-center">
+                                    <span class="btn btn-info btn-circle d-flex align-items-center">
+                                        <i class="mdi mdi-diamond fs-4 text-white" ></i>
+                                    </span>
+                        <div class="ms-3">
+                            <h5 class="mb-0 fw-bold">Top Budgets</h5>
+                            <span class="text-muted fs-6">Sunil Joshi</span>
+                        </div>
+                        <div class="ms-auto">
+                            <span class="badge bg-light text-muted">+15%</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-3 d-flex align-items-center">
+                                    <span class="btn btn-danger btn-circle d-flex align-items-center">
+                                        <i class="mdi mdi-content-duplicate fs-4 text-white" ></i>
+                                    </span>
+                        <div class="ms-3">
+                            <h5 class="mb-0 fw-bold">Best Designer</h5>
+                            <span class="text-muted fs-6">Nirav Joshi</span>
+                        </div>
+                        <div class="ms-auto">
+                            <span class="badge bg-light text-muted">+90%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+
+        // create the svg area
+        var svg = d3.select("#my_dataviz")
+            .append("svg")
+            .attr("width", 440)
+            .attr("height", 440)
+            .append("g")
+            .attr("transform", "translate(220,220)")
+
+        // create a matrix
+        var matrix = [
+            [11,  58, 89, 28],
+            [ 51, 18, 20, 61],
+            [ 80, 145, 80, 85],
+            [ 103,   99,  40, 71]
+        ];
+
+        // give this matrix to d3.chord(): it will calculates all the info we need to draw arc and ribbon
+        var res = d3.chord()
+            .padAngle(0.05)
+            .sortSubgroups(d3.descending)
+            (matrix)
+
+        // Add the links between groups
+        svg
+            .datum(res)
+            .append("g")
+            .selectAll("path")
+            .data(function(d) { return d; })
+            .enter()
+            .append("path")
+            .attr("d", d3.ribbon()
+                .radius(190)
+            )
+            .style("fill", "#69b3a2")
+            .style("stroke", "black");
+
+        // this group object use each group of the data.groups object
+        var group = svg
+            .datum(res)
+            .append("g")
+            .selectAll("g")
+            .data(function(d) { return d.groups; })
+            .enter()
+
+        // add the group arcs on the outer part of the circle
+        group.append("g")
+            .append("path")
+            .style("fill", "grey")
+            .style("stroke", "black")
+            .attr("d", d3.arc()
+                .innerRadius(190)
+                .outerRadius(200)
+            )
+
+        // Add the ticks
+        group
+            .selectAll(".group-tick")
+            .data(function(d) { return groupTicks(d, 25); })    // Controls the number of ticks: one tick each 25 here.
+            .enter()
+            .append("g")
+            .attr("transform", function(d) { return "rotate(" + (d.angle * 180 / Math.PI - 90) + ") translate(" + 200 + ",0)"; })
+            .append("line")               // By default, x1 = y1 = y2 = 0, so no need to specify it.
+            .attr("x2", 6)
+            .attr("stroke", "black")
+
+        // Add the labels of a few ticks:
+        group
+            .selectAll(".group-tick-label")
+            .data(function(d) { return groupTicks(d, 25); })
+            .enter()
+            .filter(function(d) { return d.value % 25 === 0; })
+            .append("g")
+            .attr("transform", function(d) { return "rotate(" + (d.angle * 180 / Math.PI - 90) + ") translate(" + 200 + ",0)"; })
+            .append("text")
+            .attr("x", 8)
+            .attr("dy", ".35em")
+            .attr("transform", function(d) { return d.angle > Math.PI ? "rotate(180) translate(-16)" : null; })
+            .style("text-anchor", function(d) { return d.angle > Math.PI ? "end" : null; })
+            .text(function(d) { return d.value })
+            .style("font-size", 9)
+
+
+        // Returns an array of tick angles and values for a given group and step.
+        function groupTicks(d, step) {
+            var k = (d.endAngle - d.startAngle) / d.value;
+            return d3.range(0, d.value, step).map(function(value) {
+                return {value: value, angle: value * k + d.startAngle};
+            });
+        }
+
+    </script>
+</div>

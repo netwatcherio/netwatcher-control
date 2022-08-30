@@ -32,7 +32,7 @@ func LoadApiRoutes(app *fiber.App) {
 
 	app.Post("/v1/agent/update/network", func(c *fiber.Ctx) error {
 		c.Accepts("Application/json") // "Application/json"
-		respB := agent_models.ApiConfigResponse{}
+		respB := agent_models.ApiResponse{}
 		respB.Response = 200
 
 		log.Warnf("%s", c.Body())
@@ -55,7 +55,7 @@ func LoadApiRoutes(app *fiber.App) {
 	})
 	app.Post("/v1/agent/update/speedtest", func(c *fiber.Ctx) error {
 		c.Accepts("Application/json") // "Application/json"
-		respB := agent_models.ApiConfigResponse{}
+		respB := agent_models.ApiResponse{}
 		respB.Response = 200
 
 		var data agent_models.SpeedTestInfo
@@ -84,7 +84,7 @@ func LoadApiRoutes(app *fiber.App) {
 
 	app.Post("/v1/agent/update/icmp", func(c *fiber.Ctx) error {
 		c.Accepts("Application/json") // "Application/json"
-		respB := agent_models.ApiConfigResponse{}
+		respB := agent_models.ApiResponse{}
 		respB.Response = 200
 
 		var data []*agent_models.IcmpTarget
@@ -95,6 +95,40 @@ func LoadApiRoutes(app *fiber.App) {
 		}
 
 		jRespB, err := json.Marshal(respB)
+		if err != nil {
+			log.Errorf("3 Unable to marshal API response.")
+		} else {
+			log.Warnf("%s", string(jRespB))
+			return c.SendString(string(jRespB)) // => ✋ good
+		}
+
+		return c.SendString("Something went wrong...") // => ✋
+	})
+
+	app.Get("/v1/agent/config", func(c *fiber.Ctx) error {
+		c.Accepts("Application/json") // "Application/json"
+		respB := agent_models.ApiConfigResponse{}
+		respB.Response = 200
+
+		data := agent_models.AgentConfig{
+			PingTargets:      nil,
+			TraceTargets:     nil,
+			PingInterval:     2,
+			SpeedTestPending: true,
+			TraceInterval:    5, // minutes
+		}
+
+		data.TraceTargets = append(data.TraceTargets, "1.1.1.1")
+		data.PingTargets = append(data.PingTargets, "1.1.1.1")
+
+		// TODO parse auth data to verify agent
+		/*err := json.Unmarshal(c.Body(), &data)
+		if err != nil {
+			log.Errorf("2 %s", err)
+			respB.Response = 500
+		}*/
+
+		jRespB, err := json.Marshal(data)
 		if err != nil {
 			log.Errorf("3 Unable to marshal API response.")
 		} else {
@@ -140,11 +174,11 @@ func LoadFrontendRoutes(app *fiber.App) {
 			"title": "alerts"},
 			"layouts/main")
 	})
-	app.Get("/map", func(c *fiber.Ctx) error {
+	app.Get("/profile", func(c *fiber.Ctx) error {
 		// Render index within layouts/main
 		// TODO process if they are logged in or not, otherwise send them to registration/login
-		return c.Render("map", fiber.Map{
-			"title": "map"},
+		return c.Render("profile", fiber.Map{
+			"title": "profile"},
 			"layouts/main")
 	})
 	app.Get("/manage", func(c *fiber.Ctx) error {

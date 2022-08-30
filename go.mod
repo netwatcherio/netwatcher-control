@@ -6,7 +6,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.36.0
 	github.com/gofiber/template v1.6.30
 	github.com/joho/godotenv v1.4.0
-	github.com/sagostin/netwatcher-agent v0.0.0-20220829232402-1e3202e77db6
+	github.com/sagostin/netwatcher-agent v0.0.0-20220830164133-147044bb1add
 	github.com/sirupsen/logrus v1.9.0
 	go.mongodb.org/mongo-driver v1.10.1
 )
@@ -27,8 +27,8 @@ require (
 	github.com/xdg-go/stringprep v1.0.3 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d // indirect
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
-	golang.org/x/net v0.0.0-20220822230855-b0a4917ee28c // indirect
+	golang.org/x/net v0.0.0-20220826154423-83b083e8dc8b // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
-	golang.org/x/sys v0.0.0-20220825204002-c680a09ffe64 // indirect
+	golang.org/x/sys v0.0.0-20220829200755-d48e67d00261 // indirect
 	golang.org/x/text v0.3.7 // indirect
 )

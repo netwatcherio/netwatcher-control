@@ -23,11 +23,14 @@ func main() {
 
 	log.SetFormatter(&log.TextFormatter{})
 
+	// Load .env
 	godotenv.Load()
 	if os.Getenv("DEBUG") == "true" {
 		Debug = true
 	}
+	mongoUrl = os.Getenv("MONGO_URL")
 
+	// Signal Termination if using CLI
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGTERM)
 	signal.Notify(signals, syscall.SIGKILL)
@@ -38,12 +41,14 @@ func main() {
 		os.Exit(1)
 	}()
 
+	// Load Fiber
 	app := fiber.New()
 
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("NetWatcher Control Server")
 	})
 
+	// API MTR Upd
 	app.Post("/v1/agent/update/mtr", func(c *fiber.Ctx) error {
 		c.Accepts("application/json") // "application/json"
 		respB := agent_models.ApiConfigResponse{}

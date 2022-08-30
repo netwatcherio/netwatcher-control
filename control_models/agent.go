@@ -7,7 +7,5 @@ type Agent struct {
 	CheckConfig agent_models.CheckConfig `json:"check_config"`
 	Pin         string                   `json:"pin"` // used for registration & authentication
 	Hash        string                   `json:"hash"`
-
 	// pin can be regenerated, by setting hash blank, and when registering agents, it checks for blank hashs.
-
 }

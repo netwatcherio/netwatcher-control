@@ -15,7 +15,7 @@ var (
 // Connection URI
 const uri = "mongodb://user:pass@sample.host:27017/?maxPoolSize=20&w=majority"
 
-func main() {
+func MongoConnect() {
 	// Create a new client and connect to the server
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
 	if err != nil {

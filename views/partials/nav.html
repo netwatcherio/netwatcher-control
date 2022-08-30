@@ -1,0 +1,117 @@
+<header class="topbar" data-navbarbg="skin6">
+    <nav class="navbar top-navbar navbar-expand-md navbar-light">
+        <div class="navbar-header" data-logobg="skin6">
+            <!-- ============================================================== -->
+            <!-- Logo -->
+            <!-- ============================================================== -->
+            <a class="navbar-brand" href="/">
+
+                <!-- Logo icon -->
+               <!-- <b class="logo-icon">
+                    &lt;!&ndash;You can put here icon as well // <i class="wi wi-sunset"></i> //&ndash;&gt;
+                    &lt;!&ndash; Dark Logo icon &ndas+h;&gt;
+
+                    &lt;!&ndash; Light Logo icon &ndash;&gt;
+                    <img src="/images/logo-light-icon.png" alt="homepage" class="light-logo" />
+                </b>-->
+                <!--End Logo icon -->
+                <!-- Logo text -->
+                <span class="logo-text">
+                    <h2>netwatcher</h2>
+                        </span>
+            </a>
+            <!-- ============================================================== -->
+            <!-- End Logo -->
+            <!-- ============================================================== -->
+            <!-- This is for the sidebar toggle which is visible on mobile only -->
+            <a class="nav-toggler waves-effect waves-light d-block d-md-none" href="javascript:void(0)"><i
+                    class="mdi mdi-menu"></i></a>
+        </div>
+        <!-- ============================================================== -->
+        <!-- End Logo -->
+        <!-- ============================================================== -->
+        <div class="navbar-collapse collapse" id="navbarSupportedContent" data-navbarbg="skin5">
+            <!-- ============================================================== -->
+            <!-- toggle and nav items -->
+            <!-- ============================================================== -->
+            <ul class="navbar-nav float-start me-auto">
+                <!-- ============================================================== -->
+                <!-- Search -->
+                <!-- ============================================================== -->
+                <!--<li class="nav-item search-box"> <a class="nav-link waves-effect waves-dark"
+                                                    href="javascript:void(0)"><i class="mdi mdi-magnify me-1"></i> <span class="font-16">Search</span></a>
+                    <form class="app-search position-absolute">
+                        <input type="text" class="form-control" placeholder="Search &amp; enter"> <a
+                            class="srh-btn"><i class="mdi mdi-window-close"></i></a>
+                    </form>
+                </li>-->
+            </ul>
+            <!-- ============================================================== -->
+            <!-- Right side toggle and nav items -->
+            <!-- ============================================================== -->
+            <ul class="navbar-nav float-end">
+                <!-- ============================================================== -->
+                <!-- User profile and search -->
+                <!-- ============================================================== -->
+                <li class="nav-item dropdown">
+                    <!--TODO add dropdown to select site-->
+                    <a class="nav-link dropdown-toggle text-muted waves-effect waves-dark pro-pic" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img src="/images/users/profile.webp" alt="user" class="rounded-circle" width="45">
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end user-dd animated" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="/profile"><i class="ti-user m-r-5 m-l-5"></i>
+                            Profile</a>
+                        <a class="dropdown-item" href="/sites"><i class="ti-map m-r-5 m-l-5"></i>
+                            Sites</a>
+                        <a class="dropdown-item" href="/logout"><i class="ti-key m-r-5 m-l-5"></i>
+                            Logout</a>
+                    </ul>
+                </li>
+                <!-- ============================================================== -->
+                <!-- User profile and search -->
+                <!-- ============================================================== -->
+            </ul>
+        </div>
+    </nav>
+</header>
+<!-- ============================================================== -->
+<!-- End Topbar header -->
+<!-- ============================================================== -->
+<!-- ============================================================== -->
+<!-- Left Sidebar - style you can find in sidebar.scss  -->
+<!-- ============================================================== -->
+<aside class="left-sidebar" data-sidebarbg="skin6">
+    <!-- Sidebar scroll-->
+    <div class="scroll-sidebar">
+        <!-- Sidebar navigation-->
+        <nav class="sidebar-nav">
+            <ul id="sidebarnav">
+                <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                             href="/" aria-expanded="false"><i class="mdi mdi-home"></i><span
+                        class="hide-menu">home</span></a></li>
+                <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                             href="pages-profile.html" aria-expanded="false"><i
+                        class="mdi mdi-view-dashboard"></i><span class="hide-menu">dashboard</span></a></li>
+                <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                             href="/agents" aria-expanded="false"><i class="mdi mdi-server"></i><span
+                        class="hide-menu">agents</span></a></li>
+                <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                             href="/map" aria-expanded="false"><i class="mdi mdi-map"></i><span
+                        class="hide-menu">map</span></a></li>
+                <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                             href="/alerts" aria-expanded="false"><i class="mdi mdi-alert-circle"></i><span
+                        class="hide-menu">alerts</span></a></li>
+                <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                             href="/manage" aria-expanded="false"><i class="mdi mdi-settings"></i><span
+                        class="hide-menu">manage</span></a></li>
+                <li class="text-center p-40 upgrade-btn">
+                    <a href="/logout"
+                       class="btn d-block w-100 btn-danger text-white" target="_blank">logout</a>
+                </li>
+            </ul>
+
+        </nav>
+        <!-- End Sidebar navigation -->
+    </div>
+    <!-- End Sidebar scroll-->
+</aside>

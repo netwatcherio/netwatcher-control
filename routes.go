@@ -119,4 +119,46 @@ func LoadFrontendRoutes(app *fiber.App) {
 			"title": "home"},
 			"layouts/main")
 	})
+	app.Get("/agents", func(c *fiber.Ctx) error {
+		// Render index within layouts/main
+		// TODO process if they are logged in or not, otherwise send them to registration/login
+		return c.Render("agents", fiber.Map{
+			"title": "agents"},
+			"layouts/main")
+	})
+	app.Get("/sites", func(c *fiber.Ctx) error {
+		// Render index within layouts/main
+		// TODO process if they are logged in or not, otherwise send them to registration/login
+		return c.Render("sites", fiber.Map{
+			"title": "sites"},
+			"layouts/main")
+	})
+	app.Get("/alerts", func(c *fiber.Ctx) error {
+		// Render index within layouts/main
+		// TODO process if they are logged in or not, otherwise send them to registration/login
+		return c.Render("alerts", fiber.Map{
+			"title": "alerts"},
+			"layouts/main")
+	})
+	app.Get("/map", func(c *fiber.Ctx) error {
+		// Render index within layouts/main
+		// TODO process if they are logged in or not, otherwise send them to registration/login
+		return c.Render("map", fiber.Map{
+			"title": "map"},
+			"layouts/main")
+	})
+	app.Get("/manage", func(c *fiber.Ctx) error {
+		// Render index within layouts/main
+		// TODO process if they are logged in or not, otherwise send them to registration/login
+		return c.Render("manage", fiber.Map{
+			"title": "manage"},
+			"layouts/main")
+	})
+	app.Get("/dashboard", func(c *fiber.Ctx) error {
+		// Render index within layouts/main
+		// TODO process if they are logged in or not, otherwise send them to registration/login
+		return c.Render("dashboard", fiber.Map{
+			"title": "dashboard"},
+			"layouts/main")
+	})
 }

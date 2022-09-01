@@ -9,15 +9,14 @@ import (
 )
 
 var (
-	mongoUrl string
+	mongoUri string
 )
 
 // Connection URI
-const uri = "mongodb://user:pass@sample.host:27017/?maxPoolSize=20&w=majority"
 
-func MongoConnect() {
+func MongoConnect(database string) (*mongo.Database, error) {
 	// Create a new client and connect to the server
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(mongoUri))
 	if err != nil {
 		panic(err)
 	}
@@ -31,4 +30,8 @@ func MongoConnect() {
 		panic(err)
 	}
 	fmt.Println("Successfully connected and pinged.")
+
+	db := client.Database(database)
+
+	return db, nil
 }

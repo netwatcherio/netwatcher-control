@@ -2,6 +2,8 @@ package main
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/session"
+	"github.com/gofiber/storage/mongodb"
 	"github.com/gofiber/template/html"
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
@@ -27,7 +29,14 @@ func main() {
 	if os.Getenv("DEBUG") == "true" {
 		Debug = true
 	}
-	mongoUrl = os.Getenv("MONGO_URL")
+
+	// connect to database
+	mongoUri = os.Getenv("MONGO_URI")
+
+	mainDb, err := MongoConnect(os.Getenv("MAIN_DB"))
+	if err != nil {
+		log.Fatal("unable to connect to db")
+	}
 
 	// Signal Termination if using CLI
 	signals := make(chan os.Signal, 1)
@@ -39,6 +48,17 @@ func main() {
 		shutdown()
 		os.Exit(1)
 	}()
+
+	// Initialize custom config
+	sessionStore := mongodb.New(mongodb.Config{
+		ConnectionURI: mongoUri,
+		Collection:    "fiber_storage",
+		Reset:         false,
+	})
+
+	store := session.New(session.Config{
+		Storage: sessionStore,
+	})
 
 	// Create a new engine
 	engine := html.New("./views", ".html")
@@ -62,16 +82,10 @@ func main() {
 	// Public Files
 	app.Static("/", "./public")
 
-	/*App.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("NetWatcher Control Server")
-	})*/
+	LoadApiRoutes(app, store, mainDb)
+	LoadFrontendRoutes(app, store, mainDb)
 
-	// Or from an embedded system
-	// See github.com/gofiber/embed for examples
-	// engine := html.NewFileSystem(http.Dir("./views", ".html"))
-	LoadApiRoutes(app)
-	LoadFrontendRoutes(app)
-
+	// Listen website
 	app.Listen(os.Getenv("LISTEN"))
 }
 

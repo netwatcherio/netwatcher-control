@@ -3,11 +3,13 @@ package main
 import (
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/sagostin/netwatcher-agent/agent_models"
 	log "github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func LoadApiRoutes(app *fiber.App) {
+func LoadApiRoutes(app *fiber.App, session *session.Store, db *mongo.Database) {
 	app.Post("/v1/agent/update/mtr", func(c *fiber.Ctx) error {
 		c.Accepts("Application/json") // "Application/json"
 		respB := agent_models.ApiConfigResponse{}
@@ -140,13 +142,27 @@ func LoadApiRoutes(app *fiber.App) {
 	})
 }
 
-func LoadFrontendRoutes(app *fiber.App) {
+func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Database) {
 	app.Get("/404", func(c *fiber.Ctx) error {
 		// Render index within layouts/main
 		return c.Render("404", fiber.Map{
 			"title": "404"})
 	})
 	app.Get("/", func(c *fiber.Ctx) error {
+		// Render index within layouts/main
+		// TODO process if they are logged in or not, otherwise send them to registration/login
+		return c.Render("index", fiber.Map{
+			"title": "home"},
+			"layouts/main")
+	})
+	app.Get("/login", func(c *fiber.Ctx) error {
+		// Render index within layouts/main
+		// TODO process if they are logged in or not, otherwise send them to registration/login
+		return c.Render("index", fiber.Map{
+			"title": "home"},
+			"layouts/main")
+	})
+	app.Get("/logout", func(c *fiber.Ctx) error {
 		// Render index within layouts/main
 		// TODO process if they are logged in or not, otherwise send them to registration/login
 		return c.Render("index", fiber.Map{

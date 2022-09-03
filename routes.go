@@ -27,7 +27,7 @@ func LoadApiRoutes(app *fiber.App, session *session.Store, db *mongo.Database) {
 		return c.SendString("Something went wrong...") // => ✋
 	})
 	app.Post("/v1/agent/update/speedtest", func(c *fiber.Ctx) error {
-		var str = apiUpdateSpeedtest(c, db)
+		var str = apiUpdateSpeedTest(c, db)
 		if str != "" {
 			return c.SendString(str)
 		}

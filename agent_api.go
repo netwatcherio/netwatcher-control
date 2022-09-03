@@ -13,17 +13,26 @@ func apiUpdateMtr(c *fiber.Ctx, db *mongo.Database) string {
 	respB := agent_models.ApiConfigResponse{}
 	respB.Response = 200
 
-	var data []*agent_models.MtrTarget
-	err := json.Unmarshal(c.Body(), &data)
+	hash, b, err := verifyAgentHash(c.Params("pin"), c.Params("hash"), db)
 	if err != nil {
-		log.Errorf("2 %s", err)
-		respB.Response = 500
+		log.Errorf("%s", err)
+		respB.Response = 401
 	}
-	jRespB, err := json.Marshal(respB)
-	if err != nil {
-		log.Errorf("3 Unable to marshal API response.")
-	} else {
-		return string(jRespB) // => ✋ good
+
+	if hash != "" && b {
+
+		var data []*agent_models.MtrTarget
+		err := json.Unmarshal(c.Body(), &data)
+		if err != nil {
+			log.Errorf("2 %s", err)
+			respB.Response = 500
+		}
+		jRespB, err := json.Marshal(respB)
+		if err != nil {
+			log.Errorf("3 Unable to marshal API response.")
+		} else {
+			return string(jRespB) // => ✋ good
+		}
 	}
 
 	return ""
@@ -34,19 +43,27 @@ func apiUpdateNetwork(c *fiber.Ctx, db *mongo.Database) string {
 	respB := agent_models.ApiResponse{}
 	respB.Response = 200
 
-	var data *agent_models.NetworkInfo
+	var data *agent_models.Api
 	err := json.Unmarshal(c.Body(), &data)
 	if err != nil {
 		log.Errorf("2 %s", err)
 		respB.Response = 500
 	}
+
+	hash, b, err := verifyAgentHash(c.Params("pin"), c.Params("hash"), db)
+	if err != nil {
+		log.Errorf("%s", err)
+		respB.Response = 401
+	}
+
+	hash != "" && b
+
 	jRespB, err := json.Marshal(respB)
 	if err != nil {
 		log.Errorf("3 Unable to marshal API response.")
 	} else {
 		return string(jRespB) // => ✋ good
 	}
-
 	return ""
 }
 
@@ -55,24 +72,32 @@ func apiUpdateSpeedtest(c *fiber.Ctx, db *mongo.Database) string {
 	respB := agent_models.ApiResponse{}
 	respB.Response = 200
 
-	var data agent_models.SpeedTestInfo
-
-	//log.Warnf("%s", c.Body())
-
-	//fmt.Println(res["json"])
-
-	//log.Infof("%s", string(jMar))
-	err := json.Unmarshal(c.Body(), &data)
+	hash, b, err := verifyAgentHash(c.Params("pin"), c.Params("hash"), db)
 	if err != nil {
-		log.Errorf("2 %s", err)
-		respB.Response = 500
+		log.Errorf("%s", err)
+		respB.Response = 401
 	}
 
-	jRespB, err := json.Marshal(respB)
-	if err != nil {
-		log.Errorf("3 Unable to marshal API response.")
-	} else {
-		return string(jRespB) // => ✋ good
+	if hash != "" && b {
+		var data agent_models.SpeedTestInfo
+
+		//log.Warnf("%s", c.Body())
+
+		//fmt.Println(res["json"])
+
+		//log.Infof("%s", string(jMar))
+		err := json.Unmarshal(c.Body(), &data)
+		if err != nil {
+			log.Errorf("2 %s", err)
+			respB.Response = 500
+		}
+
+		jRespB, err := json.Marshal(respB)
+		if err != nil {
+			log.Errorf("3 Unable to marshal API response.")
+		} else {
+			return string(jRespB) // => ✋ good
+		}
 	}
 
 	return ""
@@ -83,24 +108,34 @@ func apiUpdateIcmp(c *fiber.Ctx, db *mongo.Database) string {
 	respB := agent_models.ApiResponse{}
 	respB.Response = 200
 
-	var data []*agent_models.IcmpTarget
-	err := json.Unmarshal(c.Body(), &data)
+	hash, b, err := verifyAgentHash(c.Params("pin"), c.Params("hash"), db)
 	if err != nil {
-		log.Errorf("2 %s", err)
-		respB.Response = 500
+		log.Errorf("%s", err)
+		respB.Response = 401
 	}
 
-	jRespB, err := json.Marshal(respB)
-	if err != nil {
-		log.Errorf("3 Unable to marshal API response.")
-	} else {
-		return string(jRespB) // => ✋ good
+	if hash != "" && b {
+		var data []*agent_models.IcmpTarget
+		err := json.Unmarshal(c.Body(), &data)
+		if err != nil {
+			log.Errorf("2 %s", err)
+			respB.Response = 500
+		}
+
+		jRespB, err := json.Marshal(respB)
+		if err != nil {
+			log.Errorf("3 Unable to marshal API response.")
+		} else {
+			return string(jRespB) // => ✋ good
+		}
 	}
 
 	return ""
 }
 
 func apiGetConfig(c *fiber.Ctx, db *mongo.Database) string {
+	// todo change api get to post to provide auth inside of the post request, and return config as response
+
 	c.Accepts("Application/json") // "Application/json"
 	respB := agent_models.ApiConfigResponse{}
 	respB.Response = 200

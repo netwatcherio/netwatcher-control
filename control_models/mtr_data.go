@@ -9,6 +9,6 @@ import (
 type MtrData struct {
 	ID        primitive.ObjectID       `bson:"_id, omitempty"`
 	Agent     primitive.ObjectID       `bson:"agent"`
-	Data      []agent_models.MtrTarget `json:"data"`
-	Timestamp time.Time                `json:"timestamp"`
+	Data      []agent_models.MtrTarget `bson:"data"`
+	Timestamp time.Time                `bson:"timestamp"`
 }

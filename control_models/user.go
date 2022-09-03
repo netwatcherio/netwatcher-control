@@ -7,11 +7,11 @@ import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type User struct {
 	ID        primitive.ObjectID   `bson:"_id, omitempty"`
-	Email     string               `json:"email"` // username
-	FirstName string               `json:"first_name"`
-	LastName  string               `json:"last_name"`
-	Admin     bool                 `json:"admin"`
-	Password  string               `json:"password"` // password in sha256?
-	Name      string               `json:"name"`
+	Email     string               `bson:"email"` // username
+	FirstName string               `bson:"first_name"`
+	LastName  string               `bson:"last_name"`
+	Admin     bool                 `bson:"admin"`
+	Password  string               `bson:"password"` // password in sha256?
+	Name      string               `bson:"name"`
 	Sites     []primitive.ObjectID `bson:"sites"` // _id's of mongo objects
 }

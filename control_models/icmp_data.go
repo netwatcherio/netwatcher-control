@@ -9,6 +9,6 @@ import (
 type IcmpData struct {
 	ID        primitive.ObjectID        `bson:"_id, omitempty"`
 	Agent     primitive.ObjectID        `bson:"agent"` // _id of mongo object
-	Data      []agent_models.IcmpTarget `json:"data"`
-	Timestamp time.Time                 `json:"timestamp"`
+	Data      []agent_models.IcmpTarget `bson:"data"`
+	Timestamp time.Time                 `bson:"timestamp"`
 }

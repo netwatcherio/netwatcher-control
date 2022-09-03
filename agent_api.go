@@ -74,7 +74,7 @@ func apiUpdateNetwork(c *fiber.Ctx, db *mongo.Database) string {
 		respB.Response = 500
 	}
 
-	_, hash, b, err := verifyAgentHash(data.Pin, data.Hash, db)
+	agentId, hash, b, err := verifyAgentHash(data.Pin, data.Hash, db)
 	if err != nil {
 		log.Errorf("%s", err)
 		respB.Response = 401
@@ -87,13 +87,25 @@ func apiUpdateNetwork(c *fiber.Ctx, db *mongo.Database) string {
 			respB.Response = 401
 		}
 
-		var data2 []*agent_models.NetworkInfo
+		var data2 []agent_models.NetworkInfo
 		err = json.Unmarshal(dataJ, &data2)
 		if err != nil {
 			log.Errorf("2 %s", err)
 			respB.Response = 500
 		}
-		//log.Infof(string(dataJ))
+
+		var agent, _ = getAgent(agentId, db)
+		if err != nil {
+			log.Errorf("5 %s", err)
+			respB.Response = 500
+		}
+
+		for _, d := range data2 {
+			_, err = insertNetworkInfo(agent, d, data.Timestamp, db)
+			if err != nil {
+				respB.Response = 500
+			}
+		}
 	}
 
 	jRespB, err := json.Marshal(respB)
@@ -117,29 +129,34 @@ func apiUpdateSpeedTest(c *fiber.Ctx, db *mongo.Database) string {
 		respB.Response = 500
 	}
 
-	_, hash, b, err := verifyAgentHash(data.Pin, data.Hash, db)
+	agentId, hash, b, err := verifyAgentHash(data.Pin, data.Hash, db)
 	if err != nil {
 		log.Errorf("2 %s", err)
 		respB.Response = 401
 	}
 
 	if hash != "" && b {
-		var data2 agent_models.SpeedTestInfo
-
 		speedD, _ := json.Marshal(data.Data)
 		if err != nil {
 			log.Errorf("8 %s", err)
 			respB.Response = 500
 		}
 
-		//log.Warnf("%s", c.Body())
-
-		//fmt.Println(res["json"])
-
-		//log.Infof("%s", string(jMar))
+		var data2 agent_models.SpeedTestInfo
 		err := json.Unmarshal(speedD, &data2)
 		if err != nil {
 			log.Errorf("2 %s", err)
+			respB.Response = 500
+		}
+
+		var agent, _ = getAgent(agentId, db)
+		if err != nil {
+			log.Errorf("5 %s", err)
+			respB.Response = 500
+		}
+
+		_, err = insertSpeedTestData(agent, data2, data.Timestamp, db)
+		if err != nil {
 			respB.Response = 500
 		}
 	}
@@ -219,7 +236,7 @@ func apiGetConfig(c *fiber.Ctx, db *mongo.Database) string {
 		respB.Response = 401
 	}
 
-	_, hash, b, err := verifyAgentHash(c.Params("pin"), c.Params("hash"), db)
+	agentId, hash, b, err := verifyAgentHash(c.Params("pin"), c.Params("hash"), db)
 	if err != nil {
 		log.Errorf("0 %s", err)
 		respB.Response = 401
@@ -238,18 +255,13 @@ func apiGetConfig(c *fiber.Ctx, db *mongo.Database) string {
 
 	if respB.Response == 200 {
 
-		data := agent_models.AgentConfig{
-			PingTargets:      nil,
-			TraceTargets:     nil,
-			PingInterval:     2,
-			SpeedTestPending: true,
-			TraceInterval:    5, // minutes
+		var agent, _ = getAgent(agentId, db)
+		if err != nil {
+			log.Errorf("5 %s", err)
+			respB.Response = 500
 		}
 
-		data.TraceTargets = append(data.TraceTargets, "1.1.1.1")
-		data.PingTargets = append(data.PingTargets, "1.1.1.1")
-
-		respB.Config = data
+		respB.Config = agent.AgentConfig
 	}
 
 	jRespB, err := json.Marshal(respB)

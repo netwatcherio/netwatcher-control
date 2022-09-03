@@ -11,131 +11,43 @@ import (
 
 func LoadApiRoutes(app *fiber.App, session *session.Store, db *mongo.Database) {
 	app.Post("/v1/agent/update/mtr", func(c *fiber.Ctx) error {
-		c.Accepts("Application/json") // "Application/json"
-		respB := agent_models.ApiConfigResponse{}
-		respB.Response = 200
-
-		var data []*agent_models.MtrTarget
-		err := json.Unmarshal(c.Body(), &data)
-		if err != nil {
-			log.Errorf("2 %s", err)
-			respB.Response = 500
+		var str = apiUpdateMtr(c, db)
+		if str != "" {
+			return c.SendString(str)
 		}
-		jRespB, err := json.Marshal(respB)
-		if err != nil {
-			log.Errorf("3 Unable to marshal API response.")
-		} else {
-			log.Warnf("%s", string(jRespB))
-			return c.SendString(string(jRespB)) // => ✋ good
-		}
-
 		return c.SendString("Something went wrong...") // => ✋
 	})
 
 	app.Post("/v1/agent/update/network", func(c *fiber.Ctx) error {
-		c.Accepts("Application/json") // "Application/json"
-		respB := agent_models.ApiResponse{}
-		respB.Response = 200
-
-		log.Warnf("%s", c.Body())
-
-		var data *agent_models.NetworkInfo
-		err := json.Unmarshal(c.Body(), &data)
-		if err != nil {
-			log.Errorf("2 %s", err)
-			respB.Response = 500
-		}
-		jRespB, err := json.Marshal(respB)
-		if err != nil {
-			log.Errorf("3 Unable to marshal API response.")
-		} else {
-			log.Warnf("%s", string(jRespB))
-			return c.SendString(string(jRespB)) // => ✋ good
+		var str = apiUpdateNetwork(c, db)
+		if str != "" {
+			return c.SendString(str)
 		}
 
 		return c.SendString("Something went wrong...") // => ✋
 	})
 	app.Post("/v1/agent/update/speedtest", func(c *fiber.Ctx) error {
-		c.Accepts("Application/json") // "Application/json"
-		respB := agent_models.ApiResponse{}
-		respB.Response = 200
-
-		var data agent_models.SpeedTestInfo
-
-		//log.Warnf("%s", c.Body())
-
-		//fmt.Println(res["json"])
-
-		//log.Infof("%s", string(jMar))
-		err := json.Unmarshal(c.Body(), &data)
-		if err != nil {
-			log.Errorf("2 %s", err)
-			respB.Response = 500
-		}
-
-		jRespB, err := json.Marshal(respB)
-		if err != nil {
-			log.Errorf("3 Unable to marshal API response.")
-		} else {
-			log.Warnf("%s", string(jRespB))
-			return c.SendString(string(jRespB)) // => ✋ good
+		var str = apiUpdateSpeedtest(c, db)
+		if str != "" {
+			return c.SendString(str)
 		}
 
 		return c.SendString("Something went wrong...") // => ✋
 	})
 
 	app.Post("/v1/agent/update/icmp", func(c *fiber.Ctx) error {
-		c.Accepts("Application/json") // "Application/json"
-		respB := agent_models.ApiResponse{}
-		respB.Response = 200
-
-		var data []*agent_models.IcmpTarget
-		err := json.Unmarshal(c.Body(), &data)
-		if err != nil {
-			log.Errorf("2 %s", err)
-			respB.Response = 500
-		}
-
-		jRespB, err := json.Marshal(respB)
-		if err != nil {
-			log.Errorf("3 Unable to marshal API response.")
-		} else {
-			log.Warnf("%s", string(jRespB))
-			return c.SendString(string(jRespB)) // => ✋ good
+		var str = apiUpdateIcmp(c, db)
+		if str != "" {
+			return c.SendString(str)
 		}
 
 		return c.SendString("Something went wrong...") // => ✋
 	})
 
-	app.Get("/v1/agent/config", func(c *fiber.Ctx) error {
-		c.Accepts("Application/json") // "Application/json"
-		respB := agent_models.ApiConfigResponse{}
-		respB.Response = 200
-
-		data := agent_models.AgentConfig{
-			PingTargets:      nil,
-			TraceTargets:     nil,
-			PingInterval:     2,
-			SpeedTestPending: true,
-			TraceInterval:    5, // minutes
-		}
-
-		data.TraceTargets = append(data.TraceTargets, "1.1.1.1")
-		data.PingTargets = append(data.PingTargets, "1.1.1.1")
-
-		// TODO parse auth data to verify agent
-		/*err := json.Unmarshal(c.Body(), &data)
-		if err != nil {
-			log.Errorf("2 %s", err)
-			respB.Response = 500
-		}*/
-
-		jRespB, err := json.Marshal(data)
-		if err != nil {
-			log.Errorf("3 Unable to marshal API response.")
-		} else {
-			log.Warnf("%s", string(jRespB))
-			return c.SendString(string(jRespB)) // => ✋ good
+	app.Get("/v1/agent/config/:pin/:hash?", func(c *fiber.Ctx) error {
+		var str = apiGetConfig(c, db)
+		if str != "" {
+			return c.SendString(str)
 		}
 
 		return c.SendString("Something went wrong...") // => ✋
@@ -158,9 +70,29 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 	app.Get("/login", func(c *fiber.Ctx) error {
 		// Render index within layouts/main
 		// TODO process if they are logged in or not, otherwise send them to registration/login
-		return c.Render("index", fiber.Map{
-			"title": "home"},
-			"layouts/main")
+		return c.Render("login", fiber.Map{
+			"title": "login"},
+			"layouts/login")
+	})
+	app.Post("/login", func(c *fiber.Ctx) error {
+		c.Accepts("Application/json") // "Application/json"
+		respB := agent_models.ApiConfigResponse{}
+		respB.Response = 200
+
+		var data []*agent_models.MtrTarget
+		err := json.Unmarshal(c.Body(), &data)
+		if err != nil {
+			log.Errorf("2 %s", err)
+			respB.Response = 500
+		}
+		jRespB, err := json.Marshal(respB)
+		if err != nil {
+			log.Errorf("3 Unable to marshal API response.")
+		} else {
+			return c.SendString(string(jRespB)) // => ✋ good
+		}
+
+		return c.SendString("Something went wrong...") // => ✋
 	})
 	app.Get("/logout", func(c *fiber.Ctx) error {
 		// Render index within layouts/main

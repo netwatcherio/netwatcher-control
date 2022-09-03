@@ -342,6 +342,8 @@ github.com/ryanuber/columnize v0.0.0-20160712163229-9b3edd62028f/go.mod h1:sm1tb
 github.com/sagikazarmark/crypt v0.3.0/go.mod h1:uD/D+6UF4SrIR1uGEv7bBNkNqLGqUr43MRiaGWX1Nig=
 github.com/sagostin/netwatcher-agent v0.0.0-20220830164133-147044bb1add h1:sSeBDWe4aqaiHMPadHyUfEIIhQjLN0ANcZkfBOPhlc0=
 github.com/sagostin/netwatcher-agent v0.0.0-20220830164133-147044bb1add/go.mod h1:V3BPlZUBdFKvwx0GUqLqGyNL+880C++OcaEUMgoUTvc=
+github.com/sagostin/netwatcher-agent v0.0.0-20220903183132-6c223d8d3822 h1:8DJkDfV3F2mbAJl6XPCoNXv5OZ+6jTPxA0drXli49gQ=
+github.com/sagostin/netwatcher-agent v0.0.0-20220903183132-6c223d8d3822/go.mod h1:V3BPlZUBdFKvwx0GUqLqGyNL+880C++OcaEUMgoUTvc=
 github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529/go.mod h1:DxrIzT+xaE7yg65j358z/aeFdxmN0P9QXhEzd20vsDc=
 github.com/showwin/speedtest-go v1.1.5/go.mod h1:dJugxvC/AQDt4HQQKZ9lKNa2+b1c8nzj9IL0a/F8l1U=
 github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=

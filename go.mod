@@ -7,7 +7,7 @@ require (
 	github.com/gofiber/storage/mongodb v0.0.0-20220831075939-89493b1be08f
 	github.com/gofiber/template v1.6.30
 	github.com/joho/godotenv v1.4.0
-	github.com/sagostin/netwatcher-agent v0.0.0-20220830164133-147044bb1add
+	github.com/sagostin/netwatcher-agent v0.0.0-20220903183132-6c223d8d3822
 	github.com/sirupsen/logrus v1.9.0
 	go.mongodb.org/mongo-driver v1.10.1
 )

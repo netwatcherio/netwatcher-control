@@ -33,10 +33,8 @@ func main() {
 	// connect to database
 	mongoUri = os.Getenv("MONGO_URI")
 
-	mainDb, err := MongoConnect(os.Getenv("MAIN_DB"))
-	if err != nil {
-		log.Fatal("unable to connect to db")
-	}
+	var mongoData *MongoDatastore
+	mongoData = NewDatastore(os.Getenv("MAIN_DB"), log.New())
 
 	// Signal Termination if using CLI
 	signals := make(chan os.Signal, 1)
@@ -82,8 +80,10 @@ func main() {
 	// Public Files
 	app.Static("/", "./public")
 
-	LoadApiRoutes(app, store, mainDb)
-	LoadFrontendRoutes(app, store, mainDb)
+	//createAgent(mongoData.db)
+
+	LoadApiRoutes(app, store, mongoData.db)
+	LoadFrontendRoutes(app, store, mongoData.db)
 
 	// Listen website
 	app.Listen(os.Getenv("LISTEN"))

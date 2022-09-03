@@ -20,7 +20,7 @@ func apiUpdateMtr(c *fiber.Ctx, db *mongo.Database) string {
 		respB.Response = 500
 	}
 
-	_, hash, b, err := verifyAgentHash(data.Pin, data.Hash, db)
+	agentId, hash, b, err := verifyAgentHash(data.Pin, data.Hash, db)
 	if err != nil {
 		log.Errorf("0 %s", err)
 		respB.Response = 401
@@ -35,10 +35,21 @@ func apiUpdateMtr(c *fiber.Ctx, db *mongo.Database) string {
 
 		//log.Infof("4 %s", dataJ)
 
-		var data []*agent_models.MtrTarget
-		err = json.Unmarshal(dataJ, &data)
+		var data2 []agent_models.MtrTarget
+		err = json.Unmarshal(dataJ, &data2)
 		if err != nil {
 			log.Errorf("2 %s", err)
+			respB.Response = 500
+		}
+
+		var agent, _ = getAgent(agentId, db)
+		if err != nil {
+			log.Errorf("5 %s", err)
+			respB.Response = 500
+		}
+
+		_, err = insertMtrData(agent, data2, data.Timestamp, db)
+		if err != nil {
 			respB.Response = 500
 		}
 	}
@@ -181,7 +192,10 @@ func apiUpdateIcmp(c *fiber.Ctx, db *mongo.Database) string {
 			respB.Response = 500
 		}
 
-		insertIcmpData(agent, data2, data.Timestamp, db)
+		_, err = insertIcmpData(agent, data2, data.Timestamp, db)
+		if err != nil {
+			respB.Response = 500
+		}
 	}
 
 	jRespB, err := json.Marshal(respB)

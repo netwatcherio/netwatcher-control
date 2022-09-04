@@ -277,11 +277,22 @@ func getAgentStats(objId primitive.ObjectID, db *mongo.Database) ([]control_mode
 			return nil, err
 		}
 
+		tNow := time.Now()
+		tBeat := t.Heartbeat
+		tDif := tNow.Sub(tBeat)
+
+		var online = true
+		if tDif.Minutes() > 2 {
+			online = false
+		}
+
 		var agent = control_models.AgentStats{
 			ID:          objId,
 			Name:        t.Name,
 			Heartbeat:   t.Heartbeat,
 			NetworkInfo: netInfo.Data,
+			LastSeen:    tDif,
+			Online:      online,
 		}
 		statsList = append(statsList, agent)
 	}

@@ -22,6 +22,8 @@ type AgentStats struct {
 	Name        string                   `json:"name"`
 	Heartbeat   time.Time                `json:"heartbeat"`
 	NetworkInfo agent_models.NetworkInfo `json:"network_info"`
+	LastSeen    time.Duration            `json:"last_seen"`
+	Online      bool                     `json:"online"`
 }
 
 type AgentStatsList struct {

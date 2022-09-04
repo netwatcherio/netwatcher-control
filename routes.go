@@ -109,7 +109,39 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 		// TODO process if they are logged in or not, otherwise send them to registration/login
 		log.Errorf("%s", string(doc))
 		return c.Render("dashboard", fiber.Map{
-			"title": "dashboard", "siteSelected": true, "siteName": site.Name, "agents": html.UnescapeString(string(doc))},
+			"title": "dashboard", "siteSelected": true, "siteName": site.Name, "siteId": site.ID.Hex(), "agents": html.UnescapeString(string(doc))},
+			"layouts/main")
+	})
+
+	app.Get("/agent/:agent?", func(c *fiber.Ctx) error {
+		if c.Params("agent") == "" {
+			return c.RedirectBack("/home")
+		}
+		objId, err := primitive.ObjectIDFromHex(c.Params("agent"))
+		if err != nil {
+			return c.RedirectBack("/home")
+		}
+
+		site, err := getSite(objId, db)
+		if err != nil {
+			return nil
+		}
+
+		agent, err := getAgent(objId, db)
+		if err != nil {
+			return nil
+		}
+
+		doc, err := json.Marshal(agent)
+		if err != nil {
+			log.Errorf("1 %s", err)
+		}
+
+		// Render index within layouts/main
+		// TODO process if they are logged in or not, otherwise send them to registration/login
+		log.Errorf("%s", string(doc))
+		return c.Render("agent", fiber.Map{
+			"title": agent.Name, "siteSelected": true, "siteName": site.Name, "siteId": site.ID.Hex(), "agents": html.UnescapeString(string(doc))},
 			"layouts/main")
 	})
 

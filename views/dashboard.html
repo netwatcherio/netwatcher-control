@@ -163,17 +163,32 @@
 
     let parser = new DOMParser();
 
+    let onlineCount = 0;
+    let offlineCount = 0
+
     for (let i = 0; i < agents['list'].length; i++) {
         // Find a <table> element with id="myTable":
         let tbodyRef = document.getElementById('stats').getElementsByTagName('tbody')[0];
 
         let name = agents['list'][i]['name']
         let id = agents['list'][i]['id']
+        let online = agents['list'][i]['online']
+        let lastSeen = agents['list'][i]['last_seen']
         let netInfo = agents['list'][i]['network_info']
         let isp = netInfo['internet_provider']
 
         let date1 = new Date();
         let date2 = new Date(agents['list'][i]['heartbeat']);
+
+        let onlineMsg = '<span class="badge bg-danger">' +
+            '<i class="fa fa-xing" ></i></span>'
+        if (online) {
+            onlineMsg = '<span class="badge bg-success">' +
+                '<i class="fa fa-heartbeat" ></i></span>'
+            onlineCount++
+        }else{
+            offlineCount++
+        }
 
         // To calculate the time difference of two dates
         let Difference_In_Time = date2.getTime() - date1.getTime();
@@ -191,8 +206,7 @@
         // Insert a cell at the end of the row
         let newCell = newRow.insertCell();
         newCell.setAttribute("class", "px-0")
-        newCell.innerHTML += '<span class="badge bg-success">' +
-            '<i class="fa fa-check" > </i></span>'
+        newCell.innerHTML += onlineMsg
         newCell = newRow.insertCell();
         newCell.setAttribute("class", "px-0")
         newCell.innerHTML += name
@@ -221,7 +235,7 @@
                         "#22bb33",
                         "#bb2124",
                     ],
-                    data: [69, 420],
+                    data: [onlineCount, offlineCount],
                 },
             ],
         },

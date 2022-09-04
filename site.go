@@ -59,11 +59,11 @@ func getSite(id primitive.ObjectID, db *mongo.Database) (*control_models.Site, e
 	//fmt.Println(results)
 
 	if len(results) > 1 {
-		return nil, errors.New("multiple agents match when using id")
+		return nil, errors.New("multiple sites match when using id")
 	}
 
 	if len(results) == 0 {
-		return nil, errors.New("no agents match when using id")
+		return nil, errors.New("no sites match when using id")
 	}
 
 	doc, err := bson.Marshal(&results[0])

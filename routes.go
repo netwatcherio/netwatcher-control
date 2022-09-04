@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"html"
+	"time"
 )
 
 func LoadApiRoutes(app *fiber.App, session *session.Store, db *mongo.Database) {
@@ -122,20 +123,30 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			return c.RedirectBack("/home")
 		}
 
-		site, err := getSite(objId, db)
-		if err != nil {
-			return nil
-		}
-
 		agent, err := getAgent(objId, db)
 		if err != nil {
-			return nil
+			log.Errorf("1 %s", err)
+			return err
+		}
+
+		site, err := getSite(agent.Site, db)
+		if err != nil {
+			log.Errorf("12 %s", err)
+			return err
 		}
 
 		doc, err := json.Marshal(agent)
 		if err != nil {
-			log.Errorf("1 %s", err)
+			log.Errorf("13 %s", err)
+			return err
 		}
+
+		icmpD, err := getIcmpData(objId, time.Minute*5, db)
+		if err != nil {
+			return err
+		}
+
+		log.Errorf("json %s", icmpD)
 
 		// Render index within layouts/main
 		// TODO process if they are logged in or not, otherwise send them to registration/login

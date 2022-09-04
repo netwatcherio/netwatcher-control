@@ -223,8 +223,6 @@ func getLatestNetworkData(id primitive.ObjectID, db *mongo.Database) (control_mo
 		return control_models.NetworkData{}, err
 	}
 
-	//fmt.Println(results)
-
 	if len(results) == 0 {
 		return control_models.NetworkData{}, errors.New("no agents match when using id")
 	}
@@ -242,22 +240,56 @@ func getLatestNetworkData(id primitive.ObjectID, db *mongo.Database) (control_mo
 		return control_models.NetworkData{}, err
 	}
 
-	//var netInfo2 *agent_models.NetworkInfo
-	j, err := json.Marshal(netInfo1)
+	return netInfo1, nil
+}
+
+func getIcmpData(id primitive.ObjectID, timeRange time.Duration, db *mongo.Database) ([]*control_models.IcmpData, error) {
+	var filter = bson.M{
+		"agent": id,
+		"timestamp": bson.M{
+			"$gt": time.Now().Add(-timeRange),
+			"$lt": time.Now(),
+		}}
+
+	cursor, err := db.Collection("icmp_data").Find(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+	var results []bson.D
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		return nil, err
+	}
+
+	if len(results) == 0 {
+		return nil, errors.New("no data found")
+	}
+
+	var icmpD []*control_models.IcmpData
+	var icmp control_models.IcmpData
+
+	for _, r := range results {
+		doc, err := bson.Marshal(r)
+		if err != nil {
+			log.Errorf("1 %s", err)
+			return nil, err
+		}
+		err = bson.Unmarshal(doc, &icmp)
+		if err != nil {
+			log.Errorf("22 %s", err)
+			return nil, err
+		}
+
+		icmpD = append(icmpD, &icmp)
+	}
+
+	j, err := json.Marshal(icmpD)
 	if err != nil {
 		log.Errorf("123 %s", err)
-		return control_models.NetworkData{}, err
+		return nil, err
 	}
 	log.Warnf("%s", j)
-	/*err = json.Unmarshal(j, &netInfo2)
-	if err != nil {
-		log.Errorf("125 %s", err)
-		return agent_models.NetworkInfo{}, err
-	}*/
 
-	log.Warnf("%s", j)
-
-	return netInfo1, nil
+	return icmpD, nil
 }
 
 func getAgentStats(objId primitive.ObjectID, db *mongo.Database) ([]control_models.AgentStats, error) {
@@ -287,7 +319,7 @@ func getAgentStats(objId primitive.ObjectID, db *mongo.Database) ([]control_mode
 		}
 
 		var agent = control_models.AgentStats{
-			ID:          objId,
+			ID:          t.ID,
 			Name:        t.Name,
 			Heartbeat:   t.Heartbeat,
 			NetworkInfo: netInfo.Data,

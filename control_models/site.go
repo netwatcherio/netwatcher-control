@@ -3,9 +3,8 @@ package control_models
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type Site struct {
-	ID     primitive.ObjectID   `bson:"_id, omitempty"`
-	Agents []primitive.ObjectID `bson:"agents"` // _id of mongo objects
-	Name   string               `bson:"name"
+	ID   primitive.ObjectID `bson:"_id, omitempty"`
+	Name string             `bson:"name"
 	`
 	Members []struct {
 		User primitive.ObjectID `bson:"user"` // _id

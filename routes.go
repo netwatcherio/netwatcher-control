@@ -63,18 +63,37 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 	app.Get("/", func(c *fiber.Ctx) error {
 		// Render index within layouts/main
 		// TODO process if they are logged in or not, otherwise send them to registration/login
-		return c.Render("index", fiber.Map{
+		return c.Redirect("/home")
+	})
+
+	// home page
+	app.Get("/home", func(c *fiber.Ctx) error {
+		// Render index within layouts/main
+		// TODO process if they are logged in or not, otherwise send them to registration/login
+		return c.Render("home", fiber.Map{
 			"title": "home"},
 			"layouts/main")
 	})
-	app.Get("/login", func(c *fiber.Ctx) error {
+	// dashboard page
+	app.Get("/dashboard/:siteid?", func(c *fiber.Ctx) error {
+		if c.Params("siteid") == "" {
+			return c.Redirect("/home")
+		}
 		// Render index within layouts/main
 		// TODO process if they are logged in or not, otherwise send them to registration/login
-		return c.Render("login", fiber.Map{
-			"title": "login"},
-			"layouts/login")
+		return c.Render("dashboard", fiber.Map{
+			"title": "dashboard", "siteSelected": true, "siteName": "site 1"},
+			"layouts/main")
 	})
-	app.Post("/login", func(c *fiber.Ctx) error {
+
+	// authentication
+	app.Get("/auth", func(c *fiber.Ctx) error {
+		// Render index within layouts/main
+		// TODO process if they are logged in or not, otherwise send them to registration/login
+		return c.Render("auth", fiber.Map{
+			"title": "auth"})
+	})
+	app.Post("/auth", func(c *fiber.Ctx) error {
 		c.Accepts("Application/json") // "Application/json"
 		respB := agent_models.ApiConfigResponse{}
 		respB.Response = 200
@@ -101,6 +120,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			"title": "home"},
 			"layouts/main")
 	})
+
 	app.Get("/agents", func(c *fiber.Ctx) error {
 		// Render index within layouts/main
 		// TODO process if they are logged in or not, otherwise send them to registration/login
@@ -134,13 +154,6 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 		// TODO process if they are logged in or not, otherwise send them to registration/login
 		return c.Render("manage", fiber.Map{
 			"title": "manage"},
-			"layouts/main")
-	})
-	app.Get("/dashboard", func(c *fiber.Ctx) error {
-		// Render index within layouts/main
-		// TODO process if they are logged in or not, otherwise send them to registration/login
-		return c.Render("dashboard", fiber.Map{
-			"title": "dashboard"},
 			"layouts/main")
 	})
 }

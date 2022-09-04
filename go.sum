@@ -252,6 +252,7 @@ github.com/iancoleman/strcase v0.2.0/go.mod h1:iwCmte+B7n89clKwxIoIXy/HfoL7AsD47
 github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
 github.com/ianlancetaylor/demangle v0.0.0-20200824232613-28f6c0f3b639/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
+github.com/jackpal/gateway v1.0.7 h1:7tIFeCGmpyrMx9qvT0EgYUi7cxVW48a0mMvnIL17bPM=
 github.com/jackpal/gateway v1.0.7/go.mod h1:aRcO0UFKt+MgIZmRmvOmnejdDT4Y1DNiNOsSd1AcIbA=
 github.com/joho/godotenv v1.4.0 h1:3l4+N6zfMWnkbPEXKng2o2/MR5mSwTrBih4ZEkkz1lg=
 github.com/joho/godotenv v1.4.0/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=
@@ -346,7 +347,10 @@ github.com/sagostin/netwatcher-agent v0.0.0-20220903183132-6c223d8d3822 h1:8DJkD
 github.com/sagostin/netwatcher-agent v0.0.0-20220903183132-6c223d8d3822/go.mod h1:V3BPlZUBdFKvwx0GUqLqGyNL+880C++OcaEUMgoUTvc=
 github.com/sagostin/netwatcher-agent v0.0.0-20220903200726-bd20354a8e31 h1:blecb9BGOIaWAs6Jc4ejy9u0fiZ1TXto4K2lEDfRYQQ=
 github.com/sagostin/netwatcher-agent v0.0.0-20220903200726-bd20354a8e31/go.mod h1:V3BPlZUBdFKvwx0GUqLqGyNL+880C++OcaEUMgoUTvc=
+github.com/sagostin/netwatcher-agent v0.0.0-20220904074517-25afccdc4914 h1:Wz0cXpR4Da+ZRbYlevPsyqamY/mUdGm2WbROA8ygbJ8=
+github.com/sagostin/netwatcher-agent v0.0.0-20220904074517-25afccdc4914/go.mod h1:V3BPlZUBdFKvwx0GUqLqGyNL+880C++OcaEUMgoUTvc=
 github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529/go.mod h1:DxrIzT+xaE7yg65j358z/aeFdxmN0P9QXhEzd20vsDc=
+github.com/showwin/speedtest-go v1.1.5 h1:dud1cS2Qppbm50BrTKzrBj78wY78ORL5LIiRjKexmdY=
 github.com/showwin/speedtest-go v1.1.5/go.mod h1:dJugxvC/AQDt4HQQKZ9lKNa2+b1c8nzj9IL0a/F8l1U=
 github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
 github.com/sirupsen/logrus v1.4.2/go.mod h1:tLMulIdttU9McNUspp0xgXVQah82FyeX6MwdIuYE2rE=

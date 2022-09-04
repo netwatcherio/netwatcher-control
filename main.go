@@ -81,6 +81,7 @@ func main() {
 	app.Static("/", "./public")
 
 	//createAgent(mongoData.db)
+	//createSite(mongoData.db)
 
 	LoadApiRoutes(app, store, mongoData.db)
 	LoadFrontendRoutes(app, store, mongoData.db)

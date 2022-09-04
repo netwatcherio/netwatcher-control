@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/sagostin/netwatcher-agent/agent_models"
@@ -10,6 +11,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"time"
 )
 
 func createAgent(c *mongo.Database) (bool, error) {
@@ -49,6 +52,62 @@ func createAgent(c *mongo.Database) (bool, error) {
 	return true, nil
 }
 
+func getAgents(site primitive.ObjectID, db *mongo.Database) ([]*control_models.Agent, error) {
+	// if hash is blank, search for pin matching with blank hash
+	// if none exist, return error
+	// if match, return new agent, and new hash, then let another function update the hash?
+	// if hash is included, search both, and return nil for hash, and false for new if verified
+	// if hash is included and none match, return err
+	var filter = bson.D{{"site", site}}
+
+	cursor, err := db.Collection("agents").Find(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+	var results []bson.D
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		return nil, err
+	}
+
+	//fmt.Println(results)
+
+	if len(results) == 0 {
+		return nil, errors.New("no agents match when using id")
+	}
+
+	var agent []*control_models.Agent
+	for i := range results {
+		doc, err := bson.Marshal(&results[i])
+		if err != nil {
+			log.Errorf("1 %s", err)
+			return nil, err
+		}
+		var a *control_models.Agent
+		err = bson.Unmarshal(doc, &a)
+		if err != nil {
+			log.Errorf("2 %s", err)
+			return nil, err
+		}
+
+		agent = append(agent, a)
+	}
+
+	return agent, nil
+}
+
+func updateHeartbeat(id primitive.ObjectID, db *mongo.Database) error {
+	var filter = bson.D{{"_id", id}}
+
+	update := bson.D{{"$set", bson.D{{"heartbeat", time.Now()}}}}
+
+	_, err := db.Collection("agents").UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func getAgent(id primitive.ObjectID, db *mongo.Database) (*control_models.Agent, error) {
 	// if hash is blank, search for pin matching with blank hash
 	// if none exist, return error
@@ -86,6 +145,11 @@ func getAgent(id primitive.ObjectID, db *mongo.Database) (*control_models.Agent,
 	err = bson.Unmarshal(doc, &agent)
 	if err != nil {
 		log.Errorf("2 %s", err)
+		return nil, err
+	}
+
+	err = updateHeartbeat(agent.ID, db)
+	if err != nil {
 		return nil, err
 	}
 
@@ -145,6 +209,83 @@ func verifyAgentHash(pin string, hash string, db *mongo.Database) (primitive.Obj
 	}
 
 	return primitive.ObjectID{}, "", false, errors.New("something went wrong verifying agent")
+}
+
+func getLatestNetworkData(id primitive.ObjectID, db *mongo.Database) (control_models.NetworkData, error) {
+	var filter = bson.D{{"agent", id}}
+	opts := options.Find().SetSort(bson.D{{"timestamp", -1}})
+	cursor, err := db.Collection("network_data").Find(context.TODO(), filter, opts)
+	if err != nil {
+		return control_models.NetworkData{}, err
+	}
+	var results []bson.D
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		return control_models.NetworkData{}, err
+	}
+
+	//fmt.Println(results)
+
+	if len(results) == 0 {
+		return control_models.NetworkData{}, errors.New("no agents match when using id")
+	}
+
+	doc, err := bson.Marshal(&results[0])
+	if err != nil {
+		log.Errorf("1 %s", err)
+		return control_models.NetworkData{}, err
+	}
+
+	var netInfo1 control_models.NetworkData
+	err = bson.Unmarshal(doc, &netInfo1)
+	if err != nil {
+		log.Errorf("22 %s", err)
+		return control_models.NetworkData{}, err
+	}
+
+	//var netInfo2 *agent_models.NetworkInfo
+	j, err := json.Marshal(netInfo1)
+	if err != nil {
+		log.Errorf("123 %s", err)
+		return control_models.NetworkData{}, err
+	}
+	log.Warnf("%s", j)
+	/*err = json.Unmarshal(j, &netInfo2)
+	if err != nil {
+		log.Errorf("125 %s", err)
+		return agent_models.NetworkInfo{}, err
+	}*/
+
+	log.Warnf("%s", j)
+
+	return netInfo1, nil
+}
+
+func getAgentStats(objId primitive.ObjectID, db *mongo.Database) ([]control_models.AgentStats, error) {
+	site, err := getSite(objId, db)
+	if err != nil {
+		return nil, err
+	}
+	agents, err := getAgents(site.ID, db)
+	if err != nil {
+		return nil, err
+	}
+	var statsList []control_models.AgentStats
+
+	for _, t := range agents {
+		netInfo, err := getLatestNetworkData(t.ID, db)
+		if err != nil {
+			return nil, err
+		}
+
+		var agent = control_models.AgentStats{
+			ID:          objId,
+			Name:        t.Name,
+			Heartbeat:   t.Heartbeat,
+			NetworkInfo: netInfo.Data,
+		}
+		statsList = append(statsList, agent)
+	}
+	return statsList, nil
 }
 
 func deleteAgent() {

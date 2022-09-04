@@ -5,8 +5,11 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/sagostin/netwatcher-agent/agent_models"
+	"github.com/sagostin/netwatcher-control/control_models"
 	log "github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"html"
 )
 
 func LoadApiRoutes(app *fiber.App, session *session.Store, db *mongo.Database) {
@@ -79,10 +82,34 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 		if c.Params("siteid") == "" {
 			return c.Redirect("/home")
 		}
+		objId, err := primitive.ObjectIDFromHex(c.Params("siteid"))
+		if err != nil {
+			return c.Redirect("/home")
+		}
+
+		site, err := getSite(objId, db)
+		if err != nil {
+			return nil
+		}
+
+		var agentStatList control_models.AgentStatsList
+
+		stats, err := getAgentStats(objId, db)
+		if err != nil {
+			return err
+		}
+		agentStatList.List = stats
+
+		doc, err := json.Marshal(agentStatList)
+		if err != nil {
+			log.Errorf("1 %s", err)
+		}
+
 		// Render index within layouts/main
 		// TODO process if they are logged in or not, otherwise send them to registration/login
+		log.Errorf("%s", string(doc))
 		return c.Render("dashboard", fiber.Map{
-			"title": "dashboard", "siteSelected": true, "siteName": "site 1"},
+			"title": "dashboard", "siteSelected": true, "siteName": site.Name, "agents": html.UnescapeString(string(doc))},
 			"layouts/main")
 	})
 

@@ -87,7 +87,7 @@ func apiUpdateNetwork(c *fiber.Ctx, db *mongo.Database) string {
 			respB.Response = 401
 		}
 
-		var data2 []agent_models.NetworkInfo
+		var data2 agent_models.NetworkInfo
 		err = json.Unmarshal(dataJ, &data2)
 		if err != nil {
 			log.Errorf("2 %s", err)
@@ -100,11 +100,9 @@ func apiUpdateNetwork(c *fiber.Ctx, db *mongo.Database) string {
 			respB.Response = 500
 		}
 
-		for _, d := range data2 {
-			_, err = insertNetworkInfo(agent, d, data.Timestamp, db)
-			if err != nil {
-				respB.Response = 500
-			}
+		_, err = insertNetworkInfo(agent, data2, data.Timestamp, db)
+		if err != nil {
+			respB.Response = 500
 		}
 	}
 

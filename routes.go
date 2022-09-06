@@ -5,8 +5,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/sagostin/netwatcher-agent/agent_models"
+	"github.com/sagostin/netwatcher-control/control_models"
 	log "github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"html"
+	"time"
 )
 
 func LoadApiRoutes(app *fiber.App, session *session.Store, db *mongo.Database) {
@@ -27,7 +31,7 @@ func LoadApiRoutes(app *fiber.App, session *session.Store, db *mongo.Database) {
 		return c.SendString("Something went wrong...") // => ✋
 	})
 	app.Post("/v1/agent/update/speedtest", func(c *fiber.Ctx) error {
-		var str = apiUpdateSpeedtest(c, db)
+		var str = apiUpdateSpeedTest(c, db)
 		if str != "" {
 			return c.SendString(str)
 		}
@@ -63,18 +67,103 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 	app.Get("/", func(c *fiber.Ctx) error {
 		// Render index within layouts/main
 		// TODO process if they are logged in or not, otherwise send them to registration/login
-		return c.Render("index", fiber.Map{
+		return c.Redirect("/home")
+	})
+
+	// home page
+	app.Get("/home", func(c *fiber.Ctx) error {
+		// Render index within layouts/main
+		// TODO process if they are logged in or not, otherwise send them to registration/login
+		return c.Render("home", fiber.Map{
 			"title": "home"},
 			"layouts/main")
 	})
-	app.Get("/login", func(c *fiber.Ctx) error {
+	// dashboard page
+	app.Get("/dashboard/:siteid?", func(c *fiber.Ctx) error {
+		if c.Params("siteid") == "" {
+			return c.Redirect("/home")
+		}
+		objId, err := primitive.ObjectIDFromHex(c.Params("siteid"))
+		if err != nil {
+			return c.Redirect("/home")
+		}
+
+		site, err := getSite(objId, db)
+		if err != nil {
+			return nil
+		}
+
+		var agentStatList control_models.AgentStatsList
+
+		stats, err := getAgentStats(objId, db)
+		if err != nil {
+			return err
+		}
+		agentStatList.List = stats
+
+		doc, err := json.Marshal(agentStatList)
+		if err != nil {
+			log.Errorf("1 %s", err)
+		}
+
 		// Render index within layouts/main
 		// TODO process if they are logged in or not, otherwise send them to registration/login
-		return c.Render("login", fiber.Map{
-			"title": "login"},
-			"layouts/login")
+		log.Errorf("%s", string(doc))
+		return c.Render("dashboard", fiber.Map{
+			"title": "dashboard", "siteSelected": true, "siteName": site.Name, "siteId": site.ID.Hex(), "agents": html.UnescapeString(string(doc))},
+			"layouts/main")
 	})
-	app.Post("/login", func(c *fiber.Ctx) error {
+
+	app.Get("/agent/:agent?", func(c *fiber.Ctx) error {
+		if c.Params("agent") == "" {
+			return c.RedirectBack("/home")
+		}
+		objId, err := primitive.ObjectIDFromHex(c.Params("agent"))
+		if err != nil {
+			return c.RedirectBack("/home")
+		}
+
+		agent, err := getAgent(objId, db)
+		if err != nil {
+			log.Errorf("1 %s", err)
+			return err
+		}
+
+		site, err := getSite(agent.Site, db)
+		if err != nil {
+			log.Errorf("12 %s", err)
+			return err
+		}
+
+		doc, err := json.Marshal(agent)
+		if err != nil {
+			log.Errorf("13 %s", err)
+			return err
+		}
+
+		icmpD, err := getIcmpData(objId, time.Minute*5, db)
+		if err != nil {
+			return err
+		}
+
+		log.Errorf("json %s", icmpD)
+
+		// Render index within layouts/main
+		// TODO process if they are logged in or not, otherwise send them to registration/login
+		log.Errorf("%s", string(doc))
+		return c.Render("agent", fiber.Map{
+			"title": agent.Name, "siteSelected": true, "siteName": site.Name, "siteId": site.ID.Hex(), "agents": html.UnescapeString(string(doc))},
+			"layouts/main")
+	})
+
+	// authentication
+	app.Get("/auth", func(c *fiber.Ctx) error {
+		// Render index within layouts/main
+		// TODO process if they are logged in or not, otherwise send them to registration/login
+		return c.Render("auth", fiber.Map{
+			"title": "auth"})
+	})
+	app.Post("/auth", func(c *fiber.Ctx) error {
 		c.Accepts("Application/json") // "Application/json"
 		respB := agent_models.ApiConfigResponse{}
 		respB.Response = 200
@@ -101,6 +190,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			"title": "home"},
 			"layouts/main")
 	})
+
 	app.Get("/agents", func(c *fiber.Ctx) error {
 		// Render index within layouts/main
 		// TODO process if they are logged in or not, otherwise send them to registration/login
@@ -134,13 +224,6 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 		// TODO process if they are logged in or not, otherwise send them to registration/login
 		return c.Render("manage", fiber.Map{
 			"title": "manage"},
-			"layouts/main")
-	})
-	app.Get("/dashboard", func(c *fiber.Ctx) error {
-		// Render index within layouts/main
-		// TODO process if they are logged in or not, otherwise send them to registration/login
-		return c.Render("dashboard", fiber.Map{
-			"title": "dashboard"},
 			"layouts/main")
 	})
 }

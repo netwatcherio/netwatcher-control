@@ -1,6 +1,6 @@
 FROM golang:1.18-bullseye
 
-RUN go install github.com/sagostin/netwatcher-control@latest
+RUN go install github.com/netwatcherio/netwatcher-control@latest
 
 ENV GO111MODULE=on
 ENV GOFLAGS=-mod=vendor

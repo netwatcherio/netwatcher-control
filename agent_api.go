@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
-	"github.com/sagostin/netwatcher-agent/agent_models"
+	"github.com/netwatcherio/netwatcher-agent/agent_models"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 )

@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
-	"github.com/sagostin/netwatcher-agent/agent_models"
-	"github.com/sagostin/netwatcher-control/control_models"
+	"github.com/netwatcherio/netwatcher-agent/agent_models"
+	"github.com/netwatcherio/netwatcher-control/control_models"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -79,7 +79,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			"layouts/main")
 	})
 	// dashboard page
-	app.Get("/dashboard/:siteid?", func(c *fiber.Ctx) error {
+	app.Get("/site/:siteid?", func(c *fiber.Ctx) error {
 		if c.Params("siteid") == "" {
 			return c.Redirect("/home")
 		}
@@ -109,8 +109,8 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 		// Render index within layouts/main
 		// TODO process if they are logged in or not, otherwise send them to registration/login
 		log.Errorf("%s", string(doc))
-		return c.Render("dashboard", fiber.Map{
-			"title": "dashboard", "siteSelected": true, "siteName": site.Name, "siteId": site.ID.Hex(), "agents": html.UnescapeString(string(doc))},
+		return c.Render("site", fiber.Map{
+			"title": "site dashboard", "siteSelected": true, "siteName": site.Name, "siteId": site.ID.Hex(), "agents": html.UnescapeString(string(doc))},
 			"layouts/main")
 	})
 

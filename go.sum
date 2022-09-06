@@ -311,6 +311,8 @@ github.com/modern-go/reflect2 v1.0.2/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjY
 github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe h1:iruDEfMl2E6fbMZ9s0scYfZQ84/6SPL6zC8ACM2oIL0=
 github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe/go.mod h1:wL8QJuTMNUDYhXwkmfOly8iTdp5TEcJFWZD2D7SIkUc=
 github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
+github.com/netwatcherio/netwatcher-agent v1.0.0 h1:0Ax1DsZZIaJDCfW/jlnM93wAExVYIpM0GcOqXS73wZ0=
+github.com/netwatcherio/netwatcher-agent v1.0.0/go.mod h1:AyGEEFNgeKPOZ/xj5e2GAWC9H+G9wIk2d6/Lkom/3F4=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/pascaldekloe/goe v0.0.0-20180627143212-57f6aae5913c/go.mod h1:lzWF7FIEvWOWxwDKqyGYQf6ZUaNfKdP144TG7ZOy1lc=
 github.com/pascaldekloe/goe v0.1.0/go.mod h1:lzWF7FIEvWOWxwDKqyGYQf6ZUaNfKdP144TG7ZOy1lc=
@@ -341,14 +343,6 @@ github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFR
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
 github.com/ryanuber/columnize v0.0.0-20160712163229-9b3edd62028f/go.mod h1:sm1tb6uqfes/u+d4ooFouqFdy9/2g9QGwK3SQygK0Ts=
 github.com/sagikazarmark/crypt v0.3.0/go.mod h1:uD/D+6UF4SrIR1uGEv7bBNkNqLGqUr43MRiaGWX1Nig=
-github.com/sagostin/netwatcher-agent v0.0.0-20220830164133-147044bb1add h1:sSeBDWe4aqaiHMPadHyUfEIIhQjLN0ANcZkfBOPhlc0=
-github.com/sagostin/netwatcher-agent v0.0.0-20220830164133-147044bb1add/go.mod h1:V3BPlZUBdFKvwx0GUqLqGyNL+880C++OcaEUMgoUTvc=
-github.com/sagostin/netwatcher-agent v0.0.0-20220903183132-6c223d8d3822 h1:8DJkDfV3F2mbAJl6XPCoNXv5OZ+6jTPxA0drXli49gQ=
-github.com/sagostin/netwatcher-agent v0.0.0-20220903183132-6c223d8d3822/go.mod h1:V3BPlZUBdFKvwx0GUqLqGyNL+880C++OcaEUMgoUTvc=
-github.com/sagostin/netwatcher-agent v0.0.0-20220903200726-bd20354a8e31 h1:blecb9BGOIaWAs6Jc4ejy9u0fiZ1TXto4K2lEDfRYQQ=
-github.com/sagostin/netwatcher-agent v0.0.0-20220903200726-bd20354a8e31/go.mod h1:V3BPlZUBdFKvwx0GUqLqGyNL+880C++OcaEUMgoUTvc=
-github.com/sagostin/netwatcher-agent v0.0.0-20220904074517-25afccdc4914 h1:Wz0cXpR4Da+ZRbYlevPsyqamY/mUdGm2WbROA8ygbJ8=
-github.com/sagostin/netwatcher-agent v0.0.0-20220904074517-25afccdc4914/go.mod h1:V3BPlZUBdFKvwx0GUqLqGyNL+880C++OcaEUMgoUTvc=
 github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529/go.mod h1:DxrIzT+xaE7yg65j358z/aeFdxmN0P9QXhEzd20vsDc=
 github.com/showwin/speedtest-go v1.1.5 h1:dud1cS2Qppbm50BrTKzrBj78wY78ORL5LIiRjKexmdY=
 github.com/showwin/speedtest-go v1.1.5/go.mod h1:dJugxvC/AQDt4HQQKZ9lKNa2+b1c8nzj9IL0a/F8l1U=

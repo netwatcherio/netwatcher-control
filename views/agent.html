@@ -1,48 +1,103 @@
 <div class="container-fluid">
+    <!-- ============================================================= -->
+    <!-- Start Page Content -->
+    <!-- ============================================================= -->
     <div class="row">
         <!-- column -->
-        <div class="col-12">
+        <div class="col-lg-6">
             <div class="card">
+                <div class="border-bottom title-part-padding">
+                    <h4 class="mb-0">Line Chart</h4>
+                </div>
                 <div class="card-body">
-                    <!-- title -->
-                    <div class="d-md-flex">
-                        <div>
-                            <h4 class="card-title">Sites</h4>
-                            <h5 class="card-subtitle">Overview of Sites</h5>
-                        </div>
-                    </div>
-                    <!-- title -->
-                    <div class="table-responsive">
-                        <table class="table mb-0 table-hover align-middle text-nowrap">
-                            <thead>
-                            <tr>
-                                <!--TODO make custom icons for this or something to indicate wether it's online or not-->
-                                <th class="border-top-0">Status</th>
-                                <th class="border-top-0">Name</th>
-                                <th class="border-top-0">Location</th>
-                                <th class="border-top-0">ISP</th>
-                                <th class="border-top-0">Type</th>
-                                <th class="border-top-0">Last Seen</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr>
-                                <td>
-                                    <label class="badge bg-success">Online</label>
-                                </td>
-                                <td>TOPS</td>
-                                <td>Kelowna, BC</td>
-                                <td>Telus</td>
-                                <td>MacOS - Dev</td>
-                                <td>
-                                    <label class="badge bg-info">13s ago</label>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
+                    <div><div class="chartjs-size-monitor" style="position: absolute; inset: 0px; overflow: hidden; pointer-events: none; visibility: hidden; z-index: -1;"><div class="chartjs-size-monitor-expand" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;"><div style="position:absolute;width:1000000px;height:1000000px;left:0;top:0"></div></div><div class="chartjs-size-monitor-shrink" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;"><div style="position:absolute;width:200%;height:200%;left:0; top:0"></div></div></div>
+                        <canvas id="line-chart" height="288" width="576" style="display: block; width: 576px; height: 288px;" class="chartjs-render-monitor"></canvas>
                     </div>
                 </div>
             </div>
         </div>
+        <!-- column -->
     </div>
+    <!-- ============================================================= -->
+    <!-- End PAge Content -->
+    <!-- ============================================================= -->
 </div>
+<script>
+    let dataJson = JSON.parse('{{.icmpMetrics}}')
+    let timeStamps = []
+    let averageLatency = []
+    let maximumLatency = []
+
+    for (let i = 0; i < dataJson.length; i++) {
+        for (let i2 = 0; i2 < dataJson[i].data.length; i2++) {
+            //console.log(dataJson[i].data[i2])
+            if (dataJson[i].data[i2].address == '8.8.8.8') {
+                console.log(dataJson[i].data[i2])
+                let item = dataJson[i].data[i2].result
+                //console.log(dataJson[i].data[i2])
+                timeStamps.push(item.stop_timestamp)
+                averageLatency.push(item.metrics.latency_average/1000/1000)
+                maximumLatency.push(item.metrics.latency_max/1000/1000)
+            }
+        }
+    }
+
+    //Line Chart
+
+    new Chart(document.getElementById("line-chart"), {
+        type: "line",
+        data: {
+            labels: timeStamps,
+            datasets: [
+                {
+                    data: averageLatency,
+                    label: "Average Latency",
+                    borderColor: "#3e95cd",
+                    fill: false,
+                },
+                {
+                    data: maximumLatency,
+                    label: "Maximum Latency",
+                    borderColor: "#a4d7f3",
+                    fillColor: "#ffffff",
+                    fill: true,
+                },
+            ],
+        },
+        options: {
+            legend: {
+                labels: {
+                    fontColor: "#b2b9bf",
+                    type: 'time',
+                    ticks: {
+                        autoSkip: true,
+                        maxTicksLimit: 5,
+                    },
+                },
+            },
+            title: {
+                display: true,
+                fontColor: "#b2b9bf",
+                text: "World population per region (in millions)",
+            },
+            scales: {
+                yAxes: [
+                    {
+                        ticks: {
+                            fontColor: "#b2b9bf",
+                            fontSize: 12,
+                        },
+                    },
+                ],
+                xAxes: [
+                    {
+                        ticks: {
+                            fontColor: "#b2b9bf",
+                            fontSize: 12,
+                        },
+                    },
+                ],
+            },
+        },
+    });
+</script>

@@ -141,18 +141,35 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			return err
 		}
 
-		icmpD, err := getIcmpData(objId, time.Minute*5, db)
+		icmpD, err := getIcmpData(objId, time.Minute*30, db)
 		if err != nil {
 			return err
 		}
 
-		log.Errorf("json %s", icmpD)
+		for n := range icmpD {
+			for n2 := range icmpD[n].Data {
+				icmpD[n].Data[n2].Result.Data = nil
+			}
+		}
+
+		j, err := json.Marshal(icmpD)
+		if err != nil {
+			log.Errorf("%s", err)
+			return err
+		}
+
+		log.Errorf("%s", j)
 
 		// Render index within layouts/main
 		// TODO process if they are logged in or not, otherwise send them to registration/login
-		log.Errorf("%s", string(doc))
 		return c.Render("agent", fiber.Map{
-			"title": agent.Name, "siteSelected": true, "siteName": site.Name, "siteId": site.ID.Hex(), "agents": html.UnescapeString(string(doc))},
+			"title":        agent.Name,
+			"siteSelected": true,
+			"siteName":     site.Name,
+			"siteId":       site.ID.Hex(),
+			"agents":       html.UnescapeString(string(doc)),
+			"icmpMetrics":  html.UnescapeString(string(j)),
+		},
 			"layouts/main")
 	})
 

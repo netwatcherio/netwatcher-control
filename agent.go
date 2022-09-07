@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/netwatcherio/netwatcher-agent/agent_models"
@@ -282,12 +281,12 @@ func getIcmpData(id primitive.ObjectID, timeRange time.Duration, db *mongo.Datab
 		icmpD = append(icmpD, &icmp)
 	}
 
-	j, err := json.Marshal(icmpD)
+	/*j, err := json.Marshal(icmpD)
 	if err != nil {
 		log.Errorf("123 %s", err)
 		return nil, err
 	}
-	log.Warnf("%s", j)
+	log.Warnf("%s", j)*/
 
 	return icmpD, nil
 }

@@ -242,7 +242,7 @@ func getLatestNetworkData(id primitive.ObjectID, db *mongo.Database) (control_mo
 	return netInfo1, nil
 }
 
-func getIcmpData(id primitive.ObjectID, timeRange time.Duration, db *mongo.Database) ([]*control_models.IcmpData, error) {
+func getIcmpData(id primitive.ObjectID, timeRange time.Duration, db *mongo.Database) ([]control_models.IcmpData, error) {
 	var filter = bson.M{
 		"agent": id,
 		"timestamp": bson.M{
@@ -263,10 +263,10 @@ func getIcmpData(id primitive.ObjectID, timeRange time.Duration, db *mongo.Datab
 		return nil, errors.New("no data found")
 	}
 
-	var icmpD []*control_models.IcmpData
-	var icmp control_models.IcmpData
+	var icmpD []control_models.IcmpData
 
 	for _, r := range results {
+		var icmp control_models.IcmpData
 		doc, err := bson.Marshal(r)
 		if err != nil {
 			log.Errorf("1 %s", err)
@@ -278,7 +278,7 @@ func getIcmpData(id primitive.ObjectID, timeRange time.Duration, db *mongo.Datab
 			return nil, err
 		}
 
-		icmpD = append(icmpD, &icmp)
+		icmpD = append(icmpD, icmp)
 	}
 
 	/*j, err := json.Marshal(icmpD)

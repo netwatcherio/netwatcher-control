@@ -208,11 +208,38 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			"layouts/main")
 	})
 
-	app.Get("/agents", func(c *fiber.Ctx) error {
+	app.Get("/agents/:siteid?", func(c *fiber.Ctx) error {
+		if c.Params("siteid") == "" {
+			return c.Redirect("/home")
+		}
+		objId, err := primitive.ObjectIDFromHex(c.Params("siteid"))
+		if err != nil {
+			return c.Redirect("/home")
+		}
+
+		site, err := getSite(objId, db)
+		if err != nil {
+			return nil
+		}
+
+		var agentStatList control_models.AgentStatsList
+
+		stats, err := getAgentStats(objId, db)
+		if err != nil {
+			return err
+		}
+		agentStatList.List = stats
+
+		doc, err := json.Marshal(agentStatList)
+		if err != nil {
+			log.Errorf("1 %s", err)
+		}
+
 		// Render index within layouts/main
 		// TODO process if they are logged in or not, otherwise send them to registration/login
+		log.Errorf("%s", string(doc))
 		return c.Render("agents", fiber.Map{
-			"title": "agents"},
+			"title": "agents", "siteSelected": true, "siteName": site.Name, "siteId": site.ID.Hex(), "agents": html.UnescapeString(string(doc))},
 			"layouts/main")
 	})
 	app.Get("/sites", func(c *fiber.Ctx) error {

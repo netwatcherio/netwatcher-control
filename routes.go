@@ -185,12 +185,14 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 		respB := agent_models.ApiConfigResponse{}
 		respB.Response = 200
 
-		var data []*agent_models.MtrTarget
+		log.Infof("%s", c.Body())
+
+		/*var data []*agent_models.MtrTarget
 		err := json.Unmarshal(c.Body(), &data)
 		if err != nil {
 			log.Errorf("2 %s", err)
 			respB.Response = 500
-		}
+		}*/
 		jRespB, err := json.Marshal(respB)
 		if err != nil {
 			log.Errorf("3 Unable to marshal API response.")

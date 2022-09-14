@@ -28,7 +28,7 @@ type User struct {
 func (u *User) Create(db *mongo.Database) (bool, error) {
 	// todo check if already exists
 
-	exists, err := u.UserExists(db)
+	exists, err := u.UserExistsEmail(db)
 	if err != nil {
 		return false, err
 	}
@@ -58,8 +58,8 @@ func (u *User) Create(db *mongo.Database) (bool, error) {
 	return true, nil
 }
 
-// UserExists check based on wether a user with the email in user exists
-func (u *User) UserExists(db *mongo.Database) (bool, error) {
+// UserExistsEmail check based on wether a user with the email in user exists
+func (u *User) UserExistsEmail(db *mongo.Database) (bool, error) {
 	var filter = bson.D{{"email", u.Email}}
 
 	cursor, err := db.Collection("users").Find(context.TODO(), filter)
@@ -75,6 +75,36 @@ func (u *User) UserExists(db *mongo.Database) (bool, error) {
 
 	if len(results) > 1 {
 		return false, errors.New("multiple users match when using email")
+	}
+
+	if len(results) == 0 {
+		return false, nil
+	}
+
+	if len(results) == 1 {
+		return true, nil
+	}
+
+	return false, errors.New("something went wrong")
+}
+
+// UserExistsID check based on wether a user with the email in user exists
+func (u *User) UserExistsID(db *mongo.Database) (bool, error) {
+	var filter = bson.D{{"id", u.ID}}
+
+	cursor, err := db.Collection("users").Find(context.TODO(), filter)
+	if err != nil {
+		return false, err
+	}
+	var results []bson.D
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		return false, err
+	}
+
+	//fmt.Println(results)
+
+	if len(results) > 1 {
+		return false, errors.New("multiple users match when using id")
 	}
 
 	if len(results) == 0 {

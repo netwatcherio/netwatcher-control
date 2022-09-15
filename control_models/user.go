@@ -193,7 +193,7 @@ func (u *User) AddSite(site primitive.ObjectID, db *mongo.Database) (bool, error
 
 	u.Sites = append(u.Sites, site)
 
-	sites := db.Collection("sites")
+	sites := db.Collection("users")
 	_, err := sites.UpdateOne(
 		context.TODO(),
 		bson.M{"_id": u.ID},

@@ -29,6 +29,8 @@ func (s *Site) CreateSite(owner primitive.ObjectID, name string, db *mongo.Datab
 	}
 
 	s.Members = append(s.Members, member)
+	s.Name = name
+	//TODO insert into sites list for member
 
 	mar, err := bson.Marshal(s)
 	if err != nil {
@@ -89,12 +91,7 @@ func (s *Site) AddMember(id primitive.ObjectID, db *mongo.Database) (bool, error
 		log.Error(err)
 		return false, err
 	}
-
 	return true, nil
-}
-
-func (s *Site) SiteExists() {
-
 }
 
 // todo handle if site already exists, or already has the member in it

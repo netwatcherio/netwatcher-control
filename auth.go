@@ -11,6 +11,8 @@ import (
 	"golang.org/x/net/context"
 )
 
+// THIS IS OLD???!!
+
 func findUsers(filter bson.D, db *mongo.Database) ([]*control_models.User, error) {
 	cursor, err := db.Collection("users").Find(context.TODO(), filter)
 	if err != nil {

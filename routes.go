@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/hex"
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
@@ -9,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/crypto/bcrypt"
 	"html"
 	"time"
 )
@@ -247,7 +247,11 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			return c.Redirect("/auth/register")
 		}
 
-		passHash := NewSHA256([]byte(registerUser.Password))
+		pwd, err := bcrypt.GenerateFromPassword([]byte(registerUser.Password), 15)
+		if err != nil {
+			log.Errorf("%s", err)
+			return c.Redirect("/auth/login")
+		}
 
 		user := control_models.User{
 			ID:        primitive.NewObjectID(),
@@ -255,7 +259,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			FirstName: registerUser.FirstName,
 			LastName:  registerUser.LastName,
 			Admin:     false,
-			Password:  hex.EncodeToString(passHash),
+			Password:  string(pwd),
 			Sites:     nil,
 			Verified:  false,
 		}
@@ -281,8 +285,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			return err
 		}
 
-		passHash := NewSHA256([]byte(loginUser.Password))
-		user := control_models.User{Email: loginUser.Email, Password: hex.EncodeToString(passHash)}
+		user := control_models.User{Email: loginUser.Email}
 
 		// get user from email
 		usr, err2 := user.GetUserFromEmail(db)
@@ -291,9 +294,9 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			return c.Redirect("/auth/login")
 		}
 
-		if usr.Password != hex.EncodeToString(passHash) {
-			//todo handle error
-			log.Warnf("1 %s \n 2 %s", usr.Password, passHash)
+		err := bcrypt.CompareHashAndPassword([]byte(usr.Password), []byte(loginUser.Password))
+		if err != nil {
+			log.Errorf("%s", err)
 			return c.Redirect("/auth/login")
 		}
 

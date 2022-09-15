@@ -22,7 +22,14 @@ type SiteMember struct {
 	// ADMINS can regenerate agent pins
 }
 
-func (s *Site) CreateSite(name string, owner primitive.ObjectID, db *mongo.Database) (bool, error) {
+func (s *Site) CreateSite(owner primitive.ObjectID, name string, db *mongo.Database) (bool, error) {
+	member := SiteMember{
+		User: owner,
+		Role: 3,
+	}
+
+	s.Members = append(s.Members, member)
+
 	mar, err := bson.Marshal(s)
 	if err != nil {
 		log.Errorf("1 %s", err)
@@ -41,6 +48,8 @@ func (s *Site) CreateSite(name string, owner primitive.ObjectID, db *mongo.Datab
 	}
 	return true, nil
 }
+
+// todo when deleting site remove from user document as well
 
 // IsMember check if a user id is a member in the site
 func (s *Site) IsMember(id primitive.ObjectID) bool {

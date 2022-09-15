@@ -186,3 +186,27 @@ func (u *User) GetUserFromID(db *mongo.Database) (*User, error) {
 
 	return user, nil
 }
+
+// AddSite add the id of a site
+func (u *User) AddSite(site primitive.ObjectID, db *mongo.Database) (bool, error) {
+	// add member with the provided role
+
+	u.Sites = append(u.Sites, site)
+
+	sites := db.Collection("sites")
+	_, err := sites.UpdateOne(
+		context.TODO(),
+		bson.M{"_id": u.ID},
+		bson.D{
+			{"$set", bson.D{{"sites", u.Sites}}},
+		},
+	)
+	if err != nil {
+		log.Error(err)
+		return false, err
+	}
+
+	return true, nil
+}
+
+// todo when deleting site remove from user document as well

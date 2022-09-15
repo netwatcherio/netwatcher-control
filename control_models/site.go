@@ -22,6 +22,26 @@ type SiteMember struct {
 	// ADMINS can regenerate agent pins
 }
 
+func (s *Site) CreateSite(name string, owner primitive.ObjectID, db *mongo.Database) (bool, error) {
+	mar, err := bson.Marshal(s)
+	if err != nil {
+		log.Errorf("1 %s", err)
+		return false, err
+	}
+	var b *bson.D
+	err = bson.Unmarshal(mar, &b)
+	if err != nil {
+		log.Errorf("2 %s", err)
+		return false, err
+	}
+	_, err = db.Collection("sites").InsertOne(context.TODO(), b)
+	if err != nil {
+		log.Errorf("3 %s", err)
+		return false, err
+	}
+	return true, nil
+}
+
 // IsMember check if a user id is a member in the site
 func (s *Site) IsMember(id primitive.ObjectID) bool {
 	// check if the site contains the member with the provided id
@@ -62,12 +82,6 @@ func (s *Site) AddMember(id primitive.ObjectID, db *mongo.Database) (bool, error
 	}
 
 	return true, nil
-}
-
-// CreateSite create site with the owner's ID as one of the members with the role of 3
-func (s *Site) CreateSite(id primitive.ObjectID, db *mongo.Database) (bool, error) {
-
-	return false, nil
 }
 
 func (s *Site) SiteExists() {

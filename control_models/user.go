@@ -54,7 +54,7 @@ func (u *User) Create(db *mongo.Database) (bool, error) {
 		return false, err
 	}
 
-	fmt.Printf("Inserted document with _id: %v\n", result.InsertedID)
+	fmt.Printf(" with _id: %v\n", result.InsertedID)
 	return true, nil
 }
 

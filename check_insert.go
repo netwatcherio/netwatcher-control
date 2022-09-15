@@ -37,7 +37,7 @@ func insertIcmpData(agent *control_models.Agent, data []agent_models.IcmpTarget,
 		return false, err
 	}
 
-	fmt.Printf("Inserted document with _id: %v\n", result.InsertedID)
+	fmt.Printf(" with _id: %v\n", result.InsertedID)
 	return true, nil
 }
 
@@ -66,7 +66,7 @@ func insertMtrData(agent *control_models.Agent, data []agent_models.MtrTarget, t
 		return false, err
 	}
 
-	fmt.Printf("Inserted document with _id: %v\n", result.InsertedID)
+	fmt.Printf(" with _id: %v\n", result.InsertedID)
 	return true, nil
 }
 
@@ -95,7 +95,7 @@ func insertNetworkInfo(agent *control_models.Agent, data agent_models.NetworkInf
 		return false, err
 	}
 
-	fmt.Printf("Inserted document with _id: %v\n", result.InsertedID)
+	fmt.Printf(" with _id: %v\n", result.InsertedID)
 	return true, nil
 }
 
@@ -124,6 +124,6 @@ func insertSpeedTestData(agent *control_models.Agent, data agent_models.SpeedTes
 		return false, err
 	}
 
-	fmt.Printf("Inserted document with _id: %v\n", result.InsertedID)
+	fmt.Printf(" with _id: %v\n", result.InsertedID)
 	return true, nil
 }

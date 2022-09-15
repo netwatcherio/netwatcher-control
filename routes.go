@@ -351,9 +351,32 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 	})
 	app.Get("/sites", func(c *fiber.Ctx) error {
 		// Render index within layouts/main
+		b, _ := ValidateSession(c, session, db)
+		if !b {
+			return c.Redirect("/auth/login")
+		}
+
+		user, err := GetUserFromSession(c, session, db)
+		if err != nil {
+			return c.Redirect("/auth")
+		}
+
+		user.Password = ""
+
+		// convert to json for testing
+		_, err = json.Marshal(user.Sites)
+		if err != nil {
+			// todo handle properly
+			return c.Redirect("/auth")
+		}
+
 		// TODO process if they are logged in or not, otherwise send them to registration/login
 		return c.Render("sites", fiber.Map{
-			"title": "sites"},
+			"title":     "sites",
+			"firstName": user.FirstName,
+			"lastName":  user.LastName,
+			"email":     user.Email,
+		},
 			"layouts/main")
 	})
 	app.Get("/alerts", func(c *fiber.Ctx) error {

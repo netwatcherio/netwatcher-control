@@ -66,16 +66,14 @@ func ValidateSession(c *fiber.Ctx, sessions *session.Store, db *mongo.Database) 
 	return false, nil
 }
 
-func loginSession(c *fiber.Ctx, sessions *session.Store) (bool, error) {
+func LogoutSession(c *fiber.Ctx, sessions *session.Store) (bool, error) {
 	store, err := sessions.Get(c) // get/create new session
 	if err != nil {
 		log.Errorf("%s", err)
 		return false, err
 	}
 
-	if store.Get("email") == nil {
-		return true, errors.New("no email, not logged in")
-	}
+	store.Set("id", nil)
 
 	defer store.Save()
 	return true, nil

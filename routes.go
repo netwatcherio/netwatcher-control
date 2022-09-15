@@ -80,6 +80,10 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 	})
 	// dashboard page
 	app.Get("/site/:siteid?", func(c *fiber.Ctx) error {
+		b, err := ValidateSession(c, session, db)
+		if !b {
+			return c.Redirect("/auth")
+		}
 		if c.Params("siteid") == "" {
 			return c.Redirect("/home")
 		}
@@ -203,11 +207,9 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 		return c.SendString("Something went wrong...") // => ✋
 	})
 	app.Get("/logout", func(c *fiber.Ctx) error {
-		// Render index within layouts/main
-		// TODO process if they are logged in or not, otherwise send them to registration/login
-		return c.Render("index", fiber.Map{
-			"title": "home"},
-			"layouts/main")
+		LogoutSession(c, session)
+
+		return c.Redirect("/auth")
 	})
 
 	app.Get("/agents/:siteid?", func(c *fiber.Ctx) error {

@@ -391,7 +391,7 @@
                         <div class="d-none d-md-flex">
                     <span class="ms-2"
                     >Hi,
-                      <span class="text-dark fw-bold">Wadums Carbo</span></span
+                      <span class="text-dark fw-bold">{{.firstName}} {{.lastName}}</span></span
                     >
                             <span>
                       <i class="feather-sm" data-feather="chevron-down"></i>
@@ -432,11 +432,11 @@
                                             width="90"
                                     />
                                     <div class="ms-4">
-                                        <h4 class="mb-0">{{.user.first_name}}</h4>
+                                        <h4 class="mb-0">{{.firstName}} {{.lastName}}</h4>
                                         <span class="text-muted">User</span>
                                         <p class="text-muted mb-0 mt-1">
                                             <i class="feather-sm me-1" data-feather="mail"></i>
-                                            wade.arbo@topsoffice.ca
+                                            {{.email}}
                                         </p>
                                     </div>
                                 </div>

@@ -18,7 +18,7 @@ func LoginSession(c *fiber.Ctx, session *session.Store, db *mongo.Database, id p
 		return false, err
 	}
 
-	store.Set("id", id)
+	store.Set("id", id.Hex())
 	defer store.Save()
 	return true, nil
 }

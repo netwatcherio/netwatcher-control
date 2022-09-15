@@ -50,7 +50,8 @@ func main() {
 	// Initialize custom config
 	sessionStore := mongodb.New(mongodb.Config{
 		ConnectionURI: mongoUri,
-		Collection:    "fiber_storage",
+		Collection:    os.Getenv("SESSIONS_COLLECTION"),
+		Database:      os.Getenv("SESSIONS_DB"),
 		Reset:         false,
 	})
 

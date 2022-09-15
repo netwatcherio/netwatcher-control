@@ -193,10 +193,8 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 	app.Get("/auth", func(c *fiber.Ctx) error {
 		return c.Redirect("/auth/login")
 	})
-	app.Post("/register", func(c *fiber.Ctx) error {
+	app.Post("/auth/register", func(c *fiber.Ctx) error {
 		c.Accepts("application/x-www-form-urlencoded") // "Application/json"
-
-		log.Infof("%s", c.Body())
 
 		// todo recevied body is in url format, need to convert to new struct??
 		//
@@ -233,6 +231,44 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 
 		//todo handle success and send to login page
 		return c.Redirect("/auth/login")
+	})
+
+	app.Post("/auth/login", func(c *fiber.Ctx) error {
+		c.Accepts("application/x-www-form-urlencoded") // "Application/json"
+
+		// todo recevied body is in url format, need to convert to new struct??
+		//
+
+		loginUser := new(control_models.LoginUser)
+		if err := c.BodyParser(loginUser); err != nil {
+			log.Warnf("4 %s", err)
+			return err
+		}
+
+		passHash := NewSHA256([]byte(loginUser.Password))
+		user := control_models.User{Email: loginUser.Email, Password: hex.EncodeToString(passHash)}
+
+		// get user from email
+		usr, err2 := user.GetUserFromEmail(db)
+		if err2 != nil {
+			log.Warnf("3 %s", err2)
+			return c.Redirect("/auth/login")
+		}
+
+		if usr.Password != hex.EncodeToString(passHash) {
+			//todo handle error
+			log.Warnf("1 %s \n 2 %s", usr.Password, passHash)
+			return c.Redirect("/auth/login")
+		}
+
+		// create token session
+		b, err := LoginSession(c, session, db, usr.ID)
+		if err != nil || !b {
+			log.Warnf("5 %s, 2 %b", err, b)
+			return c.Redirect("/auth/login")
+		}
+		// todo handle success and return to home
+		return c.Redirect("/home")
 	})
 	app.Get("/logout", func(c *fiber.Ctx) error {
 		LogoutSession(c, session)

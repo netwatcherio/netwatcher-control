@@ -54,7 +54,7 @@
                             <p class="text-muted fs-4">
                                 Enter given details for new account
                             </p>
-                            <form class="form-horizontal mt-4 pt-4 needs-validation" novalidate="" method="post" action="/register">
+                            <form class="form-horizontal mt-4 pt-4 needs-validation" novalidate="" method="post" action="/auth/register">
                                 <div class="form-floating mb-3">
                                     <input type="text" class="form-control form-input-bg" id="tb-firstname" name="first_name" placeholder="john deo" required="">
                                     <label for="tb-firstname">First Name</label>
@@ -109,15 +109,15 @@
                                 new here?
                                 <a href="javascript:void(0)" id="to-register">create an account</a>
                             </p>
-                            <form class="form-horizontal mt-4 pt-4 needs-validation" novalidate="" method="post" action="/auth">
+                            <form class="form-horizontal mt-4 pt-4 needs-validation" novalidate="" method="post" action="/auth/login">
                                 <div class="form-floating mb-3">
-                                    <input type="email" class="form-control form-input-bg" id="tb-email" placeholder="name@example.com" required="">
+                                    <input type="email" class="form-control form-input-bg" id="tb-email" name="email" placeholder="name@example.com" required="">
                                     <label for="tb-email">email</label>
                                     <div class="invalid-feedback">email is required</div>
                                 </div>
 
                                 <div class="form-floating mb-3">
-                                    <input type="password" class="form-control form-input-bg" id="text-password" placeholder="*****" required="">
+                                    <input type="password" class="form-control form-input-bg" id="text-password" name="password" placeholder="*****" required="">
                                     <label for="text-password">password</label>
                                     <div class="invalid-feedback">password is required</div>
                                 </div>

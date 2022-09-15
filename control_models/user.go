@@ -20,8 +20,21 @@ type User struct {
 	LastName  string               `bson:"last_name"`
 	Admin     bool                 `bson:"admin" default:"false"`
 	Password  string               `bson:"password"` // password in sha256?
-	Name      string               `bson:"name"`
-	Sites     []primitive.ObjectID `bson:"sites"` // _id's of mongo objects
+	Sites     []primitive.ObjectID `bson:"sites"`    // _id's of mongo objects
+	Verified  bool                 `bson:"verified"` // verified, meaning email confirmation
+}
+
+type RegisterUser struct {
+	Email           string `bson:"email"form:"email"` // email, will be used as username
+	FirstName       string `bson:"first_name"form:"first_name"`
+	LastName        string `bson:"last_name"form:"last_name"`
+	Password        string `bson:"password"form:"password"`                 // password in sha256?
+	PasswordConfirm string `bson:"password_confirm"form:"password_confirm"` // password in sha256?
+}
+
+type LoginUser struct {
+	Email    string `bson:"email"form:"email"`       // email, will be used as username
+	Password string `bson:"password"form:"password"` // password in sha256?
 }
 
 // Create returns true if successful, false if otherwise with the error
@@ -40,18 +53,18 @@ func (u *User) Create(db *mongo.Database) (bool, error) {
 	mar, err := bson.Marshal(u)
 	if err != nil {
 		log.Errorf("1 %s", err)
-		return false, err
+		return false, errors.New("something went wrong")
 	}
 	var b *bson.D
 	err = bson.Unmarshal(mar, &b)
 	if err != nil {
 		log.Errorf("2 %s", err)
-		return false, err
+		return false, errors.New("something went wrong")
 	}
-	result, err := db.Collection("agents").InsertOne(context.TODO(), b)
+	result, err := db.Collection("users").InsertOne(context.TODO(), b)
 	if err != nil {
 		log.Errorf("3 %s", err)
-		return false, err
+		return false, errors.New("something went wrong")
 	}
 
 	fmt.Printf(" with _id: %v\n", result.InsertedID)
@@ -68,7 +81,7 @@ func (u *User) UserExistsEmail(db *mongo.Database) (bool, error) {
 	}
 	var results []bson.D
 	if err = cursor.All(context.TODO(), &results); err != nil {
-		return false, err
+		return false, errors.New("something went wrong")
 	}
 
 	//fmt.Println(results)
@@ -98,7 +111,7 @@ func (u *User) UserExistsID(db *mongo.Database) (bool, error) {
 	}
 	var results []bson.D
 	if err = cursor.All(context.TODO(), &results); err != nil {
-		return false, err
+		return false, errors.New("something went wrong")
 	}
 
 	//fmt.Println(results)
@@ -133,14 +146,14 @@ func (u *User) GetUserFromEmail(db *mongo.Database) (*User, error) {
 	doc, err := bson.Marshal(&results[0])
 	if err != nil {
 		log.Errorf("1 %s", err)
-		return nil, err
+		return nil, errors.New("something went wrong")
 	}
 
 	var user *User
 	err = bson.Unmarshal(doc, &user)
 	if err != nil {
 		log.Errorf("2 %s", err)
-		return nil, err
+		return nil, errors.New("something went wrong")
 	}
 
 	return user, nil
@@ -155,20 +168,20 @@ func (u *User) GetUserFromID(db *mongo.Database) (*User, error) {
 	}
 	var results []bson.D
 	if err = cursor.All(context.TODO(), &results); err != nil {
-		return nil, err
+		return nil, errors.New("something went wrong")
 	}
 
 	doc, err := bson.Marshal(&results[0])
 	if err != nil {
 		log.Errorf("1 %s", err)
-		return nil, err
+		return nil, errors.New("something went wrong")
 	}
 
 	var user *User
 	err = bson.Unmarshal(doc, &user)
 	if err != nil {
 		log.Errorf("2 %s", err)
-		return nil, err
+		return nil, errors.New("something went wrong")
 	}
 
 	return user, nil

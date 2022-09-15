@@ -1,10 +1,10 @@
 package main
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
-	"github.com/netwatcherio/netwatcher-agent/agent_models"
 	"github.com/netwatcherio/netwatcher-control/control_models"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -178,33 +178,61 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 	})
 
 	// authentication
-	app.Get("/auth", func(c *fiber.Ctx) error {
+	app.Get("/auth/register", func(c *fiber.Ctx) error {
 		// Render index within layouts/main
 		// TODO process if they are logged in or not, otherwise send them to registration/login
 		return c.Render("auth", fiber.Map{
-			"title": "auth"})
+			"title": "auth", "login": false})
 	})
-	app.Post("/auth", func(c *fiber.Ctx) error {
-		c.Accepts("Application/json") // "Application/json"
-		respB := agent_models.ApiConfigResponse{}
-		respB.Response = 200
+	app.Get("/auth/login", func(c *fiber.Ctx) error {
+		// Render index within layouts/main
+		// TODO process if they are logged in or not, otherwise send them to registration/login
+		return c.Render("auth", fiber.Map{
+			"title": "auth", "login": true})
+	})
+	app.Get("/auth", func(c *fiber.Ctx) error {
+		return c.Redirect("/auth/login")
+	})
+	app.Post("/register", func(c *fiber.Ctx) error {
+		c.Accepts("application/x-www-form-urlencoded") // "Application/json"
 
 		log.Infof("%s", c.Body())
 
-		/*var data []*agent_models.MtrTarget
-		err := json.Unmarshal(c.Body(), &data)
-		if err != nil {
-			log.Errorf("2 %s", err)
-			respB.Response = 500
-		}*/
-		jRespB, err := json.Marshal(respB)
-		if err != nil {
-			log.Errorf("3 Unable to marshal API response.")
-		} else {
-			return c.SendString(string(jRespB)) // => ✋ good
+		// todo recevied body is in url format, need to convert to new struct??
+		//
+
+		registerUser := new(control_models.RegisterUser)
+		if err := c.BodyParser(registerUser); err != nil {
+			log.Warnf("%s", err)
+			return err
 		}
 
-		return c.SendString("Something went wrong...") // => ✋
+		if registerUser.Password != registerUser.PasswordConfirm {
+			//todo handle error and show on auth page using sessions??
+			return c.Redirect("/auth/register")
+		}
+
+		passHash := NewSHA256([]byte(registerUser.Password))
+
+		user := control_models.User{
+			ID:        primitive.NewObjectID(),
+			Email:     registerUser.Email,
+			FirstName: registerUser.FirstName,
+			LastName:  registerUser.LastName,
+			Admin:     false,
+			Password:  hex.EncodeToString(passHash),
+			Sites:     nil,
+			Verified:  false,
+		}
+
+		ucb, err2 := user.Create(db)
+		if err2 != nil || !ucb {
+			log.Infof("%s", "error creating user")
+			return c.Redirect("/auth/register")
+		}
+
+		//todo handle success and send to login page
+		return c.Redirect("/auth/login")
 	})
 	app.Get("/logout", func(c *fiber.Ctx) error {
 		LogoutSession(c, session)

@@ -54,29 +54,29 @@
                             <p class="text-muted fs-4">
                                 Enter given details for new account
                             </p>
-                            <form class="form-horizontal mt-4 pt-4 needs-validation" novalidate="" method="post" action="/auth">
+                            <form class="form-horizontal mt-4 pt-4 needs-validation" novalidate="" method="post" action="/register">
                                 <div class="form-floating mb-3">
-                                    <input type="text" class="form-control form-input-bg" id="tb-firstname" placeholder="john deo" required="">
+                                    <input type="text" class="form-control form-input-bg" id="tb-firstname" name="first_name" placeholder="john deo" required="">
                                     <label for="tb-firstname">First Name</label>
                                     <div class="invalid-feedback">First name is required</div>
                                 </div>
                                 <div class="form-floating mb-3">
-                                    <input type="text" class="form-control form-input-bg" id="tb-lastname" placeholder="john deo" required="">
+                                    <input type="text" class="form-control form-input-bg" id="tb-lastname" name="last_name" placeholder="john deo" required="">
                                     <label for="tb-lastname">Last Name</label>
                                     <div class="invalid-feedback">Last name is required</div>
                                 </div>
                                 <div class="form-floating mb-3">
-                                    <input type="email" class="form-control form-input-bg" id="tb-remail" placeholder="john@gmail.com" required="">
+                                    <input type="email" class="form-control form-input-bg" id="tb-remail" name="email" placeholder="john@gmail.com" required="">
                                     <label for="tb-remail">Email</label>
                                     <div class="invalid-feedback">Email is required</div>
                                 </div>
                                 <div class="form-floating mb-3">
-                                    <input type="password" class="form-control form-input-bg" id="text-rpassword" placeholder="*****" required="">
+                                    <input type="password" class="form-control form-input-bg" id="text-rpassword" name="password" placeholder="*****" required="">
                                     <label for="text-rpassword">Password</label>
                                     <div class="invalid-feedback">Password is required</div>
                                 </div>
                                 <div class="form-floating mb-3">
-                                    <input type="password" class="form-control form-input-bg" id="text-rcpassword" placeholder="*****" required="">
+                                    <input type="password" class="form-control form-input-bg" id="text-rcpassword" name="password_confirm" placeholder="*****" required="">
                                     <label for="text-rcpassword">Confirm Password</label>
                                     <div class="invalid-feedback">Password is required</div>
                                 </div>
@@ -182,10 +182,16 @@
 <!-- Bootstrap tether Core JavaScript -->
 <script src="/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+
     $(".preloader").fadeOut();
     // ---------------------------
     // Login and Recover Password
     // ---------------------------
+    if(!{{.login}}){
+        $("#loginform").hide();
+        $("#registerform").fadeIn();
+    }
+
     $("#to-recover").on("click", function () {
         $("#loginform").hide();
         $("#recoverform").fadeIn();

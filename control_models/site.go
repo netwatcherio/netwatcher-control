@@ -1,6 +1,10 @@
 package control_models
 
 import (
+	"context"
+	"errors"
+	log "github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -8,17 +12,56 @@ import (
 type Site struct {
 	ID      primitive.ObjectID `bson:"_id, omitempty"`
 	Name    string             `bson:"name"`
-	Members []struct {
-		User primitive.ObjectID `bson:"user"` // _id
-		Role int                `bson:"role"`
-		// roles: 0=READ ONLY, 1=READ-WRITE (Create only), 2=ADMIN (Delete Agents), 3=OWNER (Delete Sites)
-		// ADMINS can regenerate agent pins
-	}
+	Members []SiteMember       `bson:"members"`
 }
 
-func (s *Site) AddMember(id primitive.ObjectID, db *mongo.Database) (bool, error) {
+type SiteMember struct {
+	User primitive.ObjectID `bson:"user"`
+	Role int                `bson:"role"`
+	// roles: 0=READ ONLY, 1=READ-WRITE (Create only), 2=ADMIN (Delete Agents), 3=OWNER (Delete Sites)
+	// ADMINS can regenerate agent pins
+}
 
-	return false, nil
+// IsMember check if a user id is a member in the site
+func (s *Site) IsMember(id primitive.ObjectID) bool {
+	// check if the site contains the member with the provided id
+	for _, m := range s.Members {
+		if m.User == id {
+			return true
+		}
+	}
+
+	return false
+}
+
+// AddMember Add a member to the site then update document
+func (s *Site) AddMember(id primitive.ObjectID, db *mongo.Database) (bool, error) {
+	// add member with the provided role
+	if s.IsMember(id) {
+		return false, errors.New("already a member")
+	}
+
+	newMember := SiteMember{
+		User: id,
+		Role: 1,
+	}
+
+	s.Members = append(s.Members, newMember)
+
+	sites := db.Collection("sites")
+	_, err := sites.UpdateOne(
+		context.TODO(),
+		bson.M{"_id": s.ID},
+		bson.D{
+			{"$set", bson.D{{"members", s.Members}}},
+		},
+	)
+	if err != nil {
+		log.Error(err)
+		return false, err
+	}
+
+	return true, nil
 }
 
 // CreateSite create site with the owner's ID as one of the members with the role of 3

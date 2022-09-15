@@ -16,9 +16,9 @@ import (
 type User struct {
 	ID        primitive.ObjectID   `bson:"_id, omitempty"`
 	Email     string               `bson:"email"` // email, will be used as username
-	FirstName string               `bson:"first_name"`
-	LastName  string               `bson:"last_name"`
-	Admin     bool                 `bson:"admin" default:"false"`
+	FirstName string               `bson:"first_name"json:"first_name"`
+	LastName  string               `bson:"last_name"json:"last_name"`
+	Admin     bool                 `bson:"admin" default:"false"json:"admin"`
 	Password  string               `bson:"password"` // password in sha256?
 	Sites     []primitive.ObjectID `bson:"sites"`    // _id's of mongo objects
 	Verified  bool                 `bson:"verified"` // verified, meaning email confirmation

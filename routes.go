@@ -72,10 +72,29 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 
 	// home page
 	app.Get("/home", func(c *fiber.Ctx) error {
+		b, _ := ValidateSession(c, session, db)
+		if !b {
+			return c.Redirect("/auth/login")
+		}
+
+		user, err := GetUserFromSession(c, session, db)
+		if err != nil {
+			return c.Redirect("/auth")
+		}
+
+		user.Password = ""
+
+		// convert to json for testing
+		_, err = json.Marshal(user)
+		if err != nil {
+			// todo handle properly
+			return c.Redirect("/auth")
+		}
+
 		// Render index within layouts/main
 		// TODO process if they are logged in or not, otherwise send them to registration/login
 		return c.Render("home", fiber.Map{
-			"title": "home"},
+			"title": "home", "user": user},
 			"layouts/main")
 	})
 	// dashboard page
@@ -179,18 +198,30 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 
 	// authentication
 	app.Get("/auth/register", func(c *fiber.Ctx) error {
+		b, _ := ValidateSession(c, session, db)
+		if b {
+			return c.Redirect("/home")
+		}
 		// Render index within layouts/main
 		// TODO process if they are logged in or not, otherwise send them to registration/login
 		return c.Render("auth", fiber.Map{
 			"title": "auth", "login": false})
 	})
 	app.Get("/auth/login", func(c *fiber.Ctx) error {
+		b, _ := ValidateSession(c, session, db)
+		if b {
+			return c.Redirect("/home")
+		}
 		// Render index within layouts/main
 		// TODO process if they are logged in or not, otherwise send them to registration/login
 		return c.Render("auth", fiber.Map{
 			"title": "auth", "login": true})
 	})
 	app.Get("/auth", func(c *fiber.Ctx) error {
+		b, _ := ValidateSession(c, session, db)
+		if b {
+			return c.Redirect("/home")
+		}
 		return c.Redirect("/auth/login")
 	})
 	app.Post("/auth/register", func(c *fiber.Ctx) error {
@@ -232,7 +263,6 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 		//todo handle success and send to login page
 		return c.Redirect("/auth/login")
 	})
-
 	app.Post("/auth/login", func(c *fiber.Ctx) error {
 		c.Accepts("application/x-www-form-urlencoded") // "Application/json"
 

@@ -2,8 +2,10 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
+	"github.com/netwatcherio/netwatcher-control/control_models"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -21,6 +23,31 @@ func LoginSession(c *fiber.Ctx, session *session.Store, db *mongo.Database, id p
 	return true, nil
 }
 
+func GetUserFromSession(c *fiber.Ctx, session *session.Store, db *mongo.Database) (*control_models.User, error) {
+	store, err := session.Get(c) // get/create new session
+	if err != nil {
+		log.Errorf("%s", err)
+		return nil, err
+	}
+
+	if store.Get("id") == nil {
+		return nil, errors.New("no email, not logged in")
+	}
+
+	str := fmt.Sprintf("%v", store.Get("id"))
+
+	userId, err := primitive.ObjectIDFromHex(str)
+	userGet := control_models.User{ID: userId}
+
+	usr, err := userGet.GetUserFromID(db)
+	if err != nil {
+		log.Errorf("%s", err)
+		return nil, err
+	}
+	// todo does this work?? do i need to compare against db??
+	return usr, nil
+}
+
 func ValidateSession(c *fiber.Ctx, sessions *session.Store, db *mongo.Database) (bool, error) {
 	store, err := sessions.Get(c) // get/create new session
 	if err != nil {
@@ -29,7 +56,7 @@ func ValidateSession(c *fiber.Ctx, sessions *session.Store, db *mongo.Database) 
 	}
 
 	if store.Get("id") == nil {
-		return true, errors.New("no email, not logged in")
+		return false, errors.New("no id, not logged in")
 	}
 	// todo does this work?? do i need to compare against db??
 	return true, nil
@@ -49,8 +76,9 @@ func ValidateSession(c *fiber.Ctx, sessions *session.Store, db *mongo.Database) 
 
 	if b {
 		return true, nil
-	}*/
+	}
 	return false, nil
+	*/
 }
 
 func LogoutSession(c *fiber.Ctx, sessions *session.Store) (bool, error) {

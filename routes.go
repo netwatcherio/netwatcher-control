@@ -336,7 +336,6 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 				// todo display error instead of redirecting
 				log.Errorf("%s", err)
 			}
-
 			sitesList.Sites = append(sitesList.Sites, site)
 		}
 
@@ -355,7 +354,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			"firstName": user.FirstName,
 			"lastName":  user.LastName,
 			"email":     user.Email,
-			"sites":     siteJs,
+			"sites":     html.UnescapeString(string(siteJs)),
 		},
 			"layouts/main")
 	})
@@ -373,36 +372,12 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 
 		user.Password = ""
 
-		var sitesList struct {
-			Sites []*control_models.Site `json:"sites"`
-		}
-
-		for _, sid := range user.Sites {
-			site, err := getSite(sid, db)
-			if err != nil {
-				// todo display error instead of redirecting
-				log.Errorf("%s", err)
-			}
-
-			sitesList.Sites = append(sitesList.Sites, site)
-		}
-
-		// convert to json for testing
-		siteJs, err := json.Marshal(sitesList)
-		if err != nil {
-			// todo handle properly
-			return c.Redirect("/auth")
-		}
-
-		log.Infof("%s", siteJs)
-
 		// TODO process if they are logged in or not, otherwise send them to registration/login
-		return c.Render("sites", fiber.Map{
-			"title":     "sites",
+		return c.Render("site_new", fiber.Map{
+			"title":     "new site",
 			"firstName": user.FirstName,
 			"lastName":  user.LastName,
 			"email":     user.Email,
-			"sites":     siteJs,
 		},
 			"layouts/main")
 	})
@@ -412,35 +387,39 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 		// todo recevied body is in url format, need to convert to new struct??
 		//
 
-		loginUser := new(control_models.LoginUser)
-		if err := c.BodyParser(loginUser); err != nil {
+		// Render index within layouts/main
+		b, _ := ValidateSession(c, session, db)
+		if !b {
+			return c.Redirect("/auth/login")
+		}
+
+		user, err := GetUserFromSession(c, session, db)
+		if err != nil {
+			return c.Redirect("/auth")
+		}
+
+		user.Password = ""
+
+		site := new(control_models.Site)
+		if err := c.BodyParser(site); err != nil {
 			log.Warnf("4 %s", err)
 			return err
 		}
 
-		user := control_models.User{Email: loginUser.Email}
-
-		// get user from email
-		usr, err2 := user.GetUserFromEmail(db)
-		if err2 != nil {
-			log.Warnf("3 %s", err2)
-			return c.Redirect("/auth/login")
-		}
-
-		err := bcrypt.CompareHashAndPassword([]byte(usr.Password), []byte(loginUser.Password))
+		s, err := site.CreateSite(user.ID, db)
 		if err != nil {
-			log.Errorf("%s", err)
-			return c.Redirect("/auth/login")
+			//todo handle error??
+			return c.Redirect("/sites")
 		}
 
-		// create token session
-		b, err := LoginSession(c, session, db, usr.ID)
-		if err != nil || !b {
-			log.Warnf("5 %s, 2 %b", err, b)
-			return c.Redirect("/auth/login")
+		_, err = user.AddSite(s, db)
+		if err != nil {
+			// todo handle error
+			return c.Redirect("/sites")
 		}
-		// todo handle success and return to home
-		return c.Redirect("/home")
+
+		// todo handle error/success and return to home
+		return c.Redirect("/sites")
 	})
 	app.Get("/site/:siteid?", func(c *fiber.Ctx) error {
 		b, err := ValidateSession(c, session, db)

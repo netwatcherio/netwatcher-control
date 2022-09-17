@@ -1,3 +1,38 @@
+<div class="page-titles">
+    <div class="row">
+        <div class="col-lg-8 col-md-6 col-12 align-self-center">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0 d-flex align-items-center">
+                    <li class="breadcrumb-item">
+                        <a href="/home" class="link"><i class="ri-home-3-line fs-5"></i></a>
+                    </li>
+                    {{if .siteSelected}}
+                    <li class="breadcrumb-item">
+                        {{.siteName}}
+                    </li>
+                    {{end}}
+                    <li class="breadcrumb-item active" aria-current="page">
+                        {{.title}}
+                    </li>
+                </ol>
+            </nav>
+            <h1 class="mb-0 fw-bold">{{.title}}</h1>
+        </div>
+
+        <div class="
+                col-lg-4 col-md-6
+                d-none d-md-flex
+                align-items-center
+                justify-content-end
+              ">
+            <a href="/site/new" class="btn btn-info d-flex align-items-center ms-2">
+                <i class="ri-add-line me-1"></i>
+                new site
+            </a>
+        </div>
+    </div>
+</div>
+
 <div class="container-fluid">
     <div class="row">
         <!-- column -->
@@ -25,7 +60,7 @@
                                 <thead>
                                 <tr>
                                     <th class="px-0 text-muted" scope="col">name</th>
-                                    <th class="px-0 text-muted" scope="col">agents</th>
+                                    <th class="px-0 text-muted" scope="col">agent count</th>
                                     <th class="px-0 text-muted text-end" scope="col">view</th>
                                 </tr>
                                 </thead>
@@ -48,58 +83,31 @@
     let onlineCount = 0;
     let offlineCount = 0
 
-    for (let i = 0; i < agents['list'].length; i++) {
+    for (let i = 0; i < sites['sites'].length; i++) {
         // Find a <table> element with id="myTable":
         let tbodyRef = document.getElementById('stats').getElementsByTagName('tbody')[0];
 
-        let name = agents['list'][i]['name']
-        let id = agents['list'][i]['id']
-        let online = agents['list'][i]['online']
-        let lastSeen = agents['list'][i]['last_seen']
-        let netInfo = agents['list'][i]['network_info']
-        let isp = netInfo['internet_provider']
-
-        let date1 = new Date();
-        let date2 = new Date(agents['list'][i]['heartbeat']);
-
-        let onlineMsg = '<span class="badge bg-danger">' +
-            '<i class="fa fa-arrow-down" ></i></span>'
-        if (online) {
-            onlineMsg = '<span class="badge bg-success">' +
-                '<i class="fa fa-arrow-up" ></i></span>'
-            onlineCount++
-        }else{
-            offlineCount++
-        }
-
-        // To calculate the time difference of two dates
-        let Difference_In_Time = date2.getTime() - date1.getTime();
-
-        // lol
-        if (isp.toLowerCase().indexOf('shaw') !== -1){
-            isp = '<i class="fa fa-thumbs-down"></i> '+isp
-        }
-        if (isp.toLowerCase().indexOf('telus') !== -1){
-            isp = '<i class="fa fa-thumbs-up"></i> '+isp
-        }
+        let name = sites['sites'][i]['name']
+        let agentsOnline = 0
+        let agentsOffline = 0
+        let id = sites['sites'][i]['id']
 
         // Insert a row at the end of table
         let newRow = tbodyRef.insertRow();
         // Insert a cell at the end of the row
-        let newCell = newRow.insertCell();
-        newCell.setAttribute("class", "px-0")
-        newCell.innerHTML += onlineMsg
+
         newCell = newRow.insertCell();
         newCell.setAttribute("class", "px-0")
         newCell.innerHTML += name
 
         newCell = newRow.insertCell();
         newCell.setAttribute("class", "px-0")
-        newCell.innerHTML += '<span class="badge bg-info">' + isp
+        newCell.innerHTML += '<span class="badge bg-dark">' + 666
             +'</span>'
+
         newCell = newRow.insertCell();
         newCell.setAttribute("class", "px-0 text-end")
-        newCell.innerHTML += '<a href="/agent/'+id+'">' +
+        newCell.innerHTML += '<a href="/site/'+id+'">' +
             '<span class="badge bg-purple">' +
             '<i class="fa fa-binoculars"></i> view</span></a>'
     }

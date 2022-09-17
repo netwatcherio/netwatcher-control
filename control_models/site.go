@@ -10,45 +10,45 @@ import (
 )
 
 type Site struct {
-	ID      primitive.ObjectID `bson:"_id, omitempty"`
-	Name    string             `bson:"name"`
-	Members []SiteMember       `bson:"members"`
+	ID      primitive.ObjectID `bson:"_id, omitempty"json:"id"`
+	Name    string             `bson:"name"form:"name"json:"name"`
+	Members []SiteMember       `bson:"members"json:"members"`
 }
 
 type SiteMember struct {
-	User primitive.ObjectID `bson:"user"`
-	Role int                `bson:"role"`
+	User primitive.ObjectID `bson:"user"json:"user"`
+	Role int                `bson:"role"json:"role"`
 	// roles: 0=READ ONLY, 1=READ-WRITE (Create only), 2=ADMIN (Delete Agents), 3=OWNER (Delete Sites)
 	// ADMINS can regenerate agent pins
 }
 
-func (s *Site) CreateSite(owner primitive.ObjectID, name string, db *mongo.Database) (bool, error) {
+func (s *Site) CreateSite(owner primitive.ObjectID, db *mongo.Database) (primitive.ObjectID, error) {
 	member := SiteMember{
 		User: owner,
 		Role: 3,
 	}
 
 	s.Members = append(s.Members, member)
-	s.Name = name
 	//TODO insert into sites list for member
+	s.ID = primitive.NewObjectID()
 
 	mar, err := bson.Marshal(s)
 	if err != nil {
 		log.Errorf("1 %s", err)
-		return false, err
+		return primitive.ObjectID{}, err
 	}
 	var b *bson.D
 	err = bson.Unmarshal(mar, &b)
 	if err != nil {
 		log.Errorf("2 %s", err)
-		return false, err
+		return primitive.ObjectID{}, err
 	}
 	_, err = db.Collection("sites").InsertOne(context.TODO(), b)
 	if err != nil {
 		log.Errorf("3 %s", err)
-		return false, err
+		return primitive.ObjectID{}, err
 	}
-	return true, nil
+	return s.ID, nil
 }
 
 // todo when deleting site remove from user document as well

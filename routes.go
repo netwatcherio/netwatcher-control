@@ -174,14 +174,16 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 
 		site, err := getSite(objId, db)
 		if err != nil {
-			return nil
+			// todo handle error
+			//return nil
 		}
 
 		var agentStatList control_models.AgentStatsList
 
 		stats, err := getAgentStats(objId, db)
 		if err != nil {
-			return err
+			// todo handle error
+			//return err
 		}
 		agentStatList.List = stats
 
@@ -436,14 +438,16 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 
 		site, err := getSite(objId, db)
 		if err != nil {
-			return nil
+			//todo handle error
+			//return nil
 		}
 
 		var agentStatList control_models.AgentStatsList
 
 		stats, err := getAgentStats(objId, db)
 		if err != nil {
-			return err
+			//todo handle error
+			//return err
 		}
 		agentStatList.List = stats
 

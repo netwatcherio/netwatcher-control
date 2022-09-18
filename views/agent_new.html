@@ -40,12 +40,12 @@
         <div class="card-body">
           <h4 class="card-title">new agent</h4>
         </div>
-        <form class="form-horizontal r-separator border-top" method="post" action="/site/new">
+        <form class="form-horizontal r-separator border-top" method="post" action="/agent/new/{{.siteId}}">
           <div class="card-body">
             <div class="form-group row align-items-center mb-0">
-              <label for="siteName" class="col-3 text-end control-label col-form-label">agent name</label>
+              <label for="agentName" class="col-3 text-end control-label col-form-label">agent name</label>
               <div class="col-9 border-start pb-2 pt-2">
-                <input type="text" class="form-control" id="siteName" name="name" placeholder="agent name here">
+                <input type="text" class="form-control" id="agentName" name="name" placeholder="agent name here">
               </div>
             </div>
             <div class="form-group row align-items-center mb-0">

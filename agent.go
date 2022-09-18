@@ -14,10 +14,11 @@ import (
 	"time"
 )
 
-func createAgent(c *mongo.Database) (bool, error) {
+// CreateAgent returns error or object id of new agent
+func CreateAgent(name string, icmpT []string, mtrT []string, site primitive.ObjectID, c *mongo.Database) (primitive.ObjectID, error) {
 	var agentCfg = agent_models.AgentConfig{
-		PingTargets:      []string{"1.1.1.1"},
-		TraceTargets:     []string{"1.1.1.1"},
+		PingTargets:      icmpT,
+		TraceTargets:     mtrT,
 		PingInterval:     2,
 		SpeedTestPending: true,
 		TraceInterval:    5,
@@ -25,30 +26,31 @@ func createAgent(c *mongo.Database) (bool, error) {
 
 	var agent = control_models.Agent{
 		ID:          primitive.NewObjectID(),
-		Site:        primitive.NewObjectID(),
+		Site:        site,
+		Name:        name,
 		AgentConfig: agentCfg,
-		Pin:         "12345",
+		Pin:         GeneratePin(9),
 		Hash:        "",
 	}
 	mar, err := bson.Marshal(agent)
 	if err != nil {
 		log.Errorf("1 %s", err)
-		return false, err
+		return primitive.ObjectID{}, err
 	}
 	var b *bson.D
 	err = bson.Unmarshal(mar, &b)
 	if err != nil {
 		log.Errorf("2 %s", err)
-		return false, err
+		return primitive.ObjectID{}, err
 	}
 	result, err := c.Collection("agents").InsertOne(context.TODO(), b)
 	if err != nil {
 		log.Errorf("3 %s", err)
-		return false, err
+		return primitive.ObjectID{}, err
 	}
 
 	fmt.Printf(" with _id: %v\n", result.InsertedID)
-	return true, nil
+	return agent.ID, nil
 }
 
 func getAgents(site primitive.ObjectID, db *mongo.Database) ([]*control_models.Agent, error) {

@@ -17,6 +17,12 @@ type Agent struct {
 	// pin can be regenerated, by setting hash blank, and when registering agents, it checks for blank hashs.
 }
 
+type CreateAgent struct {
+	Name        string `json:"name"form:"name"`
+	IcmpTargets string `json:"icmpTargets"form:"icmpTargets"`
+	MtrTargets  string `json:"mtrTargets"form:"mtrTargets"`
+}
+
 type AgentStats struct {
 	ID          primitive.ObjectID       `json:"id"`
 	Name        string                   `json:"name"`

@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 	"html"
+	"strings"
 	"time"
 )
 
@@ -178,26 +179,23 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			//return nil
 		}
 
-		_ = new(control_models.Site)
+		cAgent := new(control_models.CreateAgent)
 		if err := c.BodyParser(site); err != nil {
 			log.Warnf("4 %s", err)
 			return err
 		}
 
-		s, err := site.CreateSite(user.ID, db)
+		icmpTargets := strings.Split(cAgent.IcmpTargets, ",")
+		mtrTargets := strings.Split(cAgent.MtrTargets, ",")
+
+		agentId, err := CreateAgent(cAgent.Name, icmpTargets, mtrTargets, site.ID, db)
 		if err != nil {
 			//todo handle error??
-			return c.Redirect("/sites")
-		}
-
-		_, err = user.AddSite(s, db)
-		if err != nil {
-			// todo handle error
-			return c.Redirect("/sites")
+			return c.Redirect("/agents")
 		}
 
 		// todo handle error/success and return to home
-		return c.Redirect("/sites")
+		return c.Redirect("/agent/" + agentId.String() + "/install")
 	})
 	app.Get("/agent/:agent?", func(c *fiber.Ctx) error {
 		b, _ := ValidateSession(c, session, db)
@@ -328,6 +326,52 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			"email":        user.Email,
 			"agents":       html.UnescapeString(string(doc)),
 			"hasAgents":    hasAgentsBool},
+			"layouts/main")
+	})
+	app.Get("/agent/:agentid/install", func(c *fiber.Ctx) error {
+		b, _ := ValidateSession(c, session, db)
+		if !b {
+			return c.Redirect("/auth/login")
+		}
+
+		user, err := GetUserFromSession(c, session, db)
+		if err != nil {
+			return c.Redirect("/auth")
+		}
+
+		user.Password = ""
+
+		if c.Params("agentid") == "" {
+			return c.Redirect("/home")
+		}
+		objId, err := primitive.ObjectIDFromHex(c.Params("agentid"))
+		if err != nil {
+			return c.Redirect("/home")
+		}
+
+		agent, err := getAgent(objId, db)
+		if err != nil {
+			// todo handle error
+			//return nil
+			return c.Redirect("/agents")
+		}
+
+		site, err := getSite(agent.Site, db)
+		if err != nil {
+			// todo handle error
+			return c.Redirect("/agents")
+		}
+
+		return c.Render("agents", fiber.Map{
+			"title":        "agents",
+			"siteSelected": true,
+			"siteId":       agent.Site.Hex(),
+			"siteName":     site.Name,
+			"firstName":    user.FirstName,
+			"lastName":     user.LastName,
+			"email":        user.Email,
+			"agentPin":     agent.Pin,
+		},
 			"layouts/main")
 	})
 

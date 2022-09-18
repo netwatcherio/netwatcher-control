@@ -1,0 +1,81 @@
+<div class="page-titles">
+  <div class="row">
+    <div class="col-lg-8 col-md-6 col-12 align-self-center">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 d-flex align-items-center">
+          <li class="breadcrumb-item">
+            <a href="/home" class="link"><i class="ri-home-3-line fs-5"></i></a>
+          </li>
+          {{if .siteSelected}}
+          <li class="breadcrumb-item">
+            {{.siteName}}
+          </li>
+          {{end}}
+          <li class="breadcrumb-item active" aria-current="page">
+            {{.title}}
+          </li>
+        </ol>
+      </nav>
+      <h1 class="mb-0 fw-bold">{{.title}}</h1>
+    </div>
+
+    <div class="
+                col-lg-4 col-md-6
+                d-none d-md-flex
+                align-items-center
+                justify-content-end
+              ">
+      <a href="/site/new" class="btn btn-info d-flex align-items-center ms-2">
+        <i class="ri-add-line me-1"></i>
+        new agent
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <h4 class="card-title">new agent</h4>
+        </div>
+        <form class="form-horizontal r-separator border-top" method="post" action="/site/new">
+          <div class="card-body">
+            <div class="form-group row align-items-center mb-0">
+              <label for="siteName" class="col-3 text-end control-label col-form-label">agent name</label>
+              <div class="col-9 border-start pb-2 pt-2">
+                <input type="text" class="form-control" id="siteName" name="name" placeholder="agent name here">
+              </div>
+            </div>
+            <div class="form-group row align-items-center mb-0">
+              <label for="icmpTargets" class="col-3 text-end control-label col-form-label">icmp targets</label>
+              <div class="col-9 border-start pb-2 pt-2">
+                <input type="text" class="form-control" id="icmpTargets" name="icmpTargets" placeholder="icmp targets (seperated by commas, eg. 1.1.1.1,8.8.8.8)">
+              </div>
+            </div>
+            <div class="form-group row align-items-center mb-0">
+              <label for="mtrTargets" class="col-3 text-end control-label col-form-label">mtr targets</label>
+              <div class="col-9 border-start pb-2 pt-2">
+                <input type="text" class="form-control" id="mtrTargets" name="mtrTargets" placeholder="mtr targets (seperated by commas, eg. 1.1.1.1,8.8.8.8)">
+              </div>
+            </div>
+          </div>
+          <div class="p-3 border-top">
+            <div class="form-group mb-0 text-end">
+              <button type="submit" class="
+                          btn btn-info
+                          rounded-pill
+                          px-4
+                          waves-effect waves-light
+                        ">
+                create
+              </button>
+              </a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

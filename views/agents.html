@@ -35,44 +35,21 @@
 <div class="container-fluid">
     {{if .hasAgents}}
     <div class="row">
-        <div class="col-lg-4">
+        <!-- column -->
+        <div class="col-12">
             <div class="card">
-                <div class="border-bottom title-part-padding">
-                    <h4 class="mb-0">agent statuses</h4>
-                </div>
                 <div class="card-body">
-                    <div>
-                        <div class="chartjs-size-monitor"
-                             style="position: absolute; inset: 0px; overflow: hidden; pointer-events: none; visibility: hidden; z-index: -1;">
-                            <div class="chartjs-size-monitor-expand"
-                                 style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;">
-                                <div style="position:absolute;width:1000000px;height:1000000px;left:0;top:0"></div>
-                            </div>
-                            <div class="chartjs-size-monitor-shrink"
-                                 style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;">
-                                <div style="position:absolute;width:200%;height:200%;left:0; top:0"></div>
-                            </div>
-                        </div>
-                        <canvas class="chartjs-render-monitor" height="213" id="agentPie"
-                                style="display: block; width: 427px; height: 213px;"
-                                width="427"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-8 d-flex align-items-stretch">
-            <div class="card w-100">
-                <div class="card-body">
-                    <div class="d-md-flex align-items-center">
+                    <!-- title -->
+                    <div class="d-md-flex">
                         <div>
-                            <h3 class="card-title">agent info</h3>
-                            <h6 class="card-subtitle mb-0">
-                                general agent information
-                            </h6>
+                            <h4 class="card-title">agents</h4>
+                            <h5 class="card-subtitle">agents that are apart of the site {{.siteName}}</h5>
                         </div>
                     </div>
-                    <div class="table-responsive mt-4">
-                        <table class="
+                    <!-- title -->
+                    <div class="table-responsive">
+                        <div class="table-responsive mt-4">
+                            <table class="
                         table
                         mb-0
                         text-nowrap
@@ -80,17 +57,21 @@
                         align-middle
                         fs-3
                       " id="stats">
-                            <thead>
-                            <tr>
-                                <th class="px-0 text-muted" scope="col">status</th>
-                                <th class="px-0 text-muted" scope="col">name</th>
-                                <th class="px-0 text-muted" scope="col">isp</th>
-                                <th class="px-0 text-muted text-end" scope="col">view</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        </table>
+                                <thead>
+                                <tr>
+                                    <th class="px-0 text-muted" scope="col">name</th>
+                                    <th class="px-0 text-muted" scope="col">last seen</th>
+                                    <th class="px-0 text-muted" scope="col">isp</th>
+                                    <th class="px-0 text-muted" scope="col">location</th>
+                                    <th class="px-0 text-muted text-end" scope="col">install</th>
+                                    <th class="px-0 text-muted text-end" scope="col">delete</th>
+                                    <th class="px-0 text-muted text-end" scope="col">view</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -142,17 +123,37 @@
             // Insert a row at the end of table
             let newRow = tbodyRef.insertRow();
             // Insert a cell at the end of the row
-            let newCell = newRow.insertCell();
-            newCell.setAttribute("class", "px-0")
-            newCell.innerHTML += onlineMsg
+
             newCell = newRow.insertCell();
             newCell.setAttribute("class", "px-0")
             newCell.innerHTML += name
 
             newCell = newRow.insertCell();
             newCell.setAttribute("class", "px-0")
-            newCell.innerHTML += '<span class="badge bg-info">' + isp
-                +'</span>'
+            newCell.innerHTML += '<span class="badge bg-success">' +
+                '<i class="fa fa-clock"></i> '+lastSeen+'</span></a>'
+
+            newCell = newRow.insertCell();
+            newCell.setAttribute("class", "px-0")
+            newCell.innerHTML += '<span class="badge bg-orange">' +
+                '<!--<i class="fa fa-server"></i>--> '+isp+'</span></a>'
+
+            newCell = newRow.insertCell();
+            newCell.setAttribute("class", "px-0")
+            newCell.innerHTML += "location"
+
+            /*buttons*/
+            newCell = newRow.insertCell();
+            newCell.setAttribute("class", "px-0 text-end")
+            newCell.innerHTML += '<a href="/agent/install/'+id+'">' +
+                '<span class="badge bg-info">' +
+                '<i class="fa fa-download"></i> install</span></a>'
+            newCell = newRow.insertCell();
+
+            newCell.setAttribute("class", "px-0 text-end")
+            newCell.innerHTML += '<a href="/agent/delete/agentid">' +
+                '<span class="badge bg-danger">' +
+                '<i class="fa fa-trash"></i> delete</span></a>'
             newCell = newRow.insertCell();
             newCell.setAttribute("class", "px-0 text-end")
             newCell.innerHTML += '<a href="/agent/'+id+'">' +
@@ -160,7 +161,7 @@
                 '<i class="fa fa-binoculars"></i> view</span></a>'
         }
 
-        const ctx = document.getElementById('agentPie');
+        /*const ctx = document.getElementById('agentPie');
         // New chart
         new Chart(ctx, {
             type: "pie",
@@ -202,7 +203,7 @@
                     },
                 ],
             },
-        });
+        });*/
     </script>
     {{else}}
     <div class="row">

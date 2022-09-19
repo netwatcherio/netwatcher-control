@@ -231,6 +231,8 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			return c.Redirect("/agents")
 		}
 
+		//todo handle if already installed
+
 		return c.Render("agent_install", fiber.Map{
 			"title":        "agent install",
 			"siteSelected": true,
@@ -341,7 +343,26 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			//return nil
 		}
 
-		agents, err := getAgents(objId, db)
+		var agentStatList control_models.AgentStatsList
+
+		stats, err := getAgentStats(objId, db)
+		if err != nil {
+			//todo handle error
+			//return err
+		}
+		agentStatList.List = stats
+
+		var hasAgents = true
+		if len(agentStatList.List) == 0 {
+			hasAgents = false
+		}
+
+		doc, err := json.Marshal(agentStatList)
+		if err != nil {
+			log.Errorf("1 %s", err)
+		}
+
+		/*agents, err := getAgents(objId, db)
 		if err != nil {
 			// todo handle error
 			//return err
@@ -356,7 +377,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 		if len(agents) == 0 {
 			hasAgentsBool = false
 			log.Warnf("%s", "site does NOT have agents")
-		}
+		}*/
 
 		// Render index within layouts/main
 		// TODO process if they are logged in or not, otherwise send them to registration/login
@@ -370,7 +391,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			"lastName":     user.LastName,
 			"email":        user.Email,
 			"agents":       html.UnescapeString(string(doc)),
-			"hasAgents":    hasAgentsBool},
+			"hasAgents":    hasAgents},
 			"layouts/main")
 	})
 
@@ -502,8 +523,14 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 
 		user.Password = ""
 
+		type AgentCountInfo struct {
+			SiteID primitive.ObjectID `json:"site_id"`
+			Count  int                `json:"count"`
+		}
+
 		var sitesList struct {
-			Sites []*control_models.Site `json:"sites"`
+			Sites          []*control_models.Site `json:"sites"`
+			AgentCountInfo []AgentCountInfo       `json:"agentCountInfo"`
 		}
 
 		for _, sid := range user.Sites {
@@ -512,8 +539,27 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 				// todo display error instead of redirecting
 				log.Errorf("%s", err)
 			}
+
+			count, err := getAgentCount(site.ID, db)
+			if err != nil {
+				//todo handle error
+			}
+
+			tempCount := AgentCountInfo{
+				SiteID: site.ID,
+				Count:  count,
+			}
+
 			sitesList.Sites = append(sitesList.Sites, site)
+			sitesList.AgentCountInfo = append(sitesList.AgentCountInfo, tempCount)
 		}
+
+		var hasSites = true
+		if len(user.Sites) == 0 {
+			hasSites = false
+		}
+
+		//todo get agent count
 
 		// convert to json for testing
 		siteJs, err := json.Marshal(sitesList)
@@ -530,6 +576,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			"firstName": user.FirstName,
 			"lastName":  user.LastName,
 			"email":     user.Email,
+			"hasSites":  hasSites,
 			"sites":     html.UnescapeString(string(siteJs)),
 		},
 			"layouts/main")

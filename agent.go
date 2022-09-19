@@ -293,6 +293,7 @@ func getIcmpData(id primitive.ObjectID, timeRange time.Duration, db *mongo.Datab
 	return icmpD, nil
 }
 
+// getAgentStats get the general stats of agents from a site id objId
 func getAgentStats(objId primitive.ObjectID, db *mongo.Database) ([]control_models.AgentStats, error) {
 	site, err := getSite(objId, db)
 	if err != nil {
@@ -307,7 +308,8 @@ func getAgentStats(objId primitive.ObjectID, db *mongo.Database) ([]control_mode
 	for _, t := range agents {
 		netInfo, err := getLatestNetworkData(t.ID, db)
 		if err != nil {
-			return nil, err
+			// todo handle error better
+			//return nil, err
 		}
 
 		tNow := time.Now()
@@ -330,6 +332,17 @@ func getAgentStats(objId primitive.ObjectID, db *mongo.Database) ([]control_mode
 		statsList = append(statsList, agent)
 	}
 	return statsList, nil
+}
+
+func getAgentCount(site primitive.ObjectID, db *mongo.Database) (int, error) {
+	var filter = bson.D{{"site", site}}
+
+	count, err := db.Collection("agents").CountDocuments(context.TODO(), filter)
+	if err != nil {
+		return 0, err
+	}
+
+	return int(count), nil
 }
 
 func deleteAgent() {

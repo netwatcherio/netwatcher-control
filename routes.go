@@ -395,6 +395,47 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			"layouts/main")
 	})
 
+	app.Get("/alerts/:siteid?", func(c *fiber.Ctx) error {
+		b, _ := ValidateSession(c, session, db)
+		if !b {
+			return c.Redirect("/auth/login")
+		}
+
+		user, err := GetUserFromSession(c, session, db)
+		if err != nil {
+			return c.Redirect("/auth")
+		}
+
+		user.Password = ""
+
+		if c.Params("siteid") == "" {
+			return c.Redirect("/home")
+		}
+		objId, err := primitive.ObjectIDFromHex(c.Params("siteid"))
+		if err != nil {
+			return c.Redirect("/home")
+		}
+
+		site, err := getSite(objId, db)
+		if err != nil {
+			// todo handle error
+			//return nil
+		}
+
+		// Render index within layouts/main
+		// TODO process if they are logged in or not, otherwise send them to registration/login
+		//log.Errorf("%s", string(doc))
+		return c.Render("alerts", fiber.Map{
+			"title":        "alerts",
+			"siteSelected": true,
+			"siteId":       site.ID.Hex(),
+			"siteName":     site.Name,
+			"firstName":    user.FirstName,
+			"lastName":     user.LastName,
+			"email":        user.Email},
+			"layouts/main")
+	})
+
 	// authentication
 	app.Get("/auth/register", func(c *fiber.Ctx) error {
 		b, _ := ValidateSession(c, session, db)

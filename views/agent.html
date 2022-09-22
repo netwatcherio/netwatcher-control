@@ -26,9 +26,9 @@
                         <canvas class="chartjs-render-monitor" height="297" id="1.1.1.1"
                                 style="display: block; width: 595px; height: 297px;"
                                 width="595"></canvas>
-                        <canvas class="chartjs-render-monitor" height="297" id="8.8.8.8"
+                        <!--<canvas class="chartjs-render-monitor" height="297" id="8.8.8.8"
                                 style="display: block; width: 595px; height: 297px;"
-                                width="595"></canvas>
+                                width="595"></canvas>-->
                     </div>
                 </div>
             </div>
@@ -45,6 +45,7 @@
         for (let i = 0; i < dataJson.length; i++) {
             for (let i2 = 0; i2 < dataJson[i].data.length; i2++) {
                 let item = dataJson[i].data[i2]
+
                 if (data.filter(e => e.address === item.address).length > 0) {
                     console.log("1 multiple addresses match")
                 }
@@ -110,8 +111,10 @@
                 '        </div>';*/
 
             console.log(data[i].data)
+            if (data[i].address == "1.1.1.1"){
 
-            generateChart(data[i].address, data[i].data)
+                generateChart(data[i].address, data[i].data)
+            }
         }
 
         //Line Chart

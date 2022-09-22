@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/netwatcherio/netwatcher-agent/agent_models"
+	"github.com/netwatcherio/netwatcher-control/control_models"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -19,6 +20,7 @@ func apiUpdateMtr(c *fiber.Ctx, db *mongo.Database) string {
 		log.Errorf("2 %s", err)
 		respB.Response = 500
 	}
+	log.Errorf("%s", c.Body())
 
 	agentId, hash, b, err := verifyAgentHash(data.Pin, data.Hash, db)
 	if err != nil {
@@ -35,7 +37,7 @@ func apiUpdateMtr(c *fiber.Ctx, db *mongo.Database) string {
 
 		//log.Infof("4 %s", dataJ)
 
-		var data2 []agent_models.MtrTarget
+		var data2 []control_models.RealMtrData
 		err = json.Unmarshal(dataJ, &data2)
 		if err != nil {
 			log.Errorf("2 %s", err)

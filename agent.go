@@ -244,6 +244,38 @@ func getLatestNetworkData(id primitive.ObjectID, db *mongo.Database) (control_mo
 	return netInfo1, nil
 }
 
+func getLatestMtrData(id primitive.ObjectID, db *mongo.Database) ([]control_models.MtrData, error) {
+	var filter = bson.D{{"agent", id}}
+	opts := options.Find().SetSort(bson.D{{"timestamp", -1}})
+	cursor, err := db.Collection("mtr_data").Find(context.TODO(), filter, opts)
+	if err != nil {
+		return nil, err
+	}
+	var results []bson.D
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		return nil, err
+	}
+
+	if len(results) == 0 {
+		return nil, errors.New("no agents match when using id")
+	}
+
+	doc, err := bson.Marshal(&results)
+	if err != nil {
+		log.Errorf("1 %s", err)
+		return nil, err
+	}
+
+	var mtr []control_models.MtrData
+	err = bson.Unmarshal(doc, &mtr)
+	if err != nil {
+		log.Errorf("22 %s", err)
+		return nil, err
+	}
+
+	return mtr, nil
+}
+
 func getIcmpData(id primitive.ObjectID, timeRange time.Duration, db *mongo.Database) ([]control_models.IcmpData, error) {
 	var filter = bson.M{
 		"agent": id,

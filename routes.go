@@ -685,6 +685,78 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 		},
 			"layouts/main")
 	})
+	app.Post("/site/:siteid?/members/add", func(c *fiber.Ctx) error {
+		c.Accepts("application/x-www-form-urlencoded") // "Application/json"
+		// Render index within layouts/main
+		b, _ := ValidateSession(c, session, db)
+		if !b {
+			return c.Redirect("/auth/login")
+		}
+
+		if c.Params("siteid") == "" {
+			return c.Redirect("/home")
+		}
+		objId, err := primitive.ObjectIDFromHex(c.Params("siteid"))
+		if err != nil {
+			return c.Redirect("/home")
+		}
+
+		site, err := getSite(objId, db)
+		if err != nil {
+			//todo handle error
+			//return nil
+		}
+
+		user, err := GetUserFromSession(c, session, db)
+		if err != nil {
+			return c.Redirect("/auth")
+		}
+
+		user.Password = ""
+
+		newMember := new(control_models.AddSiteMember)
+		if err := c.BodyParser(newMember); err != nil {
+			log.Warnf("4 %s", err)
+			//return err
+		}
+
+		if newMember.Role > 2 {
+			// check if data has been tampered to make a new member the owner
+			// TODO support owner transferring
+			return c.Redirect("/site/" + site.ID.Hex() + "")
+		}
+
+		usr, err := getUser(&newMember.Email, db)
+		if err != nil {
+			log.Errorf("%s", err)
+			//TODO handle error correctly
+			return c.Redirect("/site/" + site.ID.Hex() + "")
+		}
+
+		b, err = site.AddMember(usr.ID, newMember.Role, db)
+		if err != nil {
+			log.Errorf("%s", err)
+			//todo handle better
+			return c.Redirect("/site/" + site.ID.Hex() + "")
+		}
+
+		if !b {
+			log.Errorf("something went wrong adding member to site")
+			return c.Redirect("/site/" + site.ID.Hex() + "")
+		}
+		addSite, err := usr.AddSite(site.ID, db)
+		if err != nil {
+			return err
+		}
+		if !addSite {
+			log.Infof("%s", "somethiung went wrongies")
+			return c.Redirect("/site/" + site.ID.Hex() + "")
+		}
+		log.Infof("%s", "added member to site successfully")
+
+		// todo handle error/success and return to home
+		return c.Redirect("/site/" + site.ID.Hex() + "/members")
+	})
 	app.Get("/site/:siteid?/members", func(c *fiber.Ctx) error {
 		// Render index within layouts/main
 		b, _ := ValidateSession(c, session, db)

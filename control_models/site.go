@@ -24,6 +24,11 @@ type SiteMember struct {
 	// ADMINS can regenerate agent pins
 }
 
+type AddSiteMember struct {
+	Email string `json:"email"`
+	Role  int    `json:"role"`
+}
+
 func (s *Site) CreateSite(owner primitive.ObjectID, db *mongo.Database) (primitive.ObjectID, error) {
 	member := SiteMember{
 		User: owner,
@@ -69,7 +74,7 @@ func (s *Site) IsMember(id primitive.ObjectID) bool {
 }
 
 // AddMember Add a member to the site then update document
-func (s *Site) AddMember(id primitive.ObjectID, db *mongo.Database) (bool, error) {
+func (s *Site) AddMember(id primitive.ObjectID, role int, db *mongo.Database) (bool, error) {
 	// add member with the provided role
 	if s.IsMember(id) {
 		return false, errors.New("already a member")
@@ -77,7 +82,7 @@ func (s *Site) AddMember(id primitive.ObjectID, db *mongo.Database) (bool, error
 
 	newMember := SiteMember{
 		User: id,
-		Role: 1,
+		Role: role,
 	}
 
 	s.Members = append(s.Members, newMember)

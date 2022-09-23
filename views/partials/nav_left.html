@@ -38,9 +38,23 @@
                 <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
                                              href="/alerts/{{.siteId}}" aria-expanded="false"><i class="mdi mdi-alert-circle"></i><span
                         class="hide-menu">alerts</span></a></li>
-                <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
-                                             href="/manage/{{.siteId}}" aria-expanded="false"><i class="mdi mdi-settings"></i><span
-                        class="hide-menu">manage</span></a></li>
+                <!-- TODO Check if member has correct role and display correct options -->
+                <li class="nav-small-line">
+                    <!-- <i class="nav-small-line"></i>
+                     <span class="hide-menu">site</span>-->
+                    <!--TODO show which site is selected -->
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false"><span class="hide-menu"><i class="fa fa-cogs"></i> manage site</span></a>
+                    <ul aria-expanded="false" class="collapse first-level">
+                        <li class="sidebar-item">
+                            <a href="/site/general/{{.siteId}}" class="sidebar-link"><i class="fa fa-cog"></i><span class="hide-menu">general</span></a>
+                            <a href="/site/addmember/{{.siteId}}" class="sidebar-link"><i class="fa fa-user-plus"></i><span class="hide-menu">add member</span></a>
+                                <a href="/site/delete/{{.siteId}}" class="sidebar-link">
+                                        <i class="fa fa-trash"></i><span class="hide-menu text-danger">delete</span></a>
+                        </li>
+                    </ul>
+                </li>
                 {{end}}
                 <li class="nav-devider">
                     <!-- <i class="nav-small-line"></i>

@@ -788,6 +788,13 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			//return nil
 		}
 
+		user, err := GetUserFromSession(c, session, db)
+		if err != nil {
+			return c.Redirect("/auth")
+		}
+
+		user.Password = ""
+
 		var agentStatList control_models.AgentStatsList
 
 		stats, err := getAgentStats(objId, db)
@@ -815,6 +822,9 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			"siteSelected": true,
 			"siteName":     site.Name,
 			"siteId":       site.ID.Hex(),
+			"firstName":    user.FirstName,
+			"lastName":     user.LastName,
+			"email":        user.Email,
 			"agents":       html.UnescapeString(string(doc)),
 			"hasData":      hasData,
 		},

@@ -25,8 +25,8 @@ type SiteMember struct {
 }
 
 type AddSiteMember struct {
-	Email string `json:"email"`
-	Role  int    `json:"role"`
+	Email string `json:"email"form:"email"`
+	Role  int    `json:"role"form:"role"`
 }
 
 func (s *Site) CreateSite(owner primitive.ObjectID, db *mongo.Database) (primitive.ObjectID, error) {

@@ -118,13 +118,13 @@
 
     newCell = newRow.insertCell();
     newCell.setAttribute("class", "px-0 text-end")
-    newCell.innerHTML += '<a href="/site/' + id + '/members/remove/'+id+'">' +
+    newCell.innerHTML += '<a href="/site/{{.siteId}}/members/remove/'+id+'">' +
             '<span class="badge bg-danger">' +
             '<i class="fa fa-trash"></i> remove</span></a>'
 
     newCell = newRow.insertCell();
     newCell.setAttribute("class", "px-0 text-end")
-    newCell.innerHTML += '<a href="/site/' + id + '/members/'+id+'/edit">' +
+    newCell.innerHTML += '<a href="/site/{{.siteId}}/members/'+id+'/edit">' +
             '<span class="badge bg-purple">' +
             '<i class="fa fa-edit"></i> edit</span></a>'
   }

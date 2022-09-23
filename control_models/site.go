@@ -7,12 +7,14 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"time"
 )
 
 type Site struct {
-	ID      primitive.ObjectID `bson:"_id, omitempty"json:"id"`
-	Name    string             `bson:"name"form:"name"json:"name"`
-	Members []SiteMember       `bson:"members"json:"members"`
+	ID              primitive.ObjectID `bson:"_id, omitempty"json:"id"`
+	Name            string             `bson:"name"form:"name"json:"name"`
+	Members         []SiteMember       `bson:"members"json:"members"`
+	CreateTimestamp time.Time          `bson:"create_timestamp"json:"create_timestamp"`
 }
 
 type SiteMember struct {
@@ -31,6 +33,7 @@ func (s *Site) CreateSite(owner primitive.ObjectID, db *mongo.Database) (primiti
 	s.Members = append(s.Members, member)
 	//TODO insert into sites list for member
 	s.ID = primitive.NewObjectID()
+	s.CreateTimestamp = time.Now()
 
 	mar, err := bson.Marshal(s)
 	if err != nil {

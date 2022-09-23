@@ -32,9 +32,12 @@
                 <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
                                              href="/agents/{{.siteId}}" aria-expanded="false"><i class="mdi mdi-server"></i><span
                         class="hide-menu">agents</span></a></li>
-                <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                <!--<li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
                                              href="/speedtests/{{.siteId}}" aria-expanded="false"><i class="mdi mdi-speedometer"></i><span
                         class="hide-menu">speedtests</span></a></li>
+                <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                             href="/traceroutes/{{.sitesId}}" aria-expanded="false"><i class="mdi mdi-map"></i><span
+                        class="hide-menu">speedtests</span></a></li>-->
                 <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
                                              href="/alerts/{{.siteId}}" aria-expanded="false"><i class="mdi mdi-alert-circle"></i><span
                         class="hide-menu">alerts</span></a></li>
@@ -48,10 +51,10 @@
                     <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false"><span class="hide-menu"><i class="fa fa-cogs"></i> manage site</span></a>
                     <ul aria-expanded="false" class="collapse first-level">
                         <li class="sidebar-item">
-                            <a href="/site/general/{{.siteId}}" class="sidebar-link"><i class="fa fa-cog"></i><span class="hide-menu">general</span></a>
-                            <a href="/site/addmember/{{.siteId}}" class="sidebar-link"><i class="fa fa-user-plus"></i><span class="hide-menu">add member</span></a>
-                                <a href="/site/delete/{{.siteId}}" class="sidebar-link">
-                                        <i class="fa fa-trash"></i><span class="hide-menu text-danger">delete</span></a>
+                            <a href="/site/{{.siteId}}/settings" class="sidebar-link"><i class="fa fa-cog"></i><span class="hide-menu">settings</span></a>
+                            <a href="/site/{{.siteId}}/members" class="sidebar-link"><i class="fa fa-users"></i><span class="hide-menu">members</span></a>
+                                <!--<a href="/site/delete/{{.siteId}}" class="sidebar-link">
+                                        <i class="fa fa-trash"></i><span class="hide-menu text-danger">delete</span></a>-->
                         </li>
                     </ul>
                 </li>

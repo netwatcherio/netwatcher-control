@@ -633,6 +633,85 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 		return c.Redirect("/auth")
 	})
 
+	app.Get("/site/:siteid?/members", func(c *fiber.Ctx) error {
+		// Render index within layouts/main
+		b, _ := ValidateSession(c, session, db)
+		if !b {
+			return c.Redirect("/auth/login")
+		}
+
+		if c.Params("siteid") == "" {
+			return c.Redirect("/home")
+		}
+		objId, err := primitive.ObjectIDFromHex(c.Params("siteid"))
+		if err != nil {
+			return c.Redirect("/home")
+		}
+
+		site, err := getSite(objId, db)
+		if err != nil {
+			//todo handle error
+			//return nil
+		}
+
+		user, err := GetUserFromSession(c, session, db)
+		if err != nil {
+			return c.Redirect("/auth")
+		}
+
+		user.Password = ""
+
+		var siteMembers []control_models.SiteMember
+		for _, mem := range site.Members {
+			siteMembers = append(siteMembers, mem)
+		}
+
+		var siteUsers []*control_models.User
+		for _, usr := range siteMembers {
+			c2 := &control_models.User{ID: usr.User}
+			u, err := c2.GetUserFromID(db)
+			if err != nil {
+				log.Errorf("%s %s", "0 Error processing users in site id", site.ID.Hex())
+			}
+			siteUsers = append(siteUsers, u)
+		}
+
+		siteMem, err := json.Marshal(siteMembers)
+		if err != nil {
+			log.Errorf("%s %s", " Error processing members in site id", site.ID.Hex())
+		}
+		siteUsr, err := json.Marshal(siteUsers)
+		if err != nil {
+			log.Errorf("%s %s", "2 Error processing users in site id", site.ID.Hex())
+		}
+
+		//todo get agent count
+
+		// convert to json for testing
+		//siteJs, err := json.Marshal(sitesList)
+		if err != nil {
+			// todo handle properly
+			return c.Redirect("/auth")
+		}
+
+		//log.Infof("%s", siteJs)
+
+		// TODO process if they are logged in or not, otherwise send them to registration/login
+		return c.Render("site_members", fiber.Map{
+			"title":        "members",
+			"firstName":    user.FirstName,
+			"lastName":     user.LastName,
+			"email":        user.Email,
+			"siteSelected": true,
+			"siteName":     site.Name,
+			"siteId":       site.ID.Hex(),
+			"siteMem":      html.UnescapeString(string(siteMem)),
+			"siteUsr":      html.UnescapeString(string(siteUsr)),
+			//"sites":     html.UnescapeString(string(siteJs)),
+		},
+			"layouts/main")
+	})
+
 	// sites
 	app.Get("/sites", func(c *fiber.Ctx) error {
 		// Render index within layouts/main
@@ -831,13 +910,6 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			"layouts/main")
 	})
 	// manage site
-	app.Get("/site/manage", func(c *fiber.Ctx) error {
-		// Render index within layouts/main
-		// TODO process if they are logged in or not, otherwise send them to registration/login
-		return c.Render("manage", fiber.Map{
-			"title": "manage"},
-			"layouts/main")
-	})
 
 	// alerts
 	app.Get("/alerts", func(c *fiber.Ctx) error {

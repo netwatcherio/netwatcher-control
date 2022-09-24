@@ -67,7 +67,7 @@ func main() {
 	})
 
 	// Reload the templates on each render, good for development
-	engine.Reload(true) // Optional. Default: false
+	//engine.Reload(true) // Optional. Default: false
 
 	// Debug will print each template that is parsed, good for debugging
 	engine.Debug(true) // Optional. Default: false

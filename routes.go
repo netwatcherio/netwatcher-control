@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 	"html"
+	"math"
 	"strings"
 	"time"
 )
@@ -96,13 +97,15 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 
 		// Render index within layouts/main
 		// TODO process if they are logged in or not, otherwise send them to registration/login
-		return c.Render("home", fiber.Map{
+		/*return c.Render("home", fiber.Map{
 			"title":     "home",
 			"firstName": user.FirstName,
 			"lastName":  user.LastName,
 			"email":     user.Email,
 		},
-			"layouts/main")
+			"layouts/main")*/
+
+		return c.Redirect("/sites")
 	})
 	// dashboard page
 
@@ -270,6 +273,89 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 		agent, err := getAgent(objId, db)
 		if err != nil {
 			log.Errorf("1 %s", err)
+		}
+
+		site, err := getSite(agent.Site, db)
+		if err != nil {
+			log.Errorf("12 %s", err)
+		}
+
+		marshal, err := json.Marshal(agent)
+		if err != nil {
+			log.Errorf("13 %s", err)
+		}
+
+		networkData, err := getLatestNetworkData(agent.ID, db)
+		if err != nil {
+			log.Errorf("14 %s", err)
+		}
+
+		mtrData, err := getLatestMtrData(agent.ID, 5, db)
+		if err != nil {
+			log.Errorf("15 %s", err)
+		}
+
+		marshalMtr, err := json.Marshal(mtrData)
+		if err != nil {
+			log.Errorf("16 %s", err)
+		}
+
+		speedData, err := getLatestSpeedtests(agent.ID, 5, db)
+		if err != nil {
+			log.Errorf("15 %s", err)
+		}
+
+		marshalSpeed, err := json.Marshal(speedData)
+		if err != nil {
+			log.Errorf("16 %s", err)
+		}
+
+		// TODO process if they are logged in or not, otherwise send them to registration/login
+		return c.Render("agent", fiber.Map{
+			"title":            agent.Name,
+			"siteSelected":     true,
+			"siteName":         site.Name,
+			"siteId":           site.ID.Hex(),
+			"agents":           html.UnescapeString(string(marshal)),
+			"mtr":              html.UnescapeString(string(marshalMtr)),
+			"speed":            html.UnescapeString(string(marshalSpeed)),
+			"publicAddress":    networkData.Data.PublicAddress,
+			"localAddress":     networkData.Data.LocalAddress,
+			"defaultGateway":   networkData.Data.DefaultGateway,
+			"internetProvider": networkData.Data.InternetProvider,
+			"uploadSpeed":      math.Round(speedData[0].Data.ULSpeed),
+			"downloadSpeed":    math.Round(speedData[0].Data.DLSpeed),
+			"firstName":        user.FirstName,
+			"lastName":         user.LastName,
+			"email":            user.Email,
+			//"icmpMetrics":  html.UnescapeString(string(j)),
+		},
+			"layouts/main")
+	})
+	app.Get("/icmp/:agent?", func(c *fiber.Ctx) error {
+		b, _ := ValidateSession(c, session, db)
+		if !b {
+			return c.Redirect("/auth/login")
+		}
+
+		user, err := GetUserFromSession(c, session, db)
+		if err != nil {
+			return c.Redirect("/auth")
+		}
+
+		user.Password = ""
+
+		if c.Params("agent") == "" {
+			return c.RedirectBack("/home")
+		}
+		objId, err := primitive.ObjectIDFromHex(c.Params("agent"))
+		if err != nil {
+			return c.RedirectBack("/home")
+		}
+
+		agent, err := getAgent(objId, db)
+		if err != nil {
+			log.Errorf("1 %s", err)
 			return err
 		}
 
@@ -285,7 +371,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			return err
 		}
 
-		icmpD, err := getIcmpData(objId, time.Minute*30, db)
+		icmpD, err := getIcmpData(objId, time.Hour*24, db)
 		if err != nil {
 			return err
 		}
@@ -306,7 +392,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 
 		// Render index within layouts/main
 		// TODO process if they are logged in or not, otherwise send them to registration/login
-		return c.Render("agent", fiber.Map{
+		return c.Render("icmp", fiber.Map{
 			"title":        agent.Name,
 			"siteSelected": true,
 			"siteName":     site.Name,

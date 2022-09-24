@@ -7,8 +7,8 @@ import (
 )
 
 type SpeedTestData struct {
-	ID        primitive.ObjectID         `bson:"_id, omitempty"`
-	Agent     primitive.ObjectID         `bson:"agent"`
-	Data      agent_models.SpeedTestInfo `bson:"data"`
-	Timestamp time.Time                  `bson:"timestamp"`
+	ID        primitive.ObjectID         `bson:"_id, omitempty"json:"id"`
+	Agent     primitive.ObjectID         `bson:"agent"json:"agent"`
+	Data      agent_models.SpeedTestInfo `bson:"data"json:"data"`
+	Timestamp time.Time                  `bson:"timestamp"json:"timestamp"`
 }

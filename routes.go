@@ -728,14 +728,14 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 
 		usr, err := getUser(&newMember.Email, db)
 		if err != nil {
-			log.Errorf("%s", err)
+			log.Errorf("1 %s", err)
 			//TODO handle error correctly
 			return c.Redirect("/site/" + site.ID.Hex() + "")
 		}
 
 		b, err = site.AddMember(usr.ID, newMember.Role, db)
 		if err != nil {
-			log.Errorf("%s", err)
+			log.Errorf("2 %s", err)
 			//todo handle better
 			return c.Redirect("/site/" + site.ID.Hex() + "")
 		}

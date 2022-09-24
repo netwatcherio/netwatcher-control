@@ -14,10 +14,11 @@ import (
 	"time"
 )
 
-func createAgent(c *mongo.Database) (bool, error) {
+// CreateAgent returns error or object id of new agent
+func CreateAgent(name string, icmpT []string, mtrT []string, site primitive.ObjectID, c *mongo.Database) (primitive.ObjectID, error) {
 	var agentCfg = agent_models.AgentConfig{
-		PingTargets:      []string{"1.1.1.1"},
-		TraceTargets:     []string{"1.1.1.1"},
+		PingTargets:      icmpT,
+		TraceTargets:     mtrT,
 		PingInterval:     2,
 		SpeedTestPending: true,
 		TraceInterval:    5,
@@ -25,30 +26,31 @@ func createAgent(c *mongo.Database) (bool, error) {
 
 	var agent = control_models.Agent{
 		ID:          primitive.NewObjectID(),
-		Site:        primitive.NewObjectID(),
+		Site:        site,
+		Name:        name,
 		AgentConfig: agentCfg,
-		Pin:         "12345",
+		Pin:         GeneratePin(9),
 		Hash:        "",
 	}
 	mar, err := bson.Marshal(agent)
 	if err != nil {
 		log.Errorf("1 %s", err)
-		return false, err
+		return primitive.ObjectID{}, err
 	}
 	var b *bson.D
 	err = bson.Unmarshal(mar, &b)
 	if err != nil {
 		log.Errorf("2 %s", err)
-		return false, err
+		return primitive.ObjectID{}, err
 	}
 	result, err := c.Collection("agents").InsertOne(context.TODO(), b)
 	if err != nil {
 		log.Errorf("3 %s", err)
-		return false, err
+		return primitive.ObjectID{}, err
 	}
 
 	fmt.Printf(" with _id: %v\n", result.InsertedID)
-	return true, nil
+	return agent.ID, nil
 }
 
 func getAgents(site primitive.ObjectID, db *mongo.Database) ([]*control_models.Agent, error) {
@@ -242,6 +244,38 @@ func getLatestNetworkData(id primitive.ObjectID, db *mongo.Database) (control_mo
 	return netInfo1, nil
 }
 
+func getLatestMtrData(id primitive.ObjectID, db *mongo.Database) ([]control_models.MtrData, error) {
+	var filter = bson.D{{"agent", id}}
+	opts := options.Find().SetSort(bson.D{{"timestamp", -1}})
+	cursor, err := db.Collection("mtr_data").Find(context.TODO(), filter, opts)
+	if err != nil {
+		return nil, err
+	}
+	var results []bson.D
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		return nil, err
+	}
+
+	if len(results) == 0 {
+		return nil, errors.New("no agents match when using id")
+	}
+
+	doc, err := bson.Marshal(&results)
+	if err != nil {
+		log.Errorf("1 %s", err)
+		return nil, err
+	}
+
+	var mtr []control_models.MtrData
+	err = bson.Unmarshal(doc, &mtr)
+	if err != nil {
+		log.Errorf("22 %s", err)
+		return nil, err
+	}
+
+	return mtr, nil
+}
+
 func getIcmpData(id primitive.ObjectID, timeRange time.Duration, db *mongo.Database) ([]control_models.IcmpData, error) {
 	var filter = bson.M{
 		"agent": id,
@@ -291,6 +325,7 @@ func getIcmpData(id primitive.ObjectID, timeRange time.Duration, db *mongo.Datab
 	return icmpD, nil
 }
 
+// getAgentStats get the general stats of agents from a site id objId
 func getAgentStats(objId primitive.ObjectID, db *mongo.Database) ([]control_models.AgentStats, error) {
 	site, err := getSite(objId, db)
 	if err != nil {
@@ -305,7 +340,8 @@ func getAgentStats(objId primitive.ObjectID, db *mongo.Database) ([]control_mode
 	for _, t := range agents {
 		netInfo, err := getLatestNetworkData(t.ID, db)
 		if err != nil {
-			return nil, err
+			// todo handle error better
+			//return nil, err
 		}
 
 		tNow := time.Now()
@@ -328,6 +364,17 @@ func getAgentStats(objId primitive.ObjectID, db *mongo.Database) ([]control_mode
 		statsList = append(statsList, agent)
 	}
 	return statsList, nil
+}
+
+func getAgentCount(site primitive.ObjectID, db *mongo.Database) (int, error) {
+	var filter = bson.D{{"site", site}}
+
+	count, err := db.Collection("agents").CountDocuments(context.TODO(), filter)
+	if err != nil {
+		return 0, err
+	}
+
+	return int(count), nil
 }
 
 func deleteAgent() {

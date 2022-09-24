@@ -32,15 +32,32 @@
                 <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
                                              href="/agents/{{.siteId}}" aria-expanded="false"><i class="mdi mdi-server"></i><span
                         class="hide-menu">agents</span></a></li>
+                <!--<li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                             href="/speedtests/{{.siteId}}" aria-expanded="false"><i class="mdi mdi-speedometer"></i><span
+                        class="hide-menu">speedtests</span></a></li>
                 <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
-                                             href="/map" aria-expanded="false"><i class="mdi mdi-map"></i><span
-                        class="hide-menu">map</span></a></li>
+                                             href="/traceroutes/{{.sitesId}}" aria-expanded="false"><i class="mdi mdi-map"></i><span
+                        class="hide-menu">speedtests</span></a></li>-->
                 <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
-                                             href="/alerts" aria-expanded="false"><i class="mdi mdi-alert-circle"></i><span
+                                             href="/alerts/{{.siteId}}" aria-expanded="false"><i class="mdi mdi-alert-circle"></i><span
                         class="hide-menu">alerts</span></a></li>
-                <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
-                                             href="/manage" aria-expanded="false"><i class="mdi mdi-settings"></i><span
-                        class="hide-menu">manage</span></a></li>
+                <!-- TODO Check if member has correct role and display correct options -->
+                <li class="nav-small-line">
+                    <!-- <i class="nav-small-line"></i>
+                     <span class="hide-menu">site</span>-->
+                    <!--TODO show which site is selected -->
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false"><span class="hide-menu"><i class="fa fa-cogs"></i> manage</span></a>
+                    <ul aria-expanded="false" class="collapse first-level">
+                        <li class="sidebar-item">
+                            <a href="/site/{{.siteId}}/settings" class="sidebar-link"><i class="fa fa-cog"></i><span class="hide-menu">settings</span></a>
+                            <a href="/site/{{.siteId}}/members" class="sidebar-link"><i class="fa fa-users"></i><span class="hide-menu">members</span></a>
+                                <!--<a href="/site/delete/{{.siteId}}" class="sidebar-link">
+                                        <i class="fa fa-trash"></i><span class="hide-menu text-danger">delete</span></a>-->
+                        </li>
+                    </ul>
+                </li>
                 {{end}}
                 <li class="nav-devider">
                     <!-- <i class="nav-small-line"></i>

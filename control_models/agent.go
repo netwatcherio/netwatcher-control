@@ -7,14 +7,20 @@ import (
 )
 
 type Agent struct {
-	ID          primitive.ObjectID       `bson:"_id, omitempty",json:"id"`
-	Name        string                   `bson:"name",json:"name"`
-	Site        primitive.ObjectID       `bson:"site",json:"site"` // _id of mongo object
-	AgentConfig agent_models.AgentConfig `bson:"agent_config",json:"agent_config"`
-	Pin         string                   `bson:"pin",json:"pin"` // used for registration & authentication
-	Hash        string                   `bson:"hash",json:"hash"`
-	Heartbeat   time.Time                `bson:"heartbeat",json:"heartbeat"`
+	ID          primitive.ObjectID       `bson:"_id, omitempty"json:"id"`
+	Name        string                   `bson:"name"json:"name"`
+	Site        primitive.ObjectID       `bson:"site"json:"site"` // _id of mongo object
+	AgentConfig agent_models.AgentConfig `bson:"agent_config"json:"agent_config"`
+	Pin         string                   `bson:"pin"json:"pin"` // used for registration & authentication
+	Hash        string                   `bson:"hash"json:"hash"`
+	Heartbeat   time.Time                `bson:"heartbeat"json:"heartbeat"`
 	// pin can be regenerated, by setting hash blank, and when registering agents, it checks for blank hashs.
+}
+
+type CreateAgent struct {
+	Name        string `json:"name"form:"name"`
+	IcmpTargets string `json:"icmpTargets"form:"icmpTargets"`
+	MtrTargets  string `json:"mtrTargets"form:"mtrTargets"`
 }
 
 type AgentStats struct {

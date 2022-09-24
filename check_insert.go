@@ -41,15 +41,15 @@ func insertIcmpData(agent *control_models.Agent, data []agent_models.IcmpTarget,
 	return true, nil
 }
 
-func insertMtrData(agent *control_models.Agent, data []agent_models.MtrTarget, timestamp time.Time, c *mongo.Database) (bool, error) {
-	var icmpData = control_models.MtrData{
+func insertMtrData(agent *control_models.Agent, data []control_models.RealMtrData, timestamp time.Time, c *mongo.Database) (bool, error) {
+	var mtrData = control_models.MtrData{
 		ID:        primitive.NewObjectID(),
 		Agent:     agent.ID,
 		Data:      data,
 		Timestamp: timestamp,
 	}
 
-	mar, err := bson.Marshal(icmpData)
+	mar, err := bson.Marshal(mtrData)
 	if err != nil {
 		log.Errorf("1 %s", err)
 		return false, err

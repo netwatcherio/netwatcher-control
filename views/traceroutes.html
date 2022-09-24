@@ -25,16 +25,12 @@
                 align-items-center
                 justify-content-end
               ">
-            <a href="/site/new" class="btn btn-info d-flex align-items-center ms-2">
-                <i class="ri-add-line me-1"></i>
-                new site
-            </a>
         </div>
     </div>
 </div>
 
 <div class="container-fluid">
-    {{if .hasSites}}
+    {{if .hasTraces}}
     <div class="row">
         <!-- column -->
         <div class="col-12">
@@ -43,8 +39,8 @@
                     <!-- title -->
                     <div class="d-md-flex">
                         <div>
-                            <h4 class="card-title">sites</h4>
-                            <h5 class="card-subtitle">an overview of the sites you have access to</h5>
+                            <h4 class="card-title">traceroutes</h4>
+                            <h5 class="card-subtitle">last day of traceroutes for AGENT NAME</h5>
                         </div>
                     </div>
                     <!-- title -->
@@ -60,8 +56,9 @@
                       " id="stats">
                                 <thead>
                                 <tr>
-                                    <th class="px-0 text-muted" scope="col">name</th>
-                                    <th class="px-0 text-muted" scope="col">agent count</th>
+                                    <th class="px-0 text-muted" scope="col">timestamp</th>
+                                    <th class="px-0 text-muted" scope="col">target</th>
+                                    <th class="px-0 text-muted" scope="col">triggered</th>
                                     <th class="px-0 text-muted text-end" scope="col">view</th>
                                 </tr>
                                 </thead>
@@ -158,8 +155,8 @@
     <div class="row">
         <div class="col-lg-12">
             <div class="error-body text-center">
-                <h1 class="error-title text-danger">no sites</h1>
-                <h3 class="text-error-subtitle">please create or join a new site</h3>
+                <h1 class="error-title text-danger">no data</h1>
+                <h3 class="text-error-subtitle">please check back later</h3>
                 <!-- <p class="text-muted m-t-30 m-b-30">YOU SEEM TO BE TRYING TO FIND HIS WAY HOME</p>
                  <a href="/" class="btn btn-danger btn-rounded waves-effect waves-light m-b-40 text-white">Back to home</a>-->
             </div>
@@ -167,3 +164,4 @@
     </div>
     {{end}}
 </div>
+

@@ -8,20 +8,22 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"time"
 )
 
 // TODO if generating db and stuff for first time,
 // generate default admin and paste to console
 
 type User struct {
-	ID        primitive.ObjectID   `bson:"_id, omitempty"`
-	Email     string               `bson:"email"json:"email"` // email, will be used as username
-	FirstName string               `bson:"first_name"json:"first_name"`
-	LastName  string               `bson:"last_name"json:"last_name"`
-	Admin     bool                 `bson:"admin" default:"false"json:"admin"`
-	Password  string               `bson:"password"`             // password in sha256?
-	Sites     []primitive.ObjectID `bson:"sites"json:"sites"`    // _id's of mongo objects
-	Verified  bool                 `bson:"verified"json:"sites"` // verified, meaning email confirmation
+	ID              primitive.ObjectID   `bson:"_id, omitempty"json:"id"`
+	Email           string               `bson:"email"json:"email"` // email, will be used as username
+	FirstName       string               `bson:"first_name"json:"first_name"`
+	LastName        string               `bson:"last_name"json:"last_name"`
+	Admin           bool                 `bson:"admin" default:"false"json:"admin"`
+	Password        string               `bson:"password"`             // password in sha256?
+	Sites           []primitive.ObjectID `bson:"sites"json:"sites"`    // _id's of mongo objects
+	Verified        bool                 `bson:"verified"json:"sites"` // verified, meaning email confirmation
+	CreateTimestamp time.Time            `bson:"create_timestamp"json:"create_timestamp"`
 }
 
 type RegisterUser struct {
@@ -61,6 +63,8 @@ func (u *User) Create(db *mongo.Database) (bool, error) {
 		log.Errorf("2 %s", err)
 		return false, errors.New("something went wrong")
 	}
+	u.CreateTimestamp = time.Now()
+
 	result, err := db.Collection("users").InsertOne(context.TODO(), b)
 	if err != nil {
 		log.Errorf("3 %s", err)
@@ -193,14 +197,21 @@ func (u *User) AddSite(site primitive.ObjectID, db *mongo.Database) (bool, error
 
 	u.Sites = append(u.Sites, site)
 
+	/*sitB, err := bson.Marshal(u.Sites)
+	if err != nil {
+		log.Errorf("69 %s", err)
+	}*/
+
 	sites := db.Collection("users")
-	_, err := sites.UpdateOne(
+	result, err := sites.UpdateOne(
 		context.TODO(),
 		bson.M{"_id": u.ID},
 		bson.D{
 			{"$set", bson.D{{"sites", u.Sites}}},
 		},
 	)
+	log.Warnf("%s", result)
+
 	if err != nil {
 		log.Error(err)
 		return false, err

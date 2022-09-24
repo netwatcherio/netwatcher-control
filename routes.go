@@ -716,20 +716,22 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 
 		newMember := new(control_models.AddSiteMember)
 		if err := c.BodyParser(newMember); err != nil {
-			log.Warnf("4 %s", err)
+			//todo
 			//return err
 		}
 
 		if newMember.Role > 2 {
 			// check if data has been tampered to make a new member the owner
-			log.Errorf("1 %s", err)
+			log.Warnf(" %s", "someone is trying to tamper with the roles when adding")
 			// TODO support owner transferring
-			return c.Redirect("/site/" + site.ID.Hex() + "")
+			return c.Redirect("/site/" + site.ID.Hex() + "/members")
 		}
 
-		usr, err := getUser(&newMember.Email, db)
+		var usrTmp = control_models.User{Email: newMember.Email}
+
+		usr, err := usrTmp.GetUserFromEmail(db)
 		if err != nil {
-			log.Errorf("1 %s", err)
+			log.Errorf("12 %s", err)
 			//TODO handle error correctly
 			return c.Redirect("/site/" + site.ID.Hex() + "")
 		}

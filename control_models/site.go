@@ -2,6 +2,7 @@ package control_models
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
@@ -86,18 +87,20 @@ func (s *Site) AddMember(id primitive.ObjectID, role int, db *mongo.Database) (b
 	}
 
 	s.Members = append(s.Members, newMember)
+	j, _ := json.Marshal(s.Members)
+	log.Warnf("%s", j)
 
-	memB, err := bson.Marshal(s.Members)
+	/*memB, err := bson.Marshal(s.Members)
 	if err != nil {
 		log.Errorf("69 %s", err)
-	}
+	}*/
 
 	sites := db.Collection("sites")
-	_, err = sites.UpdateOne(
+	_, err := sites.UpdateOne(
 		context.TODO(),
 		bson.M{"_id": s.ID},
 		bson.D{
-			{"$set", bson.D{{"members", memB}}},
+			{"$set", bson.D{{"members", s.Members}}},
 		},
 	)
 	if err != nil {

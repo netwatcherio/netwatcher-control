@@ -108,12 +108,16 @@
     switch(role) {
       case 0:
         newCell.innerHTML += '<span class="badge bg-light-danger"> <code>READ ONLY</code></span>'
+            break
       case 1:
         newCell.innerHTML += '<span class="badge bg-light-danger"> <code>CREATE AGENT</code></span>'
+            break
       case 2:
         newCell.innerHTML += '<span class="badge bg-light-danger"> <code>ADMIN</code></span>'
+            break
       case 3:
         newCell.innerHTML += '<span class="badge bg-light-danger"> <code>OWNER</code></span>'
+            break
     }
 
     newCell = newRow.insertCell();

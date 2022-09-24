@@ -197,17 +197,17 @@ func (u *User) AddSite(site primitive.ObjectID, db *mongo.Database) (bool, error
 
 	u.Sites = append(u.Sites, site)
 
-	sitB, err := bson.Marshal(u.Sites)
+	/*sitB, err := bson.Marshal(u.Sites)
 	if err != nil {
 		log.Errorf("69 %s", err)
-	}
+	}*/
 
 	sites := db.Collection("users")
 	result, err := sites.UpdateOne(
 		context.TODO(),
 		bson.M{"_id": u.ID},
 		bson.D{
-			{"$set", bson.D{{"sites", sitB}}},
+			{"$set", bson.D{{"sites", u.Sites}}},
 		},
 	)
 	log.Warnf("%s", result)

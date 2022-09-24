@@ -722,6 +722,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 
 		if newMember.Role > 2 {
 			// check if data has been tampered to make a new member the owner
+			log.Errorf("1 %s", err)
 			// TODO support owner transferring
 			return c.Redirect("/site/" + site.ID.Hex() + "")
 		}

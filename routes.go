@@ -325,6 +325,8 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			"internetProvider": networkData.Data.InternetProvider,
 			"uploadSpeed":      math.Round(speedData[0].Data.ULSpeed),
 			"downloadSpeed":    math.Round(speedData[0].Data.DLSpeed),
+			"speedtestPending": agent.AgentConfig.SpeedTestPending,
+			"agentId":          agent.ID.Hex(),
 			"firstName":        user.FirstName,
 			"lastName":         user.LastName,
 			"email":            user.Email,
@@ -481,7 +483,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			"layouts/main")
 	})
 
-	app.Get("/traceroutes/:agent?", func(c *fiber.Ctx) error {
+	app.Get("/traceroute/:mtrid?", func(c *fiber.Ctx) error {
 		b, _ := ValidateSession(c, session, db)
 		if !b {
 			return c.Redirect("/auth/login")
@@ -562,6 +564,82 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			"email":        user.Email,
 			"agents":       html.UnescapeString(string(doc)),
 			"hasAgents":    hasAgents},
+			"layouts/main")
+	})
+	app.Get("/traceroutes/:agent?", func(c *fiber.Ctx) error {
+		b, _ := ValidateSession(c, session, db)
+		if !b {
+			return c.Redirect("/auth/login")
+		}
+
+		user, err := GetUserFromSession(c, session, db)
+		if err != nil {
+			return c.Redirect("/auth")
+		}
+
+		user.Password = ""
+
+		if c.Params("agent") == "" {
+			return c.RedirectBack("/home")
+		}
+		objId, err := primitive.ObjectIDFromHex(c.Params("agent"))
+		if err != nil {
+			return c.RedirectBack("/home")
+		}
+
+		agent, err := getAgent(objId, db)
+		if err != nil {
+			log.Errorf("1 %s", err)
+			return err
+		}
+
+		site, err := getSite(agent.Site, db)
+		if err != nil {
+			log.Errorf("12 %s", err)
+			return err
+		}
+
+		mtrData, err := getLatestMtrData(agent.ID, 10, db)
+		if err != nil {
+			log.Errorf("15 %s", err)
+		}
+
+		marshalMtr, err := json.Marshal(mtrData)
+		if err != nil {
+			log.Errorf("16 %s", err)
+		}
+
+		/*agents, err := getAgents(objId, db)
+		if err != nil {
+			// todo handle error
+			//return err
+		}
+
+		doc, err := json.Marshal(agents)
+		if err != nil {
+			log.Errorf("1 %s", err)
+		}
+
+		var hasAgentsBool = true
+		if len(agents) == 0 {
+			hasAgentsBool = false
+			log.Warnf("%s", "site does NOT have agents")
+		}*/
+
+		// Render index within layouts/main
+		// TODO process if they are logged in or not, otherwise send them to registration/login
+		//log.Errorf("%s", string(doc))
+		return c.Render("traceroutes", fiber.Map{
+			"title":        "traceroutes",
+			"siteSelected": true,
+			"siteId":       site.ID.Hex(),
+			"siteName":     site.Name,
+			"firstName":    user.FirstName,
+			"lastName":     user.LastName,
+			"email":        user.Email,
+			"agentName":    agent.Name,
+			"mtr":          html.UnescapeString(string(marshalMtr)),
+		},
 			"layouts/main")
 	})
 

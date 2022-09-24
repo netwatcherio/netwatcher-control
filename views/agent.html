@@ -18,6 +18,27 @@
       </nav>
       <h1 class="mb-0 fw-bold">{{.title}}</h1>
     </div>
+
+    <div class="
+                col-lg-4 col-md-6
+                d-none d-md-flex
+                align-items-center
+                justify-content-end
+              ">
+      <a href="/icmp/{{.agentId}}" class="btn btn-info d-flex align-items-center ms-2">
+        <i class="fa fa-globe"></i>
+          view icmp
+      </a>
+      <a href="/iperf/{{.agentId}}" class="btn btn-info d-flex align-items-center ms-2">
+        <i class="mdi mdi-lan-pending"></i>
+          iperf
+      </a>
+      <a href="/iperf/{{.agentId}}" class="btn btn-info d-flex align-items-center ms-2">
+        <i class="bi-file-bar-graph"></i>
+          host stats
+      </a>
+    </div>
+
   </div>
 </div>
 
@@ -86,7 +107,7 @@
             </div>
             <div class="ms-auto">
               <span class="text-purple display-6">
-                <i class="fa fa-compass"></i>
+                <i class="fa fa-globe"></i>
               </span>
             </div>
           </div>
@@ -157,7 +178,22 @@
           view the most recent traceroutes from the agent
         </h6>
         <br>
-        <div class="table">
+        <div class="text-end">
+        <a href="/traceroutes/{{.agentId}}">
+          <button type="button" class="
+                          btn
+                          waves-effect waves-light
+                          btn-light-info
+                          text-info
+                          font-weight-medium
+                        ">
+            <i class="mdi mdi-map"></i>
+            view more
+          </button>
+        </a>
+        </div>
+        <br>
+        <div class="table-responsive">
           <table class="table customize-table mb-0 v-middle text-nowrap" id="traceroutes">
             <thead class="table-light">
             <tr>
@@ -180,7 +216,20 @@
         <h6 class="card-subtitle lh-base mb-0">
           view the most recent speedtests from the agent
         </h6>
+        <br>
         <div class="text-end">
+          {{if .speedtestPending}}
+          <button type="button" class="
+                          btn
+                          waves-effect waves-light
+                          btn-light-warning
+                          text-warning
+                          font-weight-medium
+                        ">
+            <i class="mdi mdi-lan-pending"></i>
+            already in queue
+          </button>
+          {{else}}
           <a href="/speedtest/{{.agentId}}/run">
             <button type="button" class="
                           btn
@@ -189,12 +238,14 @@
                           text-info
                           font-weight-medium
                         ">
-              Info
+              <i class="mdi mdi-speedometer"></i>
+              run speedtest
             </button>
           </a>
+          {{end}}
         </div>
         <br>
-        <div class="table">
+        <div class="table-responsive">
           <table class="table customize-table mb-0 v-middle text-nowrap" id="speedtests">
             <thead class="table-light">
             <tr>

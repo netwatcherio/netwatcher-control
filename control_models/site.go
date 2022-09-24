@@ -87,12 +87,17 @@ func (s *Site) AddMember(id primitive.ObjectID, role int, db *mongo.Database) (b
 
 	s.Members = append(s.Members, newMember)
 
+	memB, err := bson.Marshal(s.Members)
+	if err != nil {
+		log.Errorf("69 %s", err)
+	}
+
 	sites := db.Collection("sites")
-	_, err := sites.UpdateOne(
+	_, err = sites.UpdateOne(
 		context.TODO(),
 		bson.M{"_id": s.ID},
 		bson.D{
-			{"$set", bson.D{{"members", s.Members}}},
+			{"$set", bson.D{{"members", memB}}},
 		},
 	)
 	if err != nil {

@@ -54,6 +54,11 @@ func apiUpdateMtr(c *fiber.Ctx, db *mongo.Database) string {
 		if err != nil {
 			respB.Response = 500
 		}
+
+		err = updateHeartbeat(agent.ID, db)
+		if err != nil {
+			respB.Response = 500
+		}
 	}
 	jRespB, err := json.Marshal(respB)
 	if err != nil {
@@ -103,6 +108,11 @@ func apiUpdateNetwork(c *fiber.Ctx, db *mongo.Database) string {
 		}
 
 		_, err = insertNetworkInfo(agent, data2, data.Timestamp, db)
+		if err != nil {
+			respB.Response = 500
+		}
+
+		err = updateHeartbeat(agent.ID, db)
 		if err != nil {
 			respB.Response = 500
 		}
@@ -159,6 +169,10 @@ func apiUpdateSpeedTest(c *fiber.Ctx, db *mongo.Database) string {
 		if err != nil {
 			respB.Response = 500
 		}
+		err = updateHeartbeat(agent.ID, db)
+		if err != nil {
+			respB.Response = 500
+		}
 	}
 
 	jRespB, err := json.Marshal(respB)
@@ -210,6 +224,10 @@ func apiUpdateIcmp(c *fiber.Ctx, db *mongo.Database) string {
 		}
 
 		_, err = insertIcmpData(agent, data2, data.Timestamp, db)
+		if err != nil {
+			respB.Response = 500
+		}
+		err = updateHeartbeat(agent.ID, db)
 		if err != nil {
 			respB.Response = 500
 		}

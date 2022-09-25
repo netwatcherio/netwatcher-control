@@ -149,11 +149,6 @@ func getAgent(id primitive.ObjectID, db *mongo.Database) (*control_models.Agent,
 		return nil, err
 	}
 
-	err = updateHeartbeat(agent.ID, db)
-	if err != nil {
-		return nil, err
-	}
-
 	return agent, nil
 }
 
@@ -391,9 +386,9 @@ func getAgentStats(objId primitive.ObjectID, db *mongo.Database) (*control_model
 	tBeat := agent.Heartbeat
 	tDif := tNow.Sub(tBeat)
 
-	var online = true
-	if tDif.Minutes() > 2 {
-		online = false
+	var online = false
+	if tDif.Minutes() < 2 {
+		online = true
 	}
 
 	var agentStats = &control_models.AgentStats{

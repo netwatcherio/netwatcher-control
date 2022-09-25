@@ -280,6 +280,17 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			log.Errorf("12 %s", err)
 		}
 
+		stats, err := getAgentStats(objId, db)
+		if err != nil {
+			//todo handle error
+			//return err
+		}
+
+		doc, err := json.Marshal(stats)
+		if err != nil {
+			log.Errorf("1 %s", err)
+		}
+
 		marshal, err := json.Marshal(agent)
 		if err != nil {
 			log.Errorf("13 %s", err)
@@ -319,6 +330,8 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			"agents":           html.UnescapeString(string(marshal)),
 			"mtr":              html.UnescapeString(string(marshalMtr)),
 			"speed":            html.UnescapeString(string(marshalSpeed)),
+			"online":           stats.Online,
+			"agentStats":       html.UnescapeString(string(doc)),
 			"publicAddress":    networkData.Data.PublicAddress,
 			"localAddress":     networkData.Data.LocalAddress,
 			"defaultGateway":   networkData.Data.DefaultGateway,
@@ -433,7 +446,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 
 		var agentStatList control_models.AgentStatsList
 
-		stats, err := getAgentStats(objId, db)
+		stats, err := getAgentStatsForSite(objId, db)
 		if err != nil {
 			//todo handle error
 			//return err
@@ -517,7 +530,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 		}
 		var agentStatList control_models.AgentStatsList
 
-		stats, err := getAgentStats(objId, db)
+		stats, err := getAgentStatsForSite(objId, db)
 		if err != nil {
 			//todo handle error
 			//return err
@@ -1167,7 +1180,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 
 		var agentStatList control_models.AgentStatsList
 
-		stats, err := getAgentStats(objId, db)
+		stats, err := getAgentStatsForSite(objId, db)
 		if err != nil {
 			//todo handle error
 			//return err

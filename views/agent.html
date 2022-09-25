@@ -45,24 +45,45 @@
 <div class="container-fluid">
   <!-- Row -->
   <div class="row">
+    {{if .online}}
     <div class="col-lg-3 col-md-4">
-      <div class="card border-bottom border-dark">
+      <div class="card border-bottom border-success">
         <div class="card-body">
           <div class="d-flex align-items-center">
             <div>
-              <h2>todo</h2>
+              <h2>online</h2>
               <!--TODO make change color depending on status-->
-              <h6 class="text-dark mb-0">status</h6>
+              <h6 class="text-success mb-0">status</h6>
             </div>
             <div class="ms-auto">
-              <span class="text-dark display-6">
-                <i class="fa fa-xing"></i>
+              <span class="text-success display-6">
+                <i class="fa fa-arrow-up"></i>
               </span>
             </div>
           </div>
         </div>
       </div>
     </div>
+    {{else}}
+    <div class="col-lg-3 col-md-4">
+      <div class="card border-bottom border-danger">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div>
+              <h2>offline</h2>
+              <!--TODO make change color depending on status-->
+              <h6 class="text-danger mb-0">status</h6>
+            </div>
+            <div class="ms-auto">
+              <span class="text-dark display-6">
+                <i class="fa fa-arrow-down"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {{end}}
     <div class="col-lg-3 col-md-4">
       <div class="card border-bottom border-info">
         <div class="card-body">
@@ -270,6 +291,7 @@
 <script>
   let traceroutes = JSON.parse("{{.mtr}}")
   let speed = JSON.parse("{{.speed}}")
+  let agentStats = JSON.parse("{{.agentStats}}")
 
   let parser = new DOMParser();
 
@@ -338,48 +360,4 @@
     newCell.setAttribute("class", "px-0 text-end")
     newCell.innerHTML += '<code>' + server + '</code>'
   }
-
-  /*const ctx = document.getElementById('agentPie');
-  // New chart
-  new Chart(ctx, {
-      type: "pie",
-      data: {
-          labels: ["Online", "Offline"],
-          datasets: [
-              {
-                  label: "Agent Statuses",
-                  backgroundColor: [
-                      "#39CB7F",
-                      "#FC4B6C",
-                  ],
-                  data: [onlineCount, offlineCount],
-              },
-          ],
-      },
-      options: {
-          legend: {
-              labels: {
-                  fontColor: "#b2b9bf",
-              },
-          },
-      },
-      scales: {
-          yAxes: [
-              {
-                  ticks: {
-                      fontColor: "#b2b9bf",
-                      fontSize: 12,
-                  },
-              },
-          ],
-          xAxes: [
-              {
-                  ticks: {
-                      fontColor: "#b2b9bf",
-                      fontSize: 12,
-                  },
-              },
-          ],
-      },
-  });*/
 </script>

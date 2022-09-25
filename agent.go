@@ -375,8 +375,40 @@ func getIcmpData(id primitive.ObjectID, timeRange time.Duration, db *mongo.Datab
 	return icmpD, nil
 }
 
-// getAgentStats get the general stats of agents from a site id objId
-func getAgentStats(objId primitive.ObjectID, db *mongo.Database) ([]control_models.AgentStats, error) {
+// getAgentStats get the general stats of a specific agent
+func getAgentStats(objId primitive.ObjectID, db *mongo.Database) (*control_models.AgentStats, error) {
+	agent, err := getAgent(objId, db)
+	if err != nil {
+		return nil, err
+	}
+	netInfo, err := getLatestNetworkData(agent.ID, db)
+	if err != nil {
+		// todo handle error better
+		//return nil, err
+	}
+
+	tNow := time.Now()
+	tBeat := agent.Heartbeat
+	tDif := tNow.Sub(tBeat)
+
+	var online = true
+	if tDif.Minutes() > 2 {
+		online = false
+	}
+
+	var agentStats = &control_models.AgentStats{
+		ID:          agent.ID,
+		Name:        agent.Name,
+		Heartbeat:   agent.Heartbeat,
+		NetworkInfo: netInfo.Data,
+		LastSeen:    tDif,
+		Online:      online,
+	}
+	return agentStats, nil
+}
+
+// getAgentStatsForSite get the general stats of agents from a site id objId
+func getAgentStatsForSite(objId primitive.ObjectID, db *mongo.Database) ([]control_models.AgentStats, error) {
 	site, err := getSite(objId, db)
 	if err != nil {
 		return nil, err

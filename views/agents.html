@@ -62,7 +62,7 @@
                                     <th class="px-0 text-muted" scope="col">name</th>
                                     <th class="px-0 text-muted" scope="col">last seen</th>
                                     <th class="px-0 text-muted" scope="col">isp</th>
-                                    <th class="px-0 text-muted" scope="col">location</th>
+                                    <!--<th class="px-0 text-muted" scope="col">location</th>-->
                                     <th class="px-0 text-muted text-end" scope="col">install</th>
                                     <th class="px-0 text-muted text-end" scope="col">delete</th>
                                     <th class="px-0 text-muted text-end" scope="col">view</th>
@@ -92,7 +92,6 @@
             let name = agents['list'][i]['name']
             let id = agents['list'][i]['id']
             let online = agents['list'][i]['online']
-            let lastSeen = agents['list'][i]['last_seen']
             let netInfo = agents['list'][i]['network_info']
             let isp = netInfo['internet_provider']
 
@@ -100,17 +99,17 @@
             let date2 = new Date(agents['list'][i]['heartbeat']);
 
             let onlineMsg = '<span class="badge bg-danger">' +
-                '<i class="fa fa-arrow-down" ></i></span>'
+                '<i class="fa fa-arrow-down" ></i>'
             if (online) {
                 onlineMsg = '<span class="badge bg-success">' +
-                    '<i class="fa fa-arrow-up" ></i></span>'
+                    '<i class="fa fa-arrow-up" ></i>'
                 onlineCount++
             }else{
                 offlineCount++
             }
 
             // To calculate the time difference of two dates
-            let Difference_In_Time = date2.getTime() - date1.getTime();
+            let Difference_In_Time = (date1.getTime() - date2.getTime()) / 1000;
 
             // lol
             if (isp.toLowerCase().indexOf('shaw') !== -1){
@@ -130,17 +129,12 @@
 
             newCell = newRow.insertCell();
             newCell.setAttribute("class", "px-0")
-            newCell.innerHTML += '<span class="badge bg-success">' +
-                '<i class="fa fa-clock"></i> '+lastSeen+'</span></a>'
+            newCell.innerHTML += onlineMsg+Math.round(Difference_In_Time)+' seconds</span>'
 
             newCell = newRow.insertCell();
             newCell.setAttribute("class", "px-0")
             newCell.innerHTML += '<span class="badge bg-orange">' +
-                '<!--<i class="fa fa-server"></i>--> '+isp+'</span></a>'
-
-            newCell = newRow.insertCell();
-            newCell.setAttribute("class", "px-0")
-            newCell.innerHTML += "location"
+                '<!--<i class="fa fa-server"></i>--> '+isp+'</span>'
 
             /*buttons*/
             newCell = newRow.insertCell();

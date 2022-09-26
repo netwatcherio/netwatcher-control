@@ -643,7 +643,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 		// TODO process if they are logged in or not, otherwise send them to registration/login
 		//log.Errorf("%s", string(doc))
 		return c.Render("traceroutes", fiber.Map{
-			"title":        "traceroutes",
+			"title":        agent.Name,
 			"siteSelected": true,
 			"siteId":       site.ID.Hex(),
 			"siteName":     site.Name,

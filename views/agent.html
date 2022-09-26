@@ -75,7 +75,7 @@
               <h6 class="text-danger mb-0">status</h6>
             </div>
             <div class="ms-auto">
-              <span class="text-dark display-6">
+              <span class="text-danger display-6">
                 <i class="fa fa-arrow-down"></i>
               </span>
             </div>
@@ -209,24 +209,24 @@
                           font-weight-medium
                         ">
             <i class="mdi mdi-map"></i>
-            view more
+            view
           </button>
         </a>
         </div>
         <br>
-        <div class="table-responsive">
+        <!--<div class="table-responsive">
           <table class="table customize-table mb-0 v-middle text-nowrap" id="traceroutes">
             <thead class="table-light">
             <tr>
               <th class="border-bottom border-top">timestamp</th>
-              <!--<th class="border-bottom border-top">triggered</th>-->
+              &lt;!&ndash;<th class="border-bottom border-top">triggered</th>&ndash;&gt;
               <th class="border-bottom border-top text-end">view</th>
             </tr>
             </thead>
             <tbody>
             </tbody>
           </table>
-        </div>
+        </div>-->
       </div>
       </div>
     </div>
@@ -295,9 +295,9 @@
 
   let parser = new DOMParser();
 
-  for (let i = 0; i < traceroutes.length; i++) {
+  /*for (let i = 0; i < traceroutes.length; i++) {
 
-/*    {
+/!*    {
       "id": "632e3d6bf4992062743f749a",
             "agent": "632ddcce6097d9782e199900",
             "data": [
@@ -308,7 +308,7 @@
           "mtr": {
             "destination": "1.1.1.1",
     ],
-    }*/
+    }*!/
 
     // Find a <table> element with id="myTable":
     let tbodyRef = document.getElementById('traceroutes').getElementsByTagName('tbody')[0];
@@ -329,7 +329,7 @@
     newCell.innerHTML += '<a href="/traceroute/'+id+'">' +
             '<span class="badge bg-purple">' +
             '<i class="fa fa-binoculars"></i> view</span></a>'
-  }
+  }*/
   for (let i = 0; i < speed.length; i++) {
 
     // Find a <table> element with id="myTable":

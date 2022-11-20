@@ -147,6 +147,9 @@ func (u *User) GetUserFromEmail(db *mongo.Database) (*User, error) {
 		return nil, err
 	}
 
+	if len(results) < 1 {
+		return nil, errors.New("no user found")
+	}
 	doc, err := bson.Marshal(&results[0])
 	if err != nil {
 		log.Errorf("1 %s", err)

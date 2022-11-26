@@ -391,11 +391,11 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			return err
 		}
 
-		for n := range icmpD {
+		/*for n := range icmpD {
 			for n2 := range icmpD[n].Data {
-				icmpD[n].Data[n2].Result.Data = nil
+				icmpD[n].Data[n2].Result = nil
 			}
-		}
+		}*/
 
 		j, err := json.Marshal(icmpD)
 		if err != nil {

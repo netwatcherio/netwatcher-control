@@ -239,7 +239,7 @@ func getLatestNetworkData(id primitive.ObjectID, db *mongo.Database) (control_mo
 	return netInfo1, nil
 }
 
-func getLatestMtrData(id primitive.ObjectID, limit int64, db *mongo.Database) ([]control_models.MtrData, error) {
+func getLatestMtrData(id primitive.ObjectID, limit int64, db *mongo.Database) ([]*control_models.MtrData, error) {
 	var filter = bson.D{{"agent", id}}
 	opts := options.Find()
 	opts.SetSort(bson.D{{"timestamp", -1}})
@@ -259,9 +259,9 @@ func getLatestMtrData(id primitive.ObjectID, limit int64, db *mongo.Database) ([
 		return nil, errors.New("no agents match when using id")
 	}
 
-	var mtr []control_models.MtrData
+	var mtr []*control_models.MtrData
 	for _, result := range results {
-		var tempMtr control_models.MtrData
+		var tempMtr *control_models.MtrData
 		doc, err := bson.Marshal(result)
 		if err != nil {
 			log.Errorf("1 %s", err)

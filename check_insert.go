@@ -41,7 +41,7 @@ func insertIcmpData(agent *control_models.Agent, data []agent_models.IcmpTarget,
 	return true, nil
 }
 
-func insertMtrData(agent *control_models.Agent, data []control_models.RealMtrData, timestamp time.Time, c *mongo.Database) (bool, error) {
+func insertMtrData(agent *control_models.Agent, data []agent_models.MtrTarget, timestamp time.Time, c *mongo.Database) (bool, error) {
 	var mtrData = control_models.MtrData{
 		ID:        primitive.NewObjectID(),
 		Agent:     agent.ID,

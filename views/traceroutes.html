@@ -81,7 +81,7 @@
             // Find a <table> element with id="myTable":
             for (let i2 = 0; i2 < traceroutes[i]['data'].length; i2++) {
                 let address = traceroutes[i]['data'][i2]['address']
-                let triggered  = traceroutes[i]['data'][i2]['triggered']
+                let triggered  = traceroutes[i]['data'][i2]['result']['triggered']
                 let row = document.getElementById("targets")
                 let triggeredText = ' <span class="badge bg-light-success text-success"><i class="fa fa-check"></i> not triggered</span>'
 
@@ -149,7 +149,7 @@
                     .replaceAll("-", "")
                     .replaceAll(".", "")
 
-                let statistics = result.mtr.statistic
+                let statistics = result.metrics
                 //console.log(Object.keys(statistics).length + statistics)
 
                 for (let hopNum = 1; hopNum <= Object.keys(statistics).length; hopNum++) {
@@ -158,19 +158,19 @@
                     if (hopNum == 1) {
                         resultD.innerHTML += '<pre><code>\n' +
                             '+---+-------------------------------------------------------------------------+-------+-----+------+------+------+------+\n' +
-                            '| # | Hostname                                                                | Loss% | Snt | Last |  Avg | Best | Wrst |\n' +
+                            '| # | Hostname                                                                | Snt | Rcv | Last |  Avg | Best | Wrst |\n' +
                             '+---+-------------------------------------------------------------------------+-------+-----+------+------+------+------+\n';
                     }
 
                     //let statistic = statistics[hopNum]
                     console.log(hopNum + statistics)
-                    resultD.innerHTML += '\n<pre><code>| ' + hopNum + ' | ' + statistic['target'] + '                                                              |     '
-                        + statistic['loss_percent'] +
-                        ' |  ' + statistic['sent'] +
-                        ' |  ' + statistic['last_ms'] +
-                        ' |  ' + statistic['avg_ms'] +
-                        ' |  ' + statistic['best_ms'] +
-                        ' |  ' + statistic['worst_ms'] + ' |\n</code></pre>';
+                    resultD.innerHTML += '\n<pre><code>| ' + hopNum + ' | ' + statistic['address'] + '                                                              |     '
+                        + statistic['sent'] +
+                        ' |  ' + statistic['received'] +
+                        ' |  ' + statistic['last'] +
+                        ' |  ' + statistic['avg'] +
+                        ' |  ' + statistic['best'] +
+                        ' |  ' + statistic['worst'] + ' |\n</code></pre>';
 
                     if (hopNum == Object.keys(statistics).length) {
                         resultD.innerHTML +=

@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/netwatcherio/netwatcher-agent/agent_models"
-	"github.com/netwatcherio/netwatcher-control/control_models"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"netwatcher-control/agent_models"
+	"netwatcher-control/control_models"
 	"time"
 )
 

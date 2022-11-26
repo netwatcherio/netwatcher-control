@@ -1,4 +1,4 @@
-module github.com/netwatcherio/netwatcher-control
+module netwatcher-control
 
 go 1.17
 
@@ -7,7 +7,6 @@ require (
 	github.com/gofiber/storage/mongodb v0.0.0-20220831075939-89493b1be08f
 	github.com/gofiber/template v1.6.30
 	github.com/joho/godotenv v1.4.0
-	github.com/netwatcherio/netwatcher-agent v1.0.4
 	github.com/sirupsen/logrus v1.9.0
 	go.mongodb.org/mongo-driver v1.10.1
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d

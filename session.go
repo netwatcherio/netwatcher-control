@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
-	"github.com/netwatcherio/netwatcher-control/control_models"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"netwatcher-control/control_models"
 )
 
 func LoginSession(c *fiber.Ctx, session *session.Store, db *mongo.Database, id primitive.ObjectID) (bool, error) {

@@ -3,9 +3,9 @@ package main
 import (
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
-	"github.com/netwatcherio/netwatcher-agent/agent_models"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
+	"netwatcher-control/agent_models"
 )
 
 func apiUpdateMtr(c *fiber.Ctx, db *mongo.Database) string {

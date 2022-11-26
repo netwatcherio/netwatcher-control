@@ -1,8 +1,8 @@
 package control_models
 
 import (
-	"github.com/netwatcherio/netwatcher-agent/agent_models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"netwatcher-control/agent_models"
 	"time"
 )
 

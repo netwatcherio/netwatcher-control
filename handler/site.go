@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"context"
@@ -8,11 +8,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"netwatcher-control/control_models"
 )
 
 func createSite(c *mongo.Database) (bool, error) {
-	var siteD = control_models.Site{
+	var siteD = models.Site{
 		ID:      primitive.NewObjectID(),
 		Name:    "Test Site",
 		Members: nil,
@@ -39,7 +38,7 @@ func createSite(c *mongo.Database) (bool, error) {
 	return true, nil
 }
 
-func getSite(id primitive.ObjectID, db *mongo.Database) (*control_models.Site, error) {
+func getSite(id primitive.ObjectID, db *mongo.Database) (*models.Site, error) {
 	// if hash is blank, search for pin matching with blank hash
 	// if none exist, return error
 	// if match, return new agent, and new hash, then let another function update the hash?
@@ -72,7 +71,7 @@ func getSite(id primitive.ObjectID, db *mongo.Database) (*control_models.Site, e
 		return nil, err
 	}
 
-	var site *control_models.Site
+	var site *models.Site
 	err = bson.Unmarshal(doc, &site)
 	if err != nil {
 		log.Errorf("2 %s", err)

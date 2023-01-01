@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"context"
@@ -10,7 +10,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"netwatcher-control/agent_models"
-	"netwatcher-control/control_models"
 	"time"
 )
 
@@ -24,7 +23,7 @@ func CreateAgent(name string, icmpT []string, mtrT []string, site primitive.Obje
 		TraceInterval:    5,
 	}
 
-	var agent = control_models.Agent{
+	var agent = models.Agent{
 		ID:          primitive.NewObjectID(),
 		Site:        site,
 		Name:        name,
@@ -53,7 +52,7 @@ func CreateAgent(name string, icmpT []string, mtrT []string, site primitive.Obje
 	return agent.ID, nil
 }
 
-func getAgents(site primitive.ObjectID, db *mongo.Database) ([]*control_models.Agent, error) {
+func getAgents(site primitive.ObjectID, db *mongo.Database) ([]*models.Agent, error) {
 	// if hash is blank, search for pin matching with blank hash
 	// if none exist, return error
 	// if match, return new agent, and new hash, then let another function update the hash?
@@ -76,14 +75,14 @@ func getAgents(site primitive.ObjectID, db *mongo.Database) ([]*control_models.A
 		return nil, errors.New("no agents match when using id")
 	}
 
-	var agent []*control_models.Agent
+	var agent []*models.Agent
 	for i := range results {
 		doc, err := bson.Marshal(&results[i])
 		if err != nil {
 			log.Errorf("1 %s", err)
 			return nil, err
 		}
-		var a *control_models.Agent
+		var a *models.Agent
 		err = bson.Unmarshal(doc, &a)
 		if err != nil {
 			log.Errorf("2 %s", err)
@@ -109,7 +108,7 @@ func updateHeartbeat(id primitive.ObjectID, db *mongo.Database) error {
 	return nil
 }
 
-func getAgent(id primitive.ObjectID, db *mongo.Database) (*control_models.Agent, error) {
+func getAgent(id primitive.ObjectID, db *mongo.Database) (*models.Agent, error) {
 	// if hash is blank, search for pin matching with blank hash
 	// if none exist, return error
 	// if match, return new agent, and new hash, then let another function update the hash?
@@ -142,7 +141,7 @@ func getAgent(id primitive.ObjectID, db *mongo.Database) (*control_models.Agent,
 		return nil, err
 	}
 
-	var agent *control_models.Agent
+	var agent *models.Agent
 	err = bson.Unmarshal(doc, &agent)
 	if err != nil {
 		log.Errorf("2 %s", err)
@@ -189,7 +188,7 @@ func verifyAgentHash(pin string, hash string, db *mongo.Database) (primitive.Obj
 		return primitive.ObjectID{}, "", false, err
 	}
 
-	var agent control_models.Agent
+	var agent models.Agent
 	err = bson.Unmarshal(doc, &agent)
 	if err != nil {
 		log.Errorf("2 %s", err)
@@ -207,39 +206,39 @@ func verifyAgentHash(pin string, hash string, db *mongo.Database) (primitive.Obj
 	return primitive.ObjectID{}, "", false, errors.New("something went wrong verifying agent")
 }
 
-func getLatestNetworkData(id primitive.ObjectID, db *mongo.Database) (control_models.NetworkData, error) {
+func getLatestNetworkData(id primitive.ObjectID, db *mongo.Database) (models.NetworkData, error) {
 	var filter = bson.D{{"agent", id}}
 	opts := options.Find().SetSort(bson.D{{"timestamp", -1}})
 	cursor, err := db.Collection("network_data").Find(context.TODO(), filter, opts)
 	if err != nil {
-		return control_models.NetworkData{}, err
+		return models.NetworkData{}, err
 	}
 	var results []bson.D
 	if err = cursor.All(context.TODO(), &results); err != nil {
-		return control_models.NetworkData{}, err
+		return models.NetworkData{}, err
 	}
 
 	if len(results) == 0 {
-		return control_models.NetworkData{}, errors.New("no agents match when using id")
+		return models.NetworkData{}, errors.New("no agents match when using id")
 	}
 
 	doc, err := bson.Marshal(&results[0])
 	if err != nil {
 		log.Errorf("1 %s", err)
-		return control_models.NetworkData{}, err
+		return models.NetworkData{}, err
 	}
 
-	var netInfo1 control_models.NetworkData
+	var netInfo1 models.NetworkData
 	err = bson.Unmarshal(doc, &netInfo1)
 	if err != nil {
 		log.Errorf("22 %s", err)
-		return control_models.NetworkData{}, err
+		return models.NetworkData{}, err
 	}
 
 	return netInfo1, nil
 }
 
-func getLatestMtrData(id primitive.ObjectID, limit int64, db *mongo.Database) ([]*control_models.MtrData, error) {
+func getLatestMtrData(id primitive.ObjectID, limit int64, db *mongo.Database) ([]*models.MtrData, error) {
 	var filter = bson.D{{"agent", id}}
 	opts := options.Find()
 	opts.SetSort(bson.D{{"timestamp", -1}})
@@ -259,9 +258,9 @@ func getLatestMtrData(id primitive.ObjectID, limit int64, db *mongo.Database) ([
 		return nil, errors.New("no agents match when using id")
 	}
 
-	var mtr []*control_models.MtrData
+	var mtr []*models.MtrData
 	for _, result := range results {
-		var tempMtr *control_models.MtrData
+		var tempMtr *models.MtrData
 		doc, err := bson.Marshal(result)
 		if err != nil {
 			log.Errorf("1 %s", err)
@@ -280,7 +279,7 @@ func getLatestMtrData(id primitive.ObjectID, limit int64, db *mongo.Database) ([
 	return mtr, nil
 }
 
-func getLatestSpeedtests(id primitive.ObjectID, limit int64, db *mongo.Database) ([]control_models.SpeedTestData, error) {
+func getLatestSpeedtests(id primitive.ObjectID, limit int64, db *mongo.Database) ([]models.SpeedTestData, error) {
 	var filter = bson.D{{"agent", id}}
 	opts := options.Find()
 	opts.SetSort(bson.D{{"timestamp", -1}})
@@ -300,9 +299,9 @@ func getLatestSpeedtests(id primitive.ObjectID, limit int64, db *mongo.Database)
 		return nil, errors.New("no agents match when using id")
 	}
 
-	var speedtests []control_models.SpeedTestData
+	var speedtests []models.SpeedTestData
 	for _, result := range results {
-		var tempTest control_models.SpeedTestData
+		var tempTest models.SpeedTestData
 		doc, err := bson.Marshal(result)
 		if err != nil {
 			log.Errorf("1 %s", err)
@@ -321,7 +320,7 @@ func getLatestSpeedtests(id primitive.ObjectID, limit int64, db *mongo.Database)
 	return speedtests, nil
 }
 
-func getIcmpData(id primitive.ObjectID, timeRange time.Duration, db *mongo.Database) ([]control_models.IcmpData, error) {
+func getIcmpData(id primitive.ObjectID, timeRange time.Duration, db *mongo.Database) ([]models.IcmpData, error) {
 	var filter = bson.M{
 		"agent": id,
 		"timestamp": bson.M{
@@ -342,10 +341,10 @@ func getIcmpData(id primitive.ObjectID, timeRange time.Duration, db *mongo.Datab
 		return nil, errors.New("no data found")
 	}
 
-	var icmpD []control_models.IcmpData
+	var icmpD []models.IcmpData
 
 	for _, r := range results {
-		var icmp control_models.IcmpData
+		var icmp models.IcmpData
 		doc, err := bson.Marshal(r)
 		if err != nil {
 			log.Errorf("1 %s", err)
@@ -371,7 +370,7 @@ func getIcmpData(id primitive.ObjectID, timeRange time.Duration, db *mongo.Datab
 }
 
 // getAgentStats get the general stats of a specific agent
-func getAgentStats(objId primitive.ObjectID, db *mongo.Database) (*control_models.AgentStats, error) {
+func getAgentStats(objId primitive.ObjectID, db *mongo.Database) (*models.AgentStats, error) {
 	agent, err := getAgent(objId, db)
 	if err != nil {
 		return nil, err
@@ -391,7 +390,7 @@ func getAgentStats(objId primitive.ObjectID, db *mongo.Database) (*control_model
 		online = true
 	}
 
-	var agentStats = &control_models.AgentStats{
+	var agentStats = &models.AgentStats{
 		ID:          agent.ID,
 		Name:        agent.Name,
 		Heartbeat:   agent.Heartbeat,
@@ -403,7 +402,7 @@ func getAgentStats(objId primitive.ObjectID, db *mongo.Database) (*control_model
 }
 
 // getAgentStatsForSite get the general stats of agents from a site id objId
-func getAgentStatsForSite(objId primitive.ObjectID, db *mongo.Database) ([]control_models.AgentStats, error) {
+func getAgentStatsForSite(objId primitive.ObjectID, db *mongo.Database) ([]models.AgentStats, error) {
 	site, err := getSite(objId, db)
 	if err != nil {
 		return nil, err
@@ -412,7 +411,7 @@ func getAgentStatsForSite(objId primitive.ObjectID, db *mongo.Database) ([]contr
 	if err != nil {
 		return nil, err
 	}
-	var statsList []control_models.AgentStats
+	var statsList []models.AgentStats
 
 	for _, t := range agents {
 		netInfo, err := getLatestNetworkData(t.ID, db)
@@ -430,7 +429,7 @@ func getAgentStatsForSite(objId primitive.ObjectID, db *mongo.Database) ([]contr
 			online = false
 		}
 
-		var agent = control_models.AgentStats{
+		var agent = models.AgentStats{
 			ID:          t.ID,
 			Name:        t.Name,
 			Heartbeat:   t.Heartbeat,

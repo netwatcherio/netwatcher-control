@@ -1,4 +1,4 @@
-package control_models
+package models
 
 import (
 	"context"

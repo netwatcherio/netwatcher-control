@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"errors"
@@ -8,7 +8,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"netwatcher-control/control_models"
 )
 
 func LoginSession(c *fiber.Ctx, session *session.Store, db *mongo.Database, id primitive.ObjectID) (bool, error) {
@@ -23,7 +22,7 @@ func LoginSession(c *fiber.Ctx, session *session.Store, db *mongo.Database, id p
 	return true, nil
 }
 
-func GetUserFromSession(c *fiber.Ctx, session *session.Store, db *mongo.Database) (*control_models.User, error) {
+func GetUserFromSession(c *fiber.Ctx, session *session.Store, db *mongo.Database) (*models.User, error) {
 	store, err := session.Get(c) // get/create new session
 	if err != nil {
 		log.Errorf("%s", err)
@@ -37,7 +36,7 @@ func GetUserFromSession(c *fiber.Ctx, session *session.Store, db *mongo.Database
 	str := fmt.Sprintf("%v", store.Get("id"))
 
 	userId, err := primitive.ObjectIDFromHex(str)
-	userGet := control_models.User{ID: userId}
+	userGet := models.User{ID: userId}
 
 	usr, err := userGet.GetUserFromID(db)
 	if err != nil {

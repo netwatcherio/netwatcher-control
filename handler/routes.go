@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"encoding/json"
@@ -10,7 +10,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"html"
 	"math"
-	"netwatcher-control/control_models"
 	"strings"
 	"time"
 )
@@ -182,7 +181,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			//return nil
 		}
 
-		cAgent := new(control_models.CreateAgent)
+		cAgent := new(models.CreateAgent)
 		if err := c.BodyParser(cAgent); err != nil {
 			log.Warnf("4 %s", err)
 			return err
@@ -444,7 +443,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			//return nil
 		}
 
-		var agentStatList control_models.AgentStatsList
+		var agentStatList models.AgentStatsList
 
 		stats, err := getAgentStatsForSite(objId, db)
 		if err != nil {
@@ -528,7 +527,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			log.Errorf("12 %s", err)
 			return err
 		}
-		var agentStatList control_models.AgentStatsList
+		var agentStatList models.AgentStatsList
 
 		stats, err := getAgentStatsForSite(objId, db)
 		if err != nil {
@@ -731,7 +730,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 		// todo recevied body is in url format, need to convert to new struct??
 		//
 
-		registerUser := new(control_models.RegisterUser)
+		registerUser := new(models.RegisterUser)
 		if err := c.BodyParser(registerUser); err != nil {
 			log.Warnf("%s", err)
 			return err
@@ -748,7 +747,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			return c.Redirect("/auth/login")
 		}
 
-		user := control_models.User{
+		user := models.User{
 			ID:        primitive.NewObjectID(),
 			Email:     registerUser.Email,
 			FirstName: registerUser.FirstName,
@@ -774,13 +773,13 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 		// todo recevied body is in url format, need to convert to new struct??
 		//
 
-		loginUser := new(control_models.LoginUser)
+		loginUser := new(models.LoginUser)
 		if err := c.BodyParser(loginUser); err != nil {
 			log.Warnf("4 %s", err)
 			return err
 		}
 
-		user := control_models.User{Email: loginUser.Email}
+		user := models.User{Email: loginUser.Email}
 
 		// get user from email
 		usr, err2 := user.GetUserFromEmail(db)
@@ -891,7 +890,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 
 		user.Password = ""
 
-		newMember := new(control_models.AddSiteMember)
+		newMember := new(models.AddSiteMember)
 		if err := c.BodyParser(newMember); err != nil {
 			//todo
 			//return err
@@ -904,7 +903,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			return c.Redirect("/site/" + site.ID.Hex() + "/members")
 		}
 
-		var usrTmp = control_models.User{Email: newMember.Email}
+		var usrTmp = models.User{Email: newMember.Email}
 
 		usr, err := usrTmp.GetUserFromEmail(db)
 		if err != nil {
@@ -965,14 +964,14 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 
 		user.Password = ""
 
-		var siteMembers []control_models.SiteMember
+		var siteMembers []models.SiteMember
 		for _, mem := range site.Members {
 			siteMembers = append(siteMembers, mem)
 		}
 
-		var siteUsers []*control_models.User
+		var siteUsers []*models.User
 		for _, usr := range siteMembers {
-			c2 := &control_models.User{ID: usr.User}
+			c2 := &models.User{ID: usr.User}
 			u, err := c2.GetUserFromID(db)
 			if err != nil {
 				log.Errorf("%s %s", "0 Error processing users in site id", site.ID.Hex())
@@ -1037,8 +1036,8 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 		}
 
 		var sitesList struct {
-			Sites          []*control_models.Site `json:"sites"`
-			AgentCountInfo []AgentCountInfo       `json:"agentCountInfo"`
+			Sites          []*models.Site   `json:"sites"`
+			AgentCountInfo []AgentCountInfo `json:"agentCountInfo"`
 		}
 
 		for _, sid := range user.Sites {
@@ -1131,7 +1130,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 
 		user.Password = ""
 
-		site := new(control_models.Site)
+		site := new(models.Site)
 		if err := c.BodyParser(site); err != nil {
 			log.Warnf("4 %s", err)
 			return err
@@ -1178,7 +1177,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 
 		user.Password = ""
 
-		var agentStatList control_models.AgentStatsList
+		var agentStatList models.AgentStatsList
 
 		stats, err := getAgentStatsForSite(objId, db)
 		if err != nil {

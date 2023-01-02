@@ -49,7 +49,7 @@ func GetAgentStats(agent models.Agent, db *mongo.Database) (*AgentStats, error) 
 
 	stats.NetInfo = netInfo
 
-	// todo check the agent check it self to see if the speedtest is pending, else check and add the speedtest stats
+	// todo check the agent check itself to see if the speedtest is pending, else check and add the speedtest stats
 
 	// get the latest net stats
 	agentCheck = models.AgentCheck{AgentID: agent.ID, Type: models.CT_SpeedTest}

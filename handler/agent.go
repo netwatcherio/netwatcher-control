@@ -28,6 +28,7 @@ type Agent struct {
 type AgentStats struct {
 	AgentID          primitive.ObjectID `json:"agent_id"`
 	Name             string             `json:"name"`
+	Heartbeat        time.Time          `json:"heartbeat"`
 	NetInfo          checks.NetResult   `json:"net_info"`
 	SpeedTestInfo    checks.SpeedTest   `json:"speed_test_info"`
 	SpeedTestPending bool               `json:"speed_test_pending"`
@@ -37,6 +38,7 @@ func (a *Agent) GetAgentStats(db *mongo.Database) (*AgentStats, error) {
 	var stats AgentStats
 	stats.AgentID = a.ID
 	stats.Name = a.Name
+	stats.Heartbeat = a.Heartbeat
 
 	// get the latest net stats
 	agentCheck := AgentCheck{AgentID: a.ID, Type: CT_NetInfo}

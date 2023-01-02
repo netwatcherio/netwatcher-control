@@ -12,7 +12,6 @@ import (
 	"math"
 	"netwatcher-control/handler"
 	"netwatcher-control/models"
-	"time"
 )
 
 func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Database) {
@@ -242,80 +241,49 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			return c.Redirect("/home")
 		}
 
-		stats, err := getAgentStats(objId, db)
-		if err != nil {
-			//todo handle error
-			//return err
-		}
-
-		doc, err := json.Marshal(stats)
-		if err != nil {
-			log.Errorf("1 %s", err)
-		}
-
 		marshal, err := json.Marshal(agent)
 		if err != nil {
 			log.Errorf("13 %s", err)
 		}
 
-		networkData, err := getLatestNetworkData(agent.ID, db)
+		getAgentStats, err := handler.GetAgentStats(agent, db)
 		if err != nil {
-			log.Errorf("14 %s", err)
-		}
-
-		mtrData, err := getLatestMtrData(agent.ID, 5, db)
-		if err != nil {
-			log.Errorf("15 %s", err)
-		}
-
-		marshalMtr, err := json.Marshal(mtrData)
-		if err != nil {
-			log.Errorf("16 %s", err)
-		}
-
-		speedData, err := getLatestSpeedtests(agent.ID, 5, db)
-		if err != nil {
-			log.Errorf("15 %s", err)
-		}
-
-		marshalSpeed, err := json.Marshal(speedData)
-		if err != nil {
-			log.Errorf("16 %s", err)
+			return err
 		}
 
 		// TODO process if they are logged in or not, otherwise send them to registration/login
 		return c.Render("agent", fiber.Map{
-			"title":            agent.Name,
-			"siteSelected":     true,
-			"siteName":         site.Name,
-			"siteId":           site.ID.Hex(),
-			"agents":           html.UnescapeString(string(marshal)),
-			"mtr":              html.UnescapeString(string(marshalMtr)),
-			"speed":            html.UnescapeString(string(marshalSpeed)),
-			"online":           stats.Online,
-			"agentStats":       html.UnescapeString(string(doc)),
-			"publicAddress":    networkData.Data.PublicAddress,
-			"localAddress":     networkData.Data.LocalAddress,
-			"defaultGateway":   networkData.Data.DefaultGateway,
-			"internetProvider": networkData.Data.InternetProvider,
-			"uploadSpeed":      math.Round(speedData[0].Data.ULSpeed),
-			"downloadSpeed":    math.Round(speedData[0].Data.DLSpeed),
-			"speedtestPending": agent.AgentConfig.SpeedTestPending,
-			"agentId":          agent.ID.Hex(),
-			"firstName":        user.FirstName,
-			"lastName":         user.LastName,
-			"email":            user.Email,
+			"title":        agent.Name,
+			"siteSelected": true,
+			"siteName":     site.Name,
+			"siteId":       site.ID.Hex(),
+			"agents":       html.UnescapeString(string(marshal)),
+			/*"mtr":              html.UnescapeString(string(marshalMtr)),
+			"speed":            html.UnescapeString(string(marshalSpeed)),*/
+			/*"online":           stats.Online,*/
+			/*"agentStats":       html.UnescapeString(string(getAgentStats)),*/
+			"publicAddress":    getAgentStats.NetInfo.PublicAddress,
+			"localAddress":     getAgentStats.NetInfo.LocalAddress,
+			"defaultGateway":   getAgentStats.NetInfo.DefaultGateway,
+			"internetProvider": getAgentStats.NetInfo.InternetProvider,
+			"uploadSpeed":      math.Round(getAgentStats.SpeedTestInfo.ULSpeed),
+			"downloadSpeed":    math.Round(getAgentStats.SpeedTestInfo.DLSpeed),
+			/*"speedtestPending": agent.AgentConfig.SpeedTestPending,*/
+			"agentId":   agent.ID.Hex(),
+			"firstName": user.FirstName,
+			"lastName":  user.LastName,
+			"email":     user.Email,
 			//"icmpMetrics":  html.UnescapeString(string(j)),
 		},
 			"layouts/main")
 	})
 	app.Get("/icmp/:agent?", func(c *fiber.Ctx) error {
-		b, _ := ValidateSession(c, session, db)
+		b, _ := handler.ValidateSession(c, session, db)
 		if !b {
 			return c.Redirect("/auth/login")
 		}
 
-		user, err := GetUserFromSession(c, session, db)
+		user, err := handler.GetUserFromSession(c, session, db)
 		if err != nil {
 			return c.Redirect("/auth")
 		}
@@ -330,16 +298,18 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			return c.RedirectBack("/home")
 		}
 
-		agent, err := getAgent(objId, db)
+		agent := models.Agent{ID: objId}
+		err = agent.Get(db)
 		if err != nil {
-			log.Errorf("1 %s", err)
-			return err
+			log.Error(err)
+			return c.Redirect("/agents")
 		}
 
-		site, err := getSite(agent.Site, db)
+		site := models.Site{ID: objId}
+		err = site.Get(db)
 		if err != nil {
-			log.Errorf("12 %s", err)
-			return err
+			log.Error(err)
+			return c.Redirect("/home")
 		}
 
 		doc, err := json.Marshal(agent)
@@ -348,10 +318,10 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			return err
 		}
 
-		icmpD, err := getIcmpData(objId, time.Hour*24, db)
+		/*icmpD, err := getIcmpData(objId, time.Hour*24, db)
 		if err != nil {
 			return err
-		}
+		}*/
 
 		/*for n := range icmpD {
 			for n2 := range icmpD[n].Data {
@@ -359,13 +329,11 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			}
 		}*/
 
-		j, err := json.Marshal(icmpD)
+		/*j, err := json.Marshal(icmpD)
 		if err != nil {
 			log.Errorf("%s", err)
 			return err
-		}
-
-		log.Errorf("%s", j)
+		}*/
 
 		// Render index within layouts/main
 		// TODO process if they are logged in or not, otherwise send them to registration/login
@@ -375,17 +343,17 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			"siteName":     site.Name,
 			"siteId":       site.ID.Hex(),
 			"agents":       html.UnescapeString(string(doc)),
-			"icmpMetrics":  html.UnescapeString(string(j)),
+			/*"icmpMetrics":  html.UnescapeString(string(j)),*/
 		},
 			"layouts/main")
 	})
 	app.Get("/agents/:siteid?", func(c *fiber.Ctx) error {
-		b, _ := ValidateSession(c, session, db)
+		b, _ := handler.ValidateSession(c, session, db)
 		if !b {
 			return c.Redirect("/auth/login")
 		}
 
-		user, err := GetUserFromSession(c, session, db)
+		user, err := handler.GetUserFromSession(c, session, db)
 		if err != nil {
 			return c.Redirect("/auth")
 		}
@@ -400,13 +368,14 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			return c.Redirect("/home")
 		}
 
-		site, err := getSite(objId, db)
+		site := models.Site{ID: objId}
+		err = site.Get(db)
 		if err != nil {
-			// todo handle error
-			//return nil
+			log.Error(err)
+			return c.Redirect("/home")
 		}
 
-		var agentStatList models.AgentStatsList
+		/*var agentStatList models.AgentStatsList
 
 		stats, err := getAgentStatsForSite(objId, db)
 		if err != nil {
@@ -418,12 +387,12 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 		var hasAgents = true
 		if len(agentStatList.List) == 0 {
 			hasAgents = false
-		}
+		}*/
 
-		doc, err := json.Marshal(agentStatList)
+		/*doc, err := json.Marshal(agentStatList)
 		if err != nil {
 			log.Errorf("1 %s", err)
-		}
+		}*/
 
 		/*agents, err := getAgents(objId, db)
 		if err != nil {
@@ -452,19 +421,19 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			"siteName":     site.Name,
 			"firstName":    user.FirstName,
 			"lastName":     user.LastName,
-			"email":        user.Email,
-			"agents":       html.UnescapeString(string(doc)),
-			"hasAgents":    hasAgents},
+			"email":        user.Email},
+			/*"agents":       html.UnescapeString(string(doc)),
+			"hasAgents":    hasAgents},*/
 			"layouts/main")
 	})
 
 	app.Get("/traceroute/:mtrid?", func(c *fiber.Ctx) error {
-		b, _ := ValidateSession(c, session, db)
+		b, _ := handler.ValidateSession(c, session, db)
 		if !b {
 			return c.Redirect("/auth/login")
 		}
 
-		user, err := GetUserFromSession(c, session, db)
+		user, err := handler.GetUserFromSession(c, session, db)
 		if err != nil {
 			return c.Redirect("/auth")
 		}
@@ -479,18 +448,20 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			return c.RedirectBack("/home")
 		}
 
-		agent, err := getAgent(objId, db)
+		agent := models.Agent{ID: objId}
+		err = agent.Get(db)
 		if err != nil {
-			log.Errorf("1 %s", err)
-			return err
+			log.Error(err)
+			return c.Redirect("/agents")
 		}
 
-		site, err := getSite(agent.Site, db)
+		site := models.Site{ID: objId}
+		err = site.Get(db)
 		if err != nil {
-			log.Errorf("12 %s", err)
-			return err
+			log.Error(err)
+			return c.Redirect("/home")
 		}
-		var agentStatList models.AgentStatsList
+		/*var agentStatList models.AgentStatsList
 
 		stats, err := getAgentStatsForSite(objId, db)
 		if err != nil {
@@ -507,7 +478,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 		doc, err := json.Marshal(agentStatList)
 		if err != nil {
 			log.Errorf("1 %s", err)
-		}
+		}*/
 
 		/*agents, err := getAgents(objId, db)
 		if err != nil {
@@ -536,18 +507,18 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			"siteName":     site.Name,
 			"firstName":    user.FirstName,
 			"lastName":     user.LastName,
-			"email":        user.Email,
-			"agents":       html.UnescapeString(string(doc)),
-			"hasAgents":    hasAgents},
+			"email":        user.Email},
+			/*"agents":       html.UnescapeString(string(doc)),
+			"hasAgents":    hasAgents},*/
 			"layouts/main")
 	})
 	app.Get("/traceroutes/:agent?", func(c *fiber.Ctx) error {
-		b, _ := ValidateSession(c, session, db)
+		b, _ := handler.ValidateSession(c, session, db)
 		if !b {
 			return c.Redirect("/auth/login")
 		}
 
-		user, err := GetUserFromSession(c, session, db)
+		user, err := handler.GetUserFromSession(c, session, db)
 		if err != nil {
 			return c.Redirect("/auth")
 		}
@@ -562,27 +533,29 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			return c.RedirectBack("/home")
 		}
 
-		agent, err := getAgent(objId, db)
+		agent := models.Agent{ID: objId}
+		err = agent.Get(db)
 		if err != nil {
-			log.Errorf("1 %s", err)
-			return err
+			log.Error(err)
+			return c.Redirect("/agents")
 		}
 
-		site, err := getSite(agent.Site, db)
+		site := models.Site{ID: objId}
+		err = site.Get(db)
 		if err != nil {
-			log.Errorf("12 %s", err)
-			return err
+			log.Error(err)
+			return c.Redirect("/home")
 		}
 
-		mtrData, err := getLatestMtrData(agent.ID, 10, db)
+		/*mtrData, err := getLatestMtrData(agent.ID, 10, db)
 		if err != nil {
 			log.Errorf("15 %s", err)
-		}
+		}*/
 
-		marshalMtr, err := json.Marshal(mtrData)
+		/*marshalMtr, err := json.Marshal(mtrData)
 		if err != nil {
 			log.Errorf("16 %s", err)
-		}
+		}*/
 
 		/*agents, err := getAgents(objId, db)
 		if err != nil {
@@ -613,18 +586,18 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			"lastName":     user.LastName,
 			"email":        user.Email,
 			"agentName":    agent.Name,
-			"mtr":          html.UnescapeString(string(marshalMtr)),
+			/*"mtr":          html.UnescapeString(string(marshalMtr)),*/
 		},
 			"layouts/main")
 	})
 
 	app.Get("/alerts/:siteid?", func(c *fiber.Ctx) error {
-		b, _ := ValidateSession(c, session, db)
+		b, _ := handler.ValidateSession(c, session, db)
 		if !b {
 			return c.Redirect("/auth/login")
 		}
 
-		user, err := GetUserFromSession(c, session, db)
+		user, err := handler.GetUserFromSession(c, session, db)
 		if err != nil {
 			return c.Redirect("/auth")
 		}
@@ -639,10 +612,11 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			return c.Redirect("/home")
 		}
 
-		site, err := getSite(objId, db)
+		site := models.Site{ID: objId}
+		err = site.Get(db)
 		if err != nil {
-			// todo handle error
-			//return nil
+			log.Error(err)
+			return c.Redirect("/home")
 		}
 
 		// Render index within layouts/main
@@ -661,7 +635,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 
 	// authentication
 	app.Get("/auth/register", func(c *fiber.Ctx) error {
-		b, _ := ValidateSession(c, session, db)
+		b, _ := handler.ValidateSession(c, session, db)
 		if b {
 			return c.Redirect("/home")
 		}
@@ -671,7 +645,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			"title": "auth", "login": false})
 	})
 	app.Get("/auth/login", func(c *fiber.Ctx) error {
-		b, _ := ValidateSession(c, session, db)
+		b, _ := handler.ValidateSession(c, session, db)
 		if b {
 			return c.Redirect("/home")
 		}
@@ -681,7 +655,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			"title": "auth", "login": true})
 	})
 	app.Get("/auth", func(c *fiber.Ctx) error {
-		b, _ := ValidateSession(c, session, db)
+		b, _ := handler.ValidateSession(c, session, db)
 		if b {
 			return c.Redirect("/home")
 		}
@@ -758,7 +732,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 		}
 
 		// create token session
-		b, err := LoginSession(c, session, db, usr.ID)
+		b, err := handler.LoginSession(c, session, db, usr.ID)
 		if err != nil || !b {
 			log.Warnf("5 %s, 2 %b", err, b)
 			return c.Redirect("/auth/login")
@@ -767,14 +741,14 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 		return c.Redirect("/home")
 	})
 	app.Get("/logout", func(c *fiber.Ctx) error {
-		LogoutSession(c, session)
+		handler.LogoutSession(c, session)
 
 		return c.Redirect("/auth")
 	})
 
 	app.Get("/site/:siteid?/members/add", func(c *fiber.Ctx) error {
 		// Render index within layouts/main
-		b, _ := ValidateSession(c, session, db)
+		b, _ := handler.ValidateSession(c, session, db)
 		if !b {
 			return c.Redirect("/auth/login")
 		}
@@ -787,13 +761,14 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			return c.Redirect("/home")
 		}
 
-		site, err := getSite(objId, db)
+		site := models.Site{ID: objId}
+		err = site.Get(db)
 		if err != nil {
-			//todo handle error
-			//return nil
+			log.Error(err)
+			return c.Redirect("/home")
 		}
 
-		user, err := GetUserFromSession(c, session, db)
+		user, err := handler.GetUserFromSession(c, session, db)
 		if err != nil {
 			return c.Redirect("/auth")
 		}
@@ -827,7 +802,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 	app.Post("/site/:siteid?/members/add", func(c *fiber.Ctx) error {
 		c.Accepts("application/x-www-form-urlencoded") // "Application/json"
 		// Render index within layouts/main
-		b, _ := ValidateSession(c, session, db)
+		b, _ := handler.ValidateSession(c, session, db)
 		if !b {
 			return c.Redirect("/auth/login")
 		}
@@ -840,13 +815,14 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			return c.Redirect("/home")
 		}
 
-		site, err := getSite(objId, db)
+		site := models.Site{ID: objId}
+		err = site.Get(db)
 		if err != nil {
-			//todo handle error
-			//return nil
+			log.Error(err)
+			return c.Redirect("/home")
 		}
 
-		user, err := GetUserFromSession(c, session, db)
+		user, err := handler.GetUserFromSession(c, session, db)
 		if err != nil {
 			return c.Redirect("/auth")
 		}
@@ -901,7 +877,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 	})
 	app.Get("/site/:siteid?/members", func(c *fiber.Ctx) error {
 		// Render index within layouts/main
-		b, _ := ValidateSession(c, session, db)
+		b, _ := handler.ValidateSession(c, session, db)
 		if !b {
 			return c.Redirect("/auth/login")
 		}
@@ -914,13 +890,14 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			return c.Redirect("/home")
 		}
 
-		site, err := getSite(objId, db)
+		site := models.Site{ID: objId}
+		err = site.Get(db)
 		if err != nil {
-			//todo handle error
-			//return nil
+			log.Error(err)
+			return c.Redirect("/home")
 		}
 
-		user, err := GetUserFromSession(c, session, db)
+		user, err := handler.GetUserFromSession(c, session, db)
 		if err != nil {
 			return c.Redirect("/auth")
 		}
@@ -981,12 +958,12 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 	// sites
 	app.Get("/sites", func(c *fiber.Ctx) error {
 		// Render index within layouts/main
-		b, _ := ValidateSession(c, session, db)
+		b, _ := handler.ValidateSession(c, session, db)
 		if !b {
 			return c.Redirect("/auth/login")
 		}
 
-		user, err := GetUserFromSession(c, session, db)
+		user, err := handler.GetUserFromSession(c, session, db)
 		if err != nil {
 			return c.Redirect("/auth")
 		}
@@ -1004,13 +981,14 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 		}
 
 		for _, sid := range user.Sites {
-			site, err := getSite(sid, db)
+			site := models.Site{ID: sid}
+			err = site.Get(db)
 			if err != nil {
-				// todo display error instead of redirecting
-				log.Errorf("%s", err)
+				log.Error(err)
+				return c.Redirect("/home")
 			}
 
-			count, err := getAgentCount(site.ID, db)
+			count, err := site.AgentCount(db)
 			if err != nil {
 				//todo handle error
 			}
@@ -1020,7 +998,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 				Count:  count,
 			}
 
-			sitesList.Sites = append(sitesList.Sites, site)
+			sitesList.Sites = append(sitesList.Sites, &site)
 			sitesList.AgentCountInfo = append(sitesList.AgentCountInfo, tempCount)
 		}
 
@@ -1053,12 +1031,12 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 	})
 	app.Get("/site/new", func(c *fiber.Ctx) error {
 		// Render index within layouts/main
-		b, _ := ValidateSession(c, session, db)
+		b, _ := handler.ValidateSession(c, session, db)
 		if !b {
 			return c.Redirect("/auth/login")
 		}
 
-		user, err := GetUserFromSession(c, session, db)
+		user, err := handler.GetUserFromSession(c, session, db)
 		if err != nil {
 			return c.Redirect("/auth")
 		}
@@ -1081,12 +1059,12 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 		//
 
 		// Render index within layouts/main
-		b, _ := ValidateSession(c, session, db)
+		b, _ := handler.ValidateSession(c, session, db)
 		if !b {
 			return c.Redirect("/auth/login")
 		}
 
-		user, err := GetUserFromSession(c, session, db)
+		user, err := handler.GetUserFromSession(c, session, db)
 		if err != nil {
 			return c.Redirect("/auth")
 		}
@@ -1115,7 +1093,7 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 		return c.Redirect("/sites")
 	})
 	app.Get("/site/:siteid?", func(c *fiber.Ctx) error {
-		b, err := ValidateSession(c, session, db)
+		b, err := handler.ValidateSession(c, session, db)
 		if !b {
 			return c.Redirect("/auth")
 		}
@@ -1127,20 +1105,21 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			return c.Redirect("/home")
 		}
 
-		site, err := getSite(objId, db)
+		site := models.Site{ID: objId}
+		err = site.Get(db)
 		if err != nil {
-			//todo handle error
-			//return nil
+			log.Error(err)
+			return c.Redirect("/home")
 		}
 
-		user, err := GetUserFromSession(c, session, db)
+		user, err := handler.GetUserFromSession(c, session, db)
 		if err != nil {
 			return c.Redirect("/auth")
 		}
 
 		user.Password = ""
 
-		var agentStatList models.AgentStatsList
+		/*var agentStatList models.AgentStatsList
 
 		stats, err := getAgentStatsForSite(objId, db)
 		if err != nil {
@@ -1157,11 +1136,11 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 		doc, err := json.Marshal(agentStatList)
 		if err != nil {
 			log.Errorf("1 %s", err)
-		}
+		}*/
 
 		// Render index within layouts/main
 		// TODO process if they are logged in or not, otherwise send them to registration/login
-		log.Errorf("%s", string(doc))
+
 		return c.Render("site", fiber.Map{
 			"title":        "site dashboard",
 			"siteSelected": true,
@@ -1170,8 +1149,8 @@ func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Databa
 			"firstName":    user.FirstName,
 			"lastName":     user.LastName,
 			"email":        user.Email,
-			"agents":       html.UnescapeString(string(doc)),
-			"hasData":      hasData,
+			/*"agents":       html.UnescapeString(string(doc)),
+			"hasData":      hasData,*/
 		},
 			"layouts/main")
 	})

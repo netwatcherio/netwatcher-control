@@ -89,11 +89,7 @@ func (a *Agent) Get(db *mongo.Database) error {
 		return err
 	}
 
-	a.Initialized = agent.Initialized
-	a.Site = agent.Site
-	a.ID = agent.ID
-	a.Pin = agent.Pin
-	a.Heartbeat = agent.Heartbeat
+	a = agent
 
 	return nil
 }

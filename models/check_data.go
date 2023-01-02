@@ -20,11 +20,14 @@ type CheckData struct {
 
 func (cd *CheckData) Create(db *mongo.Database) error {
 	// todo handle to check if agent id is set and all that... or should it be in the api section??
+	cd.ID = primitive.NewObjectID()
+
 	mar, err := bson.Marshal(cd)
 	if err != nil {
 		log.Errorf("error marshalling check data when creating: %s", err)
 		return err
 	}
+
 	var b *bson.D
 	err = bson.Unmarshal(mar, &b)
 	if err != nil {

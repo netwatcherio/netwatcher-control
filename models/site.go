@@ -199,8 +199,7 @@ func (s *Site) Get(db *mongo.Database) error {
 		return err
 	}
 
-	s.Name = site.Name
-	s.Members = site.Members
+	s = site
 
 	return nil
 }

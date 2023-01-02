@@ -16,6 +16,9 @@ type Router struct {
 func (r *Router) Init() {
 	log.Info("Loading routes for:")
 
+	r.apiGetConfig()
+	log.Info("API")
+
 	r.utils()
 	log.Info("UTILS")
 

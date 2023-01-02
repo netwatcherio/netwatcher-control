@@ -10,7 +10,7 @@ import (
 	"netwatcher-control/handler"
 )
 
-func (r *Router) getConfiguration() {
+func (r *Router) apiGetConfig() {
 	r.App.Post("/api/v2/config/", func(c *fiber.Ctx) error {
 		c.Accepts("Application/json") // "Application/json"
 		respB := api.Data{}
@@ -77,65 +77,48 @@ func (r *Router) getConfiguration() {
 	})
 }
 
-/*app.Post("/v1/agent/update/icmp", func(c *fiber.Ctx) error {
-	var str = apiUpdateIcmp(c, db)
-	if str != "" {
-		return c.SendString(str)
-	}
+func (r *Router) apiCheckData() {
+	r.App.Post("/api/v2/check/", func(c *fiber.Ctx) error {
+		c.Accepts("Application/json") // "Application/json"
+		respB := api.Data{}
 
-	return c.SendString("Something went wrong...") // => ✋
-})*/
+		var dataRequest api.Data
 
-/*func apiUpdateIcmp(c *fiber.Ctx, db *mongo.Database) string {
-	c.Accepts("Application/json") // "Application/json"
-	respB := agent_models.ApiResponse{}
-	respB.Response = 200
-
-	var data agent_models.ApiPushData
-	err := json.Unmarshal(c.Body(), &data)
-	if err != nil {
-		log.Errorf("2 %s", err)
-		respB.Response = 500
-	}
-
-	agentId, hash, b, err := verifyAgentHash(data.Pin, data.Hash, db)
-	if err != nil {
-		log.Errorf("0 %s", err)
-		respB.Response = 401
-	}
-
-	if hash != "" && b {
-		icmpD, _ := json.Marshal(data.Data)
+		err := json.Unmarshal(c.Body(), dataRequest)
 		if err != nil {
-			log.Errorf("1 %s", err)
-			respB.Response = 500
+			respB.Error = "500"
 		}
 
-		var data2 []agent_models.IcmpTarget
-		err := json.Unmarshal(icmpD, &data2)
-		if err != nil {
-			log.Errorf("2 %s", err)
-			respB.Response = 500
+		if dataRequest.ID != "" && dataRequest.PIN != "" && len(dataRequest.Checks) > 0 {
+			hexId, err := primitive.ObjectIDFromHex(dataRequest.ID)
+			if err != nil {
+				respB.Error = "500"
+			}
+
+			for _, cD := range dataRequest.Checks {
+				checkId, err := primitive.ObjectIDFromHex(cD.ID)
+				if err != nil {
+					respB.Error = ""
+				}
+
+				data := handler.CheckData{
+					Target:    cD.Target,
+					ID:        primitive.NewObjectID(),
+					CheckID:   checkId,
+					AgentID:   hexId,
+					Triggered: cD.Triggered,
+					Result:    cD.Result,
+				}
+				data.Create(r.DB)
+			}
+		} else {
+			respB.Error = "500"
 		}
 
-		var agent, _ = getAgent(agentId, db)
+		jRespB, err := json.Marshal(respB)
 		if err != nil {
-			log.Errorf("5 %s", err)
-			respB.Response = 500
+			return c.SendString("Something went wrong...") // => ✋
 		}
-
-		_, err = insertIcmpData(agent, data2, data.Timestamp, db)
-		if err != nil {
-			respB.Response = 500
-		}
-	}
-
-	jRespB, err := json.Marshal(respB)
-	if err != nil {
-		log.Errorf("3 Unable to marshal API response.")
-	} else {
-		return string(jRespB) // => ✋ good
-	}
-
-	return ""
-}*/
+		return c.SendString(string(jRespB)) // => ✋ good
+	})
+}

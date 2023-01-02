@@ -199,10 +199,7 @@ func (s *Site) GetAgentSiteStats(db *mongo.Database) ([]*AgentStats, error) {
 	}
 	for _, a := range agents {
 		stats, err := a.GetAgentStats(db)
-		if err != nil {
-			agentStats = append(agentStats, stats)
-			return agentStats, err
-		}
+		log.Error(err)
 		agentStats = append(agentStats, stats)
 	}
 

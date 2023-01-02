@@ -8,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"netwatcher-control/models"
 )
 
 func LoginSession(c *fiber.Ctx, session *session.Store, db *mongo.Database, id primitive.ObjectID) (bool, error) {

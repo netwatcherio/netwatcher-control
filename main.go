@@ -7,6 +7,7 @@ import (
 	"github.com/gofiber/template/html"
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
+	"netwatcher-control/handler"
 	"os"
 	"os/signal"
 	"syscall"
@@ -31,10 +32,10 @@ func main() {
 	}
 
 	// connect to database
-	mongoUri = os.Getenv("MONGO_URI")
+	handler.MongoUri = os.Getenv("MONGO_URI")
 
-	var mongoData *MongoDatastore
-	mongoData = NewDatastore(os.Getenv("MAIN_DB"), log.New())
+	var mongoData *handler.MongoDatastore
+	mongoData = handler.NewDatastore(os.Getenv("MAIN_DB"), log.New())
 
 	// Signal Termination if using CLI
 	signals := make(chan os.Signal, 1)
@@ -49,7 +50,7 @@ func main() {
 
 	// Initialize custom config
 	sessionStore := mongodb.New(mongodb.Config{
-		ConnectionURI: mongoUri,
+		ConnectionURI: handler.MongoUri,
 		Collection:    os.Getenv("SESSIONS_COLLECTION"),
 		Database:      os.Getenv("SESSIONS_DB"),
 		Reset:         false,
@@ -84,8 +85,8 @@ func main() {
 	//createAgent(mongoData.db)
 	//createSite(mongoData.db)
 
-	LoadApiRoutes(app, store, mongoData.db)
-	LoadFrontendRoutes(app, store, mongoData.db)
+	handler.LoadApiRoutes(app, store, mongoData.Db)
+	handler.LoadFrontendRoutes(app, store, mongoData.Db)
 
 	// Listen website
 	app.Listen(os.Getenv("LISTEN"))

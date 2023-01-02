@@ -110,4 +110,99 @@ func (s *Site) AddMember(id primitive.ObjectID, role int, db *mongo.Database) (b
 	return true, nil
 }
 
+func (s *Site) GetAgents(db *mongo.Database) ([]*Agent, error) {
+	// if hash is blank, search for pin matching with blank hash
+	// if none exist, return error
+	// if match, return new agent, and new hash, then let another function update the hash?
+	// if hash is included, search both, and return nil for hash, and false for new if verified
+	// if hash is included and none match, return err
+	var filter = bson.D{{"site", s.ID}}
+
+	cursor, err := db.Collection("agents").Find(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+	var results []bson.D
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		return nil, err
+	}
+
+	//fmt.Println(results)
+
+	if len(results) == 0 {
+		return nil, errors.New("no agents match when using id")
+	}
+
+	var agent []*Agent
+	for i := range results {
+		doc, err := bson.Marshal(&results[i])
+		if err != nil {
+			log.Errorf("1 %s", err)
+			return nil, err
+		}
+		var a *Agent
+		err = bson.Unmarshal(doc, &a)
+		if err != nil {
+			log.Errorf("2 %s", err)
+			return nil, err
+		}
+
+		agent = append(agent, a)
+	}
+
+	return agent, nil
+}
+
+func (s *Site) AgentCount(db *mongo.Database) (int, error) {
+	var filter = bson.D{{"site", s.ID}}
+
+	count, err := db.Collection("agents").CountDocuments(context.TODO(), filter)
+	if err != nil {
+		return 0, err
+	}
+
+	return int(count), nil
+}
+
+func (s *Site) Get(db *mongo.Database) error {
+	var filter = bson.D{{"_id", s.ID}}
+
+	cursor, err := db.Collection("sites").Find(context.TODO(), filter)
+	if err != nil {
+		return err
+	}
+	var results []bson.D
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		return err
+	}
+
+	//fmt.Println(results)
+
+	if len(results) > 1 {
+		return errors.New("multiple sites match when using id")
+	}
+
+	if len(results) == 0 {
+		return errors.New("no sites match when using id")
+	}
+
+	doc, err := bson.Marshal(&results[0])
+	if err != nil {
+		log.Errorf("1 %s", err)
+		return err
+	}
+
+	var site *Site
+	err = bson.Unmarshal(doc, &site)
+	if err != nil {
+		log.Errorf("2 %s", err)
+		return err
+	}
+
+	s.Name = site.Name
+	s.Members = site.Members
+
+	return nil
+}
+
 // todo handle if site already exists, or already has the member in it

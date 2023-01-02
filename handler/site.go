@@ -1,16 +1,6 @@
 package handler
 
-import (
-	"context"
-	"errors"
-	"fmt"
-	log "github.com/sirupsen/logrus"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-)
-
-func createSite(c *mongo.Database) (bool, error) {
+/*func createSite(c *mongo.Database) (bool, error) {
 	var siteD = models.Site{
 		ID:      primitive.NewObjectID(),
 		Name:    "Test Site",
@@ -79,4 +69,4 @@ func getSite(id primitive.ObjectID, db *mongo.Database) (*models.Site, error) {
 	}
 
 	return site, nil
-}
+}*/

@@ -6,10 +6,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 	"netwatcher-control/handler"
-	"netwatcher-control/models"
 )
 
-func validateUser(r *Router, c *fiber.Ctx) (*models.User, error) {
+func validateUser(r *Router, c *fiber.Ctx) (*handler.User, error) {
 	// Render index within layouts/main
 	b, _ := handler.ValidateSession(c, r.Session, r.DB)
 	if !b {
@@ -42,7 +41,7 @@ func (r *Router) authRegister() {
 		// todo recevied body is in url format, need to convert to new struct??
 		//
 
-		registerUser := new(models.RegisterUser)
+		registerUser := new(handler.RegisterUser)
 		if err := c.BodyParser(registerUser); err != nil {
 			log.Warnf("%s", err)
 			return err
@@ -59,7 +58,7 @@ func (r *Router) authRegister() {
 			return c.Redirect("/auth/login")
 		}
 
-		user := models.User{
+		user := handler.User{
 			ID:        primitive.NewObjectID(),
 			Email:     registerUser.Email,
 			FirstName: registerUser.FirstName,
@@ -98,13 +97,13 @@ func (r *Router) authLogin() {
 		// todo recevied body is in url format, need to convert to new struct??
 		//
 
-		loginUser := new(models.LoginUser)
+		loginUser := new(handler.LoginUser)
 		if err := c.BodyParser(loginUser); err != nil {
 			log.Warnf("4 %s", err)
 			return err
 		}
 
-		user := models.User{Email: loginUser.Email}
+		user := handler.User{Email: loginUser.Email}
 
 		// get user from email
 		usr, err2 := user.GetUserFromEmail(r.DB)

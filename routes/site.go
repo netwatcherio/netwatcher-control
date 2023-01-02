@@ -7,7 +7,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"html"
 	"netwatcher-control/handler"
-	"netwatcher-control/models"
 )
 
 // TODO authenticate & verify that the user is infact apart of the site etc.
@@ -28,7 +27,7 @@ func (r *Router) siteAddMember() {
 			return c.Redirect("/home")
 		}
 
-		site := models.Site{ID: objId}
+		site := handler.Site{ID: objId}
 		err = site.Get(r.DB)
 		if err != nil {
 			log.Error(err)
@@ -81,7 +80,7 @@ func (r *Router) siteAddMember() {
 			return c.Redirect("/home")
 		}
 
-		site := models.Site{ID: objId}
+		site := handler.Site{ID: objId}
 		err = site.Get(r.DB)
 		if err != nil {
 			log.Error(err)
@@ -95,7 +94,7 @@ func (r *Router) siteAddMember() {
 
 		user.Password = ""
 
-		newMember := new(models.AddSiteMember)
+		newMember := new(handler.AddSiteMember)
 		if err := c.BodyParser(newMember); err != nil {
 			//todo
 			//return err
@@ -108,7 +107,7 @@ func (r *Router) siteAddMember() {
 			return c.Redirect("/site/" + site.ID.Hex() + "/members")
 		}
 
-		var usrTmp = models.User{Email: newMember.Email}
+		var usrTmp = handler.User{Email: newMember.Email}
 
 		usr, err := usrTmp.GetUserFromEmail(r.DB)
 		if err != nil {
@@ -159,7 +158,7 @@ func (r *Router) siteMembers() {
 			return c.Redirect("/home")
 		}
 
-		site := models.Site{ID: objId}
+		site := handler.Site{ID: objId}
 		err = site.Get(r.DB)
 		if err != nil {
 			log.Error(err)
@@ -173,14 +172,14 @@ func (r *Router) siteMembers() {
 
 		user.Password = ""
 
-		var siteMembers []models.SiteMember
+		var siteMembers []handler.SiteMember
 		for _, mem := range site.Members {
 			siteMembers = append(siteMembers, mem)
 		}
 
-		var siteUsers []*models.User
+		var siteUsers []*handler.User
 		for _, usr := range siteMembers {
-			c2 := &models.User{ID: usr.User}
+			c2 := &handler.User{ID: usr.User}
 			u, err := c2.GetUserFromID(r.DB)
 			if err != nil {
 				log.Errorf("%s %s", "0 Error processing users in site id", site.ID.Hex())
@@ -249,7 +248,7 @@ func (r *Router) siteNew() {
 			return err2
 		}
 
-		site := new(models.Site)
+		site := new(handler.Site)
 		if err := c.BodyParser(site); err != nil {
 			log.Warnf("4 %s", err)
 			return err
@@ -285,7 +284,7 @@ func (r *Router) site() {
 			return c.Redirect("/home")
 		}
 
-		site := models.Site{ID: objId}
+		site := handler.Site{ID: objId}
 		err = site.Get(r.DB)
 		if err != nil {
 			log.Error(err)
@@ -342,12 +341,12 @@ func (r *Router) sites() {
 		}
 
 		var sitesList struct {
-			Sites          []*models.Site   `json:"sites"`
+			Sites          []*handler.Site  `json:"sites"`
 			AgentCountInfo []AgentCountInfo `json:"agentCountInfo"`
 		}
 
 		for _, sid := range user.Sites {
-			site := models.Site{ID: sid}
+			site := handler.Site{ID: sid}
 			err := site.Get(r.DB)
 			if err != nil {
 				log.Error(err)

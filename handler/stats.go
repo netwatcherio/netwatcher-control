@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/netwatcherio/netwatcher-agent/checks"
 	"go.mongodb.org/mongo-driver/mongo"
-	"netwatcher-control/models"
 )
 
 /*"agents":           html.UnescapeString(string(marshal)),
@@ -26,11 +25,11 @@ type AgentStats struct {
 	SpeedTestPending bool
 }
 
-func GetAgentStats(agent models.Agent, db *mongo.Database) (*AgentStats, error) {
+func GetAgentStats(agent Agent, db *mongo.Database) (*AgentStats, error) {
 	var stats *AgentStats
 
 	// get the latest net stats
-	agentCheck := models.AgentCheck{AgentID: agent.ID, Type: models.CT_NetInfo}
+	agentCheck := AgentCheck{AgentID: agent.ID, Type: CT_NetInfo}
 	get, err := agentCheck.GetData(1, true, nil, nil, db)
 	if err != nil {
 		return nil, err
@@ -52,7 +51,7 @@ func GetAgentStats(agent models.Agent, db *mongo.Database) (*AgentStats, error) 
 	// todo check the agent check itself to see if the speedtest is pending, else check and add the speedtest stats
 
 	// get the latest net stats
-	agentCheck = models.AgentCheck{AgentID: agent.ID, Type: models.CT_SpeedTest}
+	agentCheck = AgentCheck{AgentID: agent.ID, Type: CT_SpeedTest}
 	get, err = agentCheck.GetData(1, true, nil, nil, db)
 	if err != nil {
 		return nil, err

@@ -8,7 +8,6 @@ import (
 	"html"
 	"math"
 	"netwatcher-control/handler"
-	"netwatcher-control/models"
 	_ "strings"
 )
 
@@ -36,14 +35,14 @@ func (r *Router) agent() {
 			return c.RedirectBack("/home")
 		}
 
-		agent := models.Agent{ID: objId}
+		agent := handler.Agent{ID: objId}
 		err = agent.Get(r.DB)
 		if err != nil {
 			log.Error(err)
 			return c.Redirect("/agents")
 		}
 
-		site := models.Site{ID: objId}
+		site := handler.Site{ID: objId}
 		err = site.Get(r.DB)
 		if err != nil {
 			log.Error(err)
@@ -110,14 +109,14 @@ func (r *Router) agents() {
 			return c.Redirect("/home")
 		}
 
-		site := models.Site{ID: objId}
+		site := handler.Site{ID: objId}
 		err = site.Get(r.DB)
 		if err != nil {
 			log.Error(err)
 			return c.Redirect("/home")
 		}
 
-		/*var agentStatList models.AgentStatsList
+		/*var agentStatList AgentStatsList
 
 		stats, err := getAgentStatsForSite(objId, db)
 		if err != nil {
@@ -185,7 +184,7 @@ func (r *Router) agentNew() {
 			return c.Redirect("/home")
 		}
 
-		site := models.Site{ID: objId}
+		site := handler.Site{ID: objId}
 		err = site.Get(r.DB)
 		if err != nil {
 			log.Error(err)
@@ -223,14 +222,14 @@ func (r *Router) agentNew() {
 			return c.Redirect("/agents")
 		}
 
-		site := models.Site{ID: objId}
+		site := handler.Site{ID: objId}
 		err = site.Get(r.DB)
 		if err != nil {
 			log.Error(err)
 			return c.Redirect("/home")
 		}
 
-		cAgent := new(models.Agent)
+		cAgent := new(handler.Agent)
 		if err := c.BodyParser(cAgent); err != nil {
 			log.Warnf("4 %s", err)
 			return err
@@ -273,14 +272,14 @@ func (r *Router) agentInstall() {
 			return c.Redirect("/home")
 		}
 
-		agent := models.Agent{ID: objId}
+		agent := handler.Agent{ID: objId}
 		err = agent.Get(r.DB)
 		if err != nil {
 			log.Error(err)
 			return c.Redirect("/agents")
 		}
 
-		site := models.Site{ID: objId}
+		site := handler.Site{ID: objId}
 		err = site.Get(r.DB)
 		if err != nil {
 			log.Error(err)

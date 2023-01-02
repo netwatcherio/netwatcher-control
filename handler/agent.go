@@ -1,4 +1,4 @@
-package models
+package handler
 
 import (
 	"context"
@@ -8,7 +8,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"netwatcher-control/handler"
 	"time"
 )
 
@@ -32,7 +31,7 @@ type Agent struct {
 
 func (a *Agent) Create(db *mongo.Database) error {
 	// todo handle to check if agent id is set and all that...
-	a.Pin = handler.GeneratePin(9)
+	a.Pin = GeneratePin(9)
 	a.ID = primitive.NewObjectID()
 	a.Initialized = false
 

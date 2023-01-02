@@ -5,7 +5,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"netwatcher-control/handler"
-	"netwatcher-control/models"
 )
 
 // TODO authenticate & verify that the user is infact apart of the site etc.
@@ -32,14 +31,14 @@ func (r *Router) check() {
 			return c.RedirectBack("/home")
 		}
 
-		agent := models.Agent{ID: objId}
+		agent := handler.Agent{ID: objId}
 		err = agent.Get(r.DB)
 		if err != nil {
 			log.Error(err)
 			return c.Redirect("/agents")
 		}
 
-		site := models.Site{ID: objId}
+		site := handler.Site{ID: objId}
 		err = site.Get(r.DB)
 		if err != nil {
 			log.Error(err)

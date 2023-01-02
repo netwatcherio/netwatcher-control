@@ -163,7 +163,15 @@ func (ac *AgentCheck) Get(db *mongo.Database) error {
 		return err
 	}
 
-	ac = agentCheck
+	ac.AgentID = agentCheck.AgentID
+	ac.Type = agentCheck.Type
+	ac.Duration = agentCheck.Duration
+	ac.Server = agentCheck.Server
+	ac.Triggered = agentCheck.Triggered
+	ac.Count = agentCheck.Count
+	ac.Pending = agentCheck.Pending
+	ac.Target = agentCheck.Target
+
 	return nil
 }
 

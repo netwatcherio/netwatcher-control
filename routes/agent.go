@@ -54,7 +54,7 @@ func (r *Router) agent() {
 			log.Errorf("13 %s", err)
 		}
 
-		getAgentStats, err := handler.GetAgentStats(agent, r.DB)
+		getAgentStats, err := agent.GetAgentStats(r.DB)
 		if err != nil {
 			return err
 		}
@@ -89,17 +89,10 @@ func (r *Router) agent() {
 
 func (r *Router) agents() {
 	r.App.Get("/agents/:siteid?", func(c *fiber.Ctx) error {
-		b, _ := handler.ValidateSession(c, r.Session, r.DB)
-		if !b {
-			return c.Redirect("/auth/login")
-		}
-
-		user, err := handler.GetUserFromSession(c, r.Session, r.DB)
+		user, err := validateUser(r, c)
 		if err != nil {
-			return c.Redirect("/auth")
+			return err
 		}
-
-		user.Password = ""
 
 		if c.Params("siteid") == "" {
 			return c.Redirect("/home")
@@ -116,41 +109,20 @@ func (r *Router) agents() {
 			return c.Redirect("/home")
 		}
 
-		/*var agentStatList AgentStatsList
-
-		stats, err := getAgentStatsForSite(objId, db)
+		agentStats, err := site.GetAgentSiteStats(r.DB)
 		if err != nil {
-			//todo handle error
-			//return err
-		}
-		agentStatList.List = stats
-
-		var hasAgents = true
-		if len(agentStatList.List) == 0 {
-			hasAgents = false
-		}*/
-
-		/*doc, err := json.Marshal(agentStatList)
-		if err != nil {
-			log.Errorf("1 %s", err)
-		}*/
-
-		/*agents, err := getAgents(objId, db)
-		if err != nil {
-			// todo handle error
-			//return err
+			log.Error(err)
 		}
 
-		doc, err := json.Marshal(agents)
+		marshalAS, err := json.Marshal(agentStats)
 		if err != nil {
-			log.Errorf("1 %s", err)
+			return err
 		}
 
-		var hasAgentsBool = true
-		if len(agents) == 0 {
-			hasAgentsBool = false
-			log.Warnf("%s", "site does NOT have agents")
-		}*/
+		hasAgents := false
+		if len(agentStats) > 0 {
+			hasAgents = true
+		}
 
 		// Render index within layouts/main
 		// TODO process if they are logged in or not, otherwise send them to registration/login
@@ -162,9 +134,9 @@ func (r *Router) agents() {
 			"siteName":     site.Name,
 			"firstName":    user.FirstName,
 			"lastName":     user.LastName,
-			"email":        user.Email},
-			/*"agents":       html.UnescapeString(string(doc)),
-			"hasAgents":    hasAgents},*/
+			"email":        user.Email,
+			"agents":       html.UnescapeString(string(marshalAS)),
+			"hasAgents":    hasAgents},
 			"layouts/main")
 	})
 }

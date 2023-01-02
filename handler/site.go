@@ -90,11 +90,6 @@ func (s *Site) AddMember(id primitive.ObjectID, role int, db *mongo.Database) (b
 	j, _ := json.Marshal(s.Members)
 	log.Warnf("%s", j)
 
-	/*memB, err := bson.Marshal(s.Members)
-	if err != nil {
-		log.Errorf("69 %s", err)
-	}*/
-
 	sites := db.Collection("sites")
 	_, err := sites.UpdateOne(
 		context.TODO(),
@@ -111,11 +106,6 @@ func (s *Site) AddMember(id primitive.ObjectID, role int, db *mongo.Database) (b
 }
 
 func (s *Site) GetAgents(db *mongo.Database) ([]*Agent, error) {
-	// if hash is blank, search for pin matching with blank hash
-	// if none exist, return error
-	// if match, return new agent, and new hash, then let another function update the hash?
-	// if hash is included, search both, and return nil for hash, and false for new if verified
-	// if hash is included and none match, return err
 	var filter = bson.D{{"site", s.ID}}
 
 	cursor, err := db.Collection("agents").Find(context.TODO(), filter)
@@ -127,8 +117,6 @@ func (s *Site) GetAgents(db *mongo.Database) ([]*Agent, error) {
 		return nil, err
 	}
 
-	//fmt.Println(results)
-
 	if len(results) == 0 {
 		return nil, errors.New("no agents match when using id")
 	}
@@ -137,13 +125,11 @@ func (s *Site) GetAgents(db *mongo.Database) ([]*Agent, error) {
 	for i := range results {
 		doc, err := bson.Marshal(&results[i])
 		if err != nil {
-			log.Errorf("1 %s", err)
 			return nil, err
 		}
 		var a *Agent
 		err = bson.Unmarshal(doc, &a)
 		if err != nil {
-			log.Errorf("2 %s", err)
 			return nil, err
 		}
 
@@ -188,20 +174,39 @@ func (s *Site) Get(db *mongo.Database) error {
 
 	doc, err := bson.Marshal(&results[0])
 	if err != nil {
-		log.Errorf("1 %s", err)
 		return err
 	}
 
-	var site *Site
+	var site Site
 	err = bson.Unmarshal(doc, &site)
 	if err != nil {
-		log.Errorf("2 %s", err)
 		return err
 	}
 
-	s = site
+	s.Name = site.Name
+	s.Members = site.Members
+	s.CreateTimestamp = site.CreateTimestamp
 
 	return nil
+}
+
+func (s *Site) GetAgentSiteStats(db *mongo.Database) ([]*AgentStats, error) {
+	var agentStats []*AgentStats
+
+	agents, err := s.GetAgents(db)
+	if err != nil {
+		return nil, err
+	}
+	for _, a := range agents {
+		stats, err := a.GetAgentStats(db)
+		if err != nil {
+			agentStats = append(agentStats, stats)
+			return agentStats, err
+		}
+		agentStats = append(agentStats, stats)
+	}
+
+	return agentStats, nil
 }
 
 // todo handle if site already exists, or already has the member in it

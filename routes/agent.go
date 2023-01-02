@@ -224,17 +224,10 @@ func (r *Router) agentNew() {
 
 func (r *Router) agentInstall() {
 	r.App.Get("/agent/install/:agentid", func(c *fiber.Ctx) error {
-		b, _ := handler.ValidateSession(c, r.Session, r.DB)
-		if !b {
-			return c.Redirect("/auth/login")
-		}
-
-		user, err := handler.GetUserFromSession(c, r.Session, r.DB)
+		user, err := validateUser(r, c)
 		if err != nil {
-			return c.Redirect("/auth")
+			return err
 		}
-
-		user.Password = ""
 
 		if c.Params("agentid") == "" {
 			return c.Redirect("/home")
@@ -251,7 +244,7 @@ func (r *Router) agentInstall() {
 			return c.Redirect("/agents")
 		}
 
-		site := handler.Site{ID: objId}
+		site := handler.Site{ID: agent.Site}
 		err = site.Get(r.DB)
 		if err != nil {
 			log.Error(err)

@@ -42,7 +42,7 @@ func (r *Router) agent() {
 			return c.Redirect("/agents")
 		}
 
-		site := handler.Site{ID: objId}
+		site := handler.Site{ID: agent.Site}
 		err = site.Get(r.DB)
 		if err != nil {
 			log.Error(err)
@@ -56,20 +56,16 @@ func (r *Router) agent() {
 
 		getAgentStats, err := agent.GetAgentStats(r.DB)
 		if err != nil {
-			return err
+			log.Error(err)
 		}
 
 		// TODO process if they are logged in or not, otherwise send them to registration/login
 		return c.Render("agent", fiber.Map{
-			"title":        agent.Name,
-			"siteSelected": true,
-			"siteName":     site.Name,
-			"siteId":       site.ID.Hex(),
-			"agents":       html.UnescapeString(string(marshal)),
-			/*"mtr":              html.UnescapeString(string(marshalMtr)),
-			"speed":            html.UnescapeString(string(marshalSpeed)),*/
-			/*"online":           stats.Online,*/
-			/*"agentStats":       html.UnescapeString(string(getAgentStats)),*/
+			"title":            agent.Name,
+			"siteSelected":     true,
+			"siteName":         site.Name,
+			"siteId":           site.ID.Hex(),
+			"agents":           html.UnescapeString(string(marshal)),
 			"publicAddress":    getAgentStats.NetInfo.PublicAddress,
 			"localAddress":     getAgentStats.NetInfo.LocalAddress,
 			"defaultGateway":   getAgentStats.NetInfo.DefaultGateway,
@@ -81,7 +77,6 @@ func (r *Router) agent() {
 			"firstName": user.FirstName,
 			"lastName":  user.LastName,
 			"email":     user.Email,
-			//"icmpMetrics":  html.UnescapeString(string(j)),
 		},
 			"layouts/main")
 	})

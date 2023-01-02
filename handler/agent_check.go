@@ -175,4 +175,45 @@ func (ac *AgentCheck) Get(db *mongo.Database) error {
 	return nil
 }
 
+// GetAll get all checks based on id, and &/or type
+func (ac *AgentCheck) GetAll(db *mongo.Database) ([]*AgentCheck, error) {
+	var filter = bson.D{{"agent", ac.ID}}
+	if ac.Type != "" {
+		filter = bson.D{{"agent", ac.ID}, {"type", ac.Type}}
+	}
+
+	cursor, err := db.Collection("agent_check").Find(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+	var results []bson.D
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		return nil, err
+	}
+
+	//fmt.Println(results)
+
+	if len(results) > 1 {
+		return nil, errors.New("multiple sites match when using id")
+	}
+
+	if len(results) == 0 {
+		return nil, errors.New("no sites match when using id")
+	}
+
+	doc, err := bson.Marshal(&results)
+	if err != nil {
+		log.Errorf("1 %s", err)
+		return nil, err
+	}
+
+	var agentCheck []*AgentCheck
+	err = bson.Unmarshal(doc, &agentCheck)
+	if err != nil {
+		log.Errorf("2 %s", err)
+		return nil, err
+	}
+	return agentCheck, nil
+}
+
 //todo deleting checks

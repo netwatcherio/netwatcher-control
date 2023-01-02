@@ -107,7 +107,7 @@ func (u *User) UserExistsEmail(db *mongo.Database) (bool, error) {
 
 // UserExistsID check based on wether a user with the email in user exists
 func (u *User) UserExistsID(db *mongo.Database) (bool, error) {
-	var filter = bson.D{{"id", u.ID}}
+	var filter = bson.D{{"_id", u.ID}}
 
 	cursor, err := db.Collection("users").Find(context.TODO(), filter)
 	if err != nil {

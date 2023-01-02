@@ -26,6 +26,7 @@ type Agent struct {
 }
 
 type AgentStats struct {
+	// not used in api / db
 	AgentID          primitive.ObjectID `json:"agent_id"`
 	Name             string             `json:"name"`
 	Heartbeat        time.Time          `json:"heartbeat"`
@@ -133,8 +134,6 @@ func (a *Agent) Get(db *mongo.Database) error {
 		return err
 	}
 
-	//fmt.Println(results)
-
 	if len(results) > 1 {
 		return errors.New("multiple agents match when getting using id") // edge case??
 	}
@@ -167,12 +166,67 @@ func (a *Agent) Get(db *mongo.Database) error {
 	return nil
 }
 
-func (a *Agent) UpdateHeartBeat(db *mongo.Database) error {
+func (a *Agent) Verify(db *mongo.Database) error {
+	var filter = bson.D{{"pin", a.Pin}, {"initialized", false}}
+	if &a.ID == nil {
+		filter = bson.D{{"pin", a.Pin}, {"_id", a.ID}}
+	}
+
+	cursor, err := db.Collection("agents").Find(context.TODO(), filter)
+	if err != nil {
+		return err
+	}
+	var results []bson.D
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		return err
+	}
+
+	if len(results) > 1 {
+		return errors.New("multiple agents match")
+	}
+
+	if len(results) == 0 {
+		return errors.New("no agents match")
+	}
+
+	doc, err := bson.Marshal(&results[0])
+	if err != nil {
+		log.Errorf("1 %s", err)
+		return err
+	}
+
+	var agent Agent
+	err = bson.Unmarshal(doc, &agent)
+	if err != nil {
+		log.Errorf("2 %s", err)
+		return err
+	}
+	a.Latitude = agent.Latitude
+	a.Longitude = agent.Longitude
+	a.Pin = agent.Pin
+	a.Name = agent.Name
+	a.Site = agent.Site
+	a.Heartbeat = agent.Heartbeat
+	a.Initialized = agent.Initialized
+
+	err = a.Update(db)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (a *Agent) Update(db *mongo.Database) error {
 	var filter = bson.D{{"_id", a.ID}}
 
-	update := bson.D{{"$set", bson.D{{"heartbeat", time.Now()}}}}
+	marshal, err := bson.Marshal(a)
+	if err != nil {
+		return err
+	}
 
-	_, err := db.Collection("agents").UpdateOne(context.TODO(), filter, update)
+	update := bson.D{{"$set", marshal}}
+
+	_, err = db.Collection("agents").UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		return err
 	}

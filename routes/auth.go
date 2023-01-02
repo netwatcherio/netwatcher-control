@@ -9,6 +9,22 @@ import (
 	"netwatcher-control/models"
 )
 
+func validateUser(r *Router, c *fiber.Ctx) (*models.User, error) {
+	// Render index within layouts/main
+	b, _ := handler.ValidateSession(c, r.Session, r.DB)
+	if !b {
+		return nil, c.Redirect("/auth/login")
+	}
+
+	user, err := handler.GetUserFromSession(c, r.Session, r.DB)
+	if err != nil {
+		return nil, c.Redirect("/auth")
+	}
+	user.Password = ""
+
+	return user, nil
+}
+
 func (r *Router) authRegister() {
 	r.App.Get("/auth/register", func(c *fiber.Ctx) error {
 		b, _ := handler.ValidateSession(c, r.Session, r.DB)

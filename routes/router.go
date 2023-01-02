@@ -15,21 +15,17 @@ type Router struct {
 func (r *Router) Init() {
 	r.utils()
 
+	r.agent()
+	r.agents()
+	r.agentNew()
+	r.agentInstall()
+
+	r.alerts()
+
 	// Load Auth
 	r.auth()
 	r.authLogin()
 	r.authRegister()
 
 	// Load
-}
-
-func LoadFrontendRoutes(app *fiber.App, session *session.Store, db *mongo.Database) {
-
-	// home page
-
-	// dashboard page
-
-	// authentication
-
-	// backend admin TODO
 }

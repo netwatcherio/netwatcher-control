@@ -8,6 +8,7 @@ import (
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
 	"netwatcher-control/handler"
+	"netwatcher-control/routes"
 	"os"
 	"os/signal"
 	"syscall"
@@ -85,8 +86,13 @@ func main() {
 	//createAgent(mongoData.db)
 	//createSite(mongoData.db)
 
-	handler.LoadApiRoutes(app, store, mongoData.Db)
-	handler.LoadFrontendRoutes(app, store, mongoData.Db)
+	router := routes.Router{
+		App:     app,
+		Session: store,
+		DB:      mongoData.Db,
+	}
+
+	router.Init()
 
 	// Listen website
 	app.Listen(os.Getenv("LISTEN"))

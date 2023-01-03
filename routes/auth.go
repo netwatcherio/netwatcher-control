@@ -17,7 +17,7 @@ func validateUser(r *Router, c *fiber.Ctx) (*handler.User, error) {
 
 	user, err := handler.GetUserFromSession(c, r.Session, r.DB)
 	if err != nil {
-		return nil, c.Redirect("/auth")
+		return nil, c.Redirect("/logout")
 	}
 	user.Password = ""
 

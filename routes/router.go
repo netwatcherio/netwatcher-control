@@ -20,6 +20,9 @@ func (r *Router) Init() {
 	r.apiDataPush()
 	log.Info("API")
 
+	r.checkNew()
+	log.Info("CHECKS")
+
 	r.utils()
 	log.Info("UTILS")
 

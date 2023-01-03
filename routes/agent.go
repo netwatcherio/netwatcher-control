@@ -15,17 +15,10 @@ import (
 
 func (r *Router) agent() {
 	r.App.Get("/agent/:agent?", func(c *fiber.Ctx) error {
-		b, _ := handler.ValidateSession(c, r.Session, r.DB)
-		if !b {
-			return c.Redirect("/auth/login")
-		}
-
-		user, err := handler.GetUserFromSession(c, r.Session, r.DB)
+		user, err := validateUser(r, c)
 		if err != nil {
-			return c.Redirect("/auth")
+			return err
 		}
-
-		user.Password = ""
 
 		if c.Params("agent") == "" {
 			return c.RedirectBack("/home")
@@ -86,7 +79,7 @@ func (r *Router) agents() {
 	r.App.Get("/agents/:siteid?", func(c *fiber.Ctx) error {
 		user, err := validateUser(r, c)
 		if err != nil {
-			return err
+			return c.Redirect("/auth")
 		}
 
 		if c.Params("siteid") == "" {

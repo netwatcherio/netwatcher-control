@@ -25,17 +25,9 @@
                 align-items-center
                 justify-content-end
               ">
-      <a href="/icmp/{{.agentId}}" class="btn btn-info d-flex align-items-center ms-2">
-        <i class="fa fa-globe"></i>
-          view icmp
-      </a>
-      <a href="/iperf/{{.agentId}}" class="btn btn-info d-flex align-items-center ms-2">
-        <i class="mdi mdi-lan-pending"></i>
-          iperf
-      </a>
-      <a href="/iperf/{{.agentId}}" class="btn btn-info d-flex align-items-center ms-2">
-        <i class="bi-file-bar-graph"></i>
-          host stats
+      <a href="/check/new/{{.agentId}}" class="btn btn-info d-flex align-items-center ms-2">
+        <i class="mdi mdi-plus-box-outline"></i>
+            create new check
       </a>
     </div>
 
@@ -190,7 +182,208 @@
     </div>
   </div>
 
+  <div class="
+              d-flex
+              border-bottom
+              title-part-padding
+              px-0
+              mb-3
+              align-items-center
+            ">
+    <div>
+      <h4 class="mb-0">Checks</h4>
+    </div>
+  </div>
+
   <div class="row">
+    <div class="col-lg-12">
+      <div class="error-body text-center">
+        <h1 class="error-title text-danger">no checks</h1>
+        <h3 class="text-error-subtitle">please create a new check</h3>
+        <!-- <p class="text-muted m-t-30 m-b-30">YOU SEEM TO BE TRYING TO FIND HIS WAY HOME</p>
+         <a href="/" class="btn btn-danger btn-rounded waves-effect waves-light m-b-40 text-white">Back to home</a>-->
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 col-lg-4 col-xl-3 d-flex align-items-stretch">
+      <div class="card w-100 overflow-hidden">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <h4 class="mb-0">speedtest</h4>
+          </div>
+          2023-01-02T16:28:15.182626-08:00
+          <div class="align-items-end">
+            <div class="d-flex align-items-center my-3">
+              <div class="border-end pe-3">
+                <h6 class="text-muted fw-normal">upload</h6>
+                <b>3.0 Kbps</b>
+              </div>
+              <div class="ms-3 border-end pe-3">
+                <h6 class="text-muted fw-normal">download</h6>
+                <b>2 Gbps</b>
+              </div>
+            </div>
+          </div>
+          {{if .speedtestPending}}
+          <button type="button" class="
+                          btn
+                          waves-effect waves-light
+                          btn-light-warning
+                          text-warning
+                          font-weight-medium
+                        ">
+            <i class="mdi mdi-lan-pending"></i>
+            already in queue
+          </button>
+          {{else}}
+          <a href="/speedtest/{{.agentId}}/run">
+            <button type="button" class="
+                          btn
+                          waves-effect waves-light
+                          btn-light-info
+                          text-info
+                          font-weight-medium
+                        ">
+              <i class="mdi mdi-speedometer"></i>
+              run speedtest
+            </button>
+          </a>
+          {{end}}
+        </div>
+        <div class="progress">
+          <div class="
+                      progress-bar progress-bar-striped
+                      bg-primary
+                      progress-bar-animated
+                    " style="width: 30%; height: 6px" role="progressbar">
+            <span class="sr-only">30% complete</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-4 col-xl-3 d-flex align-items-stretch">
+      <div class="card w-100 overflow-hidden">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <h4 class="mb-0">mtr</h4>
+            <div class="ms-auto">
+                      <span class="
+                          text-success
+                          fs-3
+                          font-weight-medium
+                          d-flex
+                          align-items-center
+                        ">( <i class="ri-arrow-down-s-fill"></i> 10% Down )</span>
+            </div>
+          </div>
+          <div class="d-flex align-items-center my-3">
+            <div class="ms-5 pe-3">
+              <h6 class="ms-3 text-muted fw-normal">target</h6>
+              <b>1.1.1.1</b>
+            </div>
+          </div>
+          <a href="/check/:checkid" class="btn btn-light-success text-success">edit</a>
+        </div>
+        <div class="progress">
+          <div class="
+                      progress-bar progress-bar-striped
+                      bg-success
+                      progress-bar-animated
+                    " style="width: 60%; height: 6px" role="progressbar">
+            <span class="sr-only">60% Complete</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-4 col-xl-3 d-flex align-items-stretch">
+      <div class="card w-100 overflow-hidden">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <h4 class="mb-0">Call/Contract Ratio</h4>
+            <div class="ms-auto">
+                      <span class="
+                          text-success
+                          fs-3
+                          font-weight-medium
+                          d-flex
+                          align-items-center
+                        ">( <i class="ri-arrow-down-s-fill"></i> 10% Down )</span>
+            </div>
+          </div>
+          <div class="d-flex align-items-center my-3">
+            <div class="border-end pe-3">
+              <h6 class="text-muted fw-normal">Yearly</h6>
+              <b>80.40%</b>
+            </div>
+            <div class="ms-3 border-end pe-3">
+              <h6 class="text-muted fw-normal">Montly</h6>
+              <b>15.40%</b>
+            </div>
+            <div class="ms-3">
+              <h6 class="text-muted fw-normal">Day</h6>
+              <b>5.50%</b>
+            </div>
+          </div>
+          <a href="javascript:void(0)" class="btn btn-light-warning text-warning">Learn More</a>
+        </div>
+        <div class="progress">
+          <div class="
+                      progress-bar progress-bar-striped
+                      bg-warning
+                      progress-bar-animated
+                    " style="width: 60%; height: 6px" role="progressbar">
+            <span class="sr-only">60% Complete</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-4 col-xl-3 d-flex align-items-stretch">
+      <div class="card w-100 overflow-hidden">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <h4 class="mb-0">Incoming Deals</h4>
+            <div class="ms-auto">
+                      <span class="
+                          text-danger
+                          fs-3
+                          font-weight-medium
+                          d-flex
+                          align-items-center
+                        ">( <i class="ri-arrow-down-s-fill"></i> 06% Down )</span>
+            </div>
+          </div>
+          <div class="d-flex align-items-center my-3">
+            <div class="border-end pe-3">
+              <h6 class="text-muted fw-normal">Yearly</h6>
+              <b>80.40%</b>
+            </div>
+            <div class="ms-3 border-end pe-3">
+              <h6 class="text-muted fw-normal">Montly</h6>
+              <b>15.40%</b>
+            </div>
+            <div class="ms-3">
+              <h6 class="text-muted fw-normal">Day</h6>
+              <b>5.50%</b>
+            </div>
+          </div>
+          <a href="javascript:void(0)" class="btn btn-light-danger text-danger">Learn More</a>
+        </div>
+        <div class="progress">
+          <div class="
+                      progress-bar progress-bar-striped
+                      bg-danger
+                      progress-bar-animated
+                    " style="width: 60%; height: 6px" role="progressbar">
+            <span class="sr-only">60% Complete</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--<div class="row">
     <div class="col-lg-4">
       <div class="card">
       <div class="card-body">
@@ -214,7 +407,7 @@
         </a>
         </div>
         <br>
-        <!--<div class="table-responsive">
+        &lt;!&ndash;<div class="table-responsive">
           <table class="table customize-table mb-0 v-middle text-nowrap" id="traceroutes">
             <thead class="table-light">
             <tr>
@@ -226,7 +419,7 @@
             <tbody>
             </tbody>
           </table>
-        </div>-->
+        </div>&ndash;&gt;
       </div>
       </div>
     </div>
@@ -285,8 +478,8 @@
   </div>
 
 
-  <!-- Row -->
-</div>
+  &lt;!&ndash; Row &ndash;&gt;
+</div>-->
 
 <script>
   let traceroutes = JSON.parse("{{.mtr}}")

@@ -17,6 +17,7 @@ func (r *Router) Init() {
 	log.Info("Loading routes for:")
 
 	r.apiGetConfig()
+	r.apiDataPush()
 	log.Info("API")
 
 	r.utils()

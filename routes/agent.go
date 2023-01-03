@@ -210,6 +210,13 @@ func (r *Router) agentNew() {
 			return c.Redirect("/agents")
 		}
 
+		check := handler.AgentCheck{AgentID: cAgent.ID}
+		check.Type = handler.CT_NetInfo
+		err = check.Create(r.DB)
+		if err != nil {
+			return err
+		}
+
 		// todo create default checks such as network info and that sort of thing
 
 		// todo handle error/success and return to home also display message for error if error

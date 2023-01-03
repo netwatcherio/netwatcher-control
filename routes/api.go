@@ -2,10 +2,12 @@ package routes
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/netwatcherio/netwatcher-agent/api"
 	"github.com/netwatcherio/netwatcher-agent/checks"
 	_ "github.com/netwatcherio/netwatcher-agent/checks"
+	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"netwatcher-control/handler"
 )
@@ -17,20 +19,20 @@ func (r *Router) apiGetConfig() {
 
 		var dataRequest api.Data
 
-		err := json.Unmarshal(c.Body(), dataRequest)
+		err := json.Unmarshal(c.Body(), &dataRequest)
 		if err != nil {
 			respB.Error = "500"
 		}
 
 		var agentSearch handler.Agent
-		if dataRequest.ID != "" && dataRequest.PIN != "" {
+		if dataRequest.ID != "000000000000000000000000" && dataRequest.PIN != "" {
 			agentSearch.Pin = dataRequest.PIN
 			hexId, err := primitive.ObjectIDFromHex(dataRequest.ID)
 			if err != nil {
 				respB.Error = "500"
 			}
 			agentSearch.ID = hexId
-		} else if dataRequest.ID == "" && dataRequest.PIN != "" {
+		} else if dataRequest.ID == "000000000000000000000000" && dataRequest.PIN != "" {
 			agentSearch.Pin = dataRequest.PIN
 			agentSearch.Initialized = false
 		} else {
@@ -45,15 +47,18 @@ func (r *Router) apiGetConfig() {
 
 			respB.ID = agentSearch.ID.Hex()
 			respB.PIN = agentSearch.Pin
-			respB.Checks = []checks.CheckData{}
 			//todo add checks to be processed
 
-			var agentCheck handler.AgentCheck
+			agentCheck := handler.AgentCheck{
+				AgentID: agentSearch.ID,
+			}
 
 			all, err := agentCheck.GetAll(r.DB)
 			if err != nil {
-				return err
+				respB.Error = "500"
 			}
+
+			var che []checks.CheckData
 
 			for _, ac := range all {
 				modifiedData := checks.CheckData{
@@ -65,8 +70,9 @@ func (r *Router) apiGetConfig() {
 					Server:   ac.Server,
 				}
 
-				respB.Checks = append(respB.Checks, modifiedData)
+				che = append(che, modifiedData)
 			}
+			respB.Checks = che
 		}
 
 		jRespB, err := json.Marshal(respB)
@@ -77,28 +83,31 @@ func (r *Router) apiGetConfig() {
 	})
 }
 
-func (r *Router) apiCheckData() {
-	r.App.Post("/api/v2/check/", func(c *fiber.Ctx) error {
+func (r *Router) apiDataPush() {
+	r.App.Post("/api/v2/agent/push", func(c *fiber.Ctx) error {
 		c.Accepts("Application/json") // "Application/json"
 		respB := api.Data{}
 
 		var dataRequest api.Data
 
-		err := json.Unmarshal(c.Body(), dataRequest)
+		fmt.Println(string(c.Body()))
+
+		err := json.Unmarshal(c.Body(), &dataRequest)
 		if err != nil {
-			respB.Error = "500"
+			respB.Error = "500 unable to read data"
+			log.Fatal(err)
 		}
 
-		if dataRequest.ID != "" && dataRequest.PIN != "" && len(dataRequest.Checks) > 0 {
+		if dataRequest.ID != "000000000000000000000000" && dataRequest.PIN != "" && len(dataRequest.Checks) > 0 {
 			hexId, err := primitive.ObjectIDFromHex(dataRequest.ID)
 			if err != nil {
-				respB.Error = "500"
+				respB.Error = "500 something went wrong, unable to compute object id"
 			}
 
 			for _, cD := range dataRequest.Checks {
 				checkId, err := primitive.ObjectIDFromHex(cD.ID)
 				if err != nil {
-					respB.Error = ""
+					respB.Error = "500 something went wrong, unable to compute object id"
 				}
 
 				data := handler.CheckData{
@@ -109,10 +118,13 @@ func (r *Router) apiCheckData() {
 					Triggered: cD.Triggered,
 					Result:    cD.Result,
 				}
-				data.Create(r.DB)
+				err = data.Create(r.DB)
+				if err != nil {
+					respB.Error = "500 unable to create check data"
+				}
 			}
 		} else {
-			respB.Error = "500"
+			respB.Error = "500 unable to verify auth"
 		}
 
 		jRespB, err := json.Marshal(respB)

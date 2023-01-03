@@ -168,8 +168,10 @@ func (a *Agent) Get(db *mongo.Database) error {
 
 func (a *Agent) Verify(db *mongo.Database) error {
 	var filter = bson.D{{"pin", a.Pin}, {"initialized", false}}
+	initialized := false
 	if &a.ID == nil {
 		filter = bson.D{{"pin", a.Pin}, {"_id", a.ID}}
+		initialized = true
 	}
 
 	cursor, err := db.Collection("agents").Find(context.TODO(), filter)
@@ -185,7 +187,7 @@ func (a *Agent) Verify(db *mongo.Database) error {
 		return errors.New("multiple agents match")
 	}
 
-	if len(results) == 0 {
+	if len(results) <= 0 {
 		return errors.New("no agents match")
 	}
 
@@ -201,13 +203,19 @@ func (a *Agent) Verify(db *mongo.Database) error {
 		log.Errorf("2 %s", err)
 		return err
 	}
+	a.ID = agent.ID
 	a.Latitude = agent.Latitude
 	a.Longitude = agent.Longitude
 	a.Pin = agent.Pin
 	a.Name = agent.Name
 	a.Site = agent.Site
 	a.Heartbeat = agent.Heartbeat
-	a.Initialized = agent.Initialized
+
+	if !initialized {
+		a.Initialized = true
+	} else {
+		a.Initialized = agent.Initialized
+	}
 
 	err = a.Update(db)
 	if err != nil {
@@ -219,12 +227,19 @@ func (a *Agent) Verify(db *mongo.Database) error {
 func (a *Agent) Update(db *mongo.Database) error {
 	var filter = bson.D{{"_id", a.ID}}
 
-	marshal, err := bson.Marshal(a)
+	marshal, err := bson.Marshal(&a)
 	if err != nil {
 		return err
 	}
 
-	update := bson.D{{"$set", marshal}}
+	var b *bson.D
+	err = bson.Unmarshal(marshal, &b)
+	if err != nil {
+		log.Errorf("error unmarhsalling agent data when creating: %s", err)
+		return err
+	}
+
+	update := bson.D{{"$set", b}}
 
 	_, err = db.Collection("agents").UpdateOne(context.TODO(), filter, update)
 	if err != nil {

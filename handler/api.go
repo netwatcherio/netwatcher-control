@@ -20,7 +20,7 @@ func (d *Data) GenerateCheckData(db *mongo.Database) error {
 	}
 
 	agentCheck := AgentCheck{AgentID: hexId}
-	err = agentCheck.Get(db)
+	_, err = agentCheck.Get(db)
 	if err != nil {
 		return err
 	}

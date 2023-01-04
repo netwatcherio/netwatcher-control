@@ -204,7 +204,7 @@ func (r *Router) agentNew() {
 		}
 
 		check := handler.AgentCheck{AgentID: cAgent.ID}
-		check.Type = handler.CT_NetInfo
+		check.Type = handler.CtNetinfo
 		err = check.Create(r.DB)
 		if err != nil {
 			return err

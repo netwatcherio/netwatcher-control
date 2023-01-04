@@ -10,7 +10,7 @@ import (
 // TODO authenticate & verify that the user is infact apart of the site etc.
 
 func (r *Router) check() {
-	r.App.Get("/traceroute/:mtrid?", func(c *fiber.Ctx) error {
+	r.App.Get("/check/:checkid?", func(c *fiber.Ctx) error {
 		user, err := validateUser(r, c)
 		if err != nil {
 			return c.Redirect("/auth")
@@ -125,13 +125,13 @@ func (r *Router) checkNew() {
 			"firstName":    user.FirstName,
 			"lastName":     user.LastName,
 			"email":        user.Email,
-			"siteId":       site.ID.Hex(),
+			"agentId":      agent.ID.Hex(),
 			"siteName":     site.Name,
 			"siteSelected": true,
 		},
 			"layouts/main")
 	})
-	r.App.Post("/agent/new/:siteid?", func(c *fiber.Ctx) error {
+	r.App.Post("/check/new/:agentid?", func(c *fiber.Ctx) error {
 		c.Accepts("application/x-www-form-urlencoded") // "Application/json"
 
 		// todo recevied body is in url format, need to convert to new struct??
@@ -142,45 +142,68 @@ func (r *Router) checkNew() {
 			return err
 		}
 
-		if c.Params("siteid") == "" {
+		if c.Params("agentid") == "" {
 			return c.Redirect("/agents")
 		}
-		objId, err := primitive.ObjectIDFromHex(c.Params("siteid"))
+		objId, err := primitive.ObjectIDFromHex(c.Params("agentid"))
 		if err != nil {
 			return c.Redirect("/agents")
 		}
 
-		site := handler.Site{ID: objId}
+		agent := handler.Agent{ID: objId}
+		err = agent.Get(r.DB)
+		if err != nil {
+			log.Error(err)
+			return c.Redirect("/home")
+		}
+
+		site := handler.Site{ID: agent.Site}
 		err = site.Get(r.DB)
 		if err != nil {
 			log.Error(err)
 			return c.Redirect("/home")
 		}
 
-		cAgent := new(handler.Agent)
-		if err := c.BodyParser(cAgent); err != nil {
+		cCheck := new(handler.CheckNewForm)
+		if err := c.BodyParser(cCheck); err != nil {
 			log.Warnf("4 %s", err)
 			return err
 		}
 
-		cAgent.Site = site.ID
+		var aC handler.AgentCheck
 
-		err = cAgent.Create(r.DB)
+		// todo validate target depending on check
+		// ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]):[0-9]+$
+
+		if cCheck.Type == string(handler.CtMtr) {
+			if cCheck.Duration < 30 {
+				cCheck.Duration = 30
+			}
+
+			aC = handler.AgentCheck{
+				Type:     handler.CtMtr,
+				Target:   cCheck.Target,
+				AgentID:  agent.ID,
+				Duration: cCheck.Duration,
+			}
+		} else if cCheck.Type == string(handler.CtRperf) {
+			aC = handler.AgentCheck{
+				Type:    handler.CtRperf,
+				Target:  cCheck.Target,
+				AgentID: agent.ID,
+				Server:  cCheck.RperfServerEnable,
+			}
+		}
+
+		err = aC.Create(r.DB)
 		if err != nil {
 			log.Error(err)
 			return c.Redirect("/agents")
 		}
 
-		check := handler.AgentCheck{AgentID: cAgent.ID}
-		check.Type = handler.CT_NetInfo
-		err = check.Create(r.DB)
-		if err != nil {
-			return err
-		}
-
 		// todo create default checks such as network info and that sort of thing
 
 		// todo handle error/success and return to home also display message for error if error
-		return c.Redirect("/agent/install/" + cAgent.ID.Hex())
+		return c.Redirect("/agent/" + agent.ID.Hex())
 	})
 }

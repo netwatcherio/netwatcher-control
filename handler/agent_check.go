@@ -15,27 +15,31 @@ import (
 type CheckType string
 
 const (
-	CT_RPerf     CheckType = "RPERF"
-	CT_MTR       CheckType = "MTR"
-	CT_SpeedTest CheckType = "SPEEDTEST"
-	CT_NetInfo   CheckType = "NETINFO"
+	CtRperf     CheckType = "RPERF"
+	CtMtr       CheckType = "MTR"
+	CtSpeedtest CheckType = "SPEEDTEST"
+	CtNetinfo   CheckType = "NETINFO"
 )
 
 type AgentCheck struct {
-	Type      CheckType          `json:"type"bson:"type""`
-	Target    string             `json:"address,omitempty"bson:"target,omitempty"`
-	ID        primitive.ObjectID `json:"id"bson:"_id"`
-	AgentID   primitive.ObjectID `json:"agent"bson:"agent"`
-	Duration  int                `json:"interval,omitempty'"bson:"duration,omitempty"`
-	Count     int                `json:"count,omitempty"bson:"count,omitempty"`
-	Triggered bool               `json:"triggered"bson:"triggered,omitempty"`
-	Server    bool               `json:"server,omitempty"bson:"server,omitempty"`
-	Pending   bool               `json:"pending,omitempty"bson:"pending,omitempty"`
+	Type            CheckType          `json:"type"bson:"type""`
+	Target          string             `json:"address,omitempty"bson:"target,omitempty"`
+	ID              primitive.ObjectID `json:"id"bson:"_id"`
+	AgentID         primitive.ObjectID `json:"agent"bson:"agent"`
+	Duration        int                `json:"duration,omitempty'"bson:"duration,omitempty"`
+	Count           int                `json:"count,omitempty"bson:"count,omitempty"`
+	Triggered       bool               `json:"triggered"bson:"triggered,omitempty"`
+	Server          bool               `json:"server,omitempty"bson:"server,omitempty"`
+	Pending         bool               `json:"pending,omitempty"bson:"pending,omitempty"`
+	CreateTimestamp time.Time          `bson:"create_timestamp"json:"create_timestamp"`
 }
 
 func (ac *AgentCheck) GetData(limit int64, recent bool, timeStart *time.Time, timeEnd *time.Time, db *mongo.Database) ([]*CheckData, error) {
 	opts := options.Find().SetLimit(limit)
 	var filter = bson.D{{"check", ac.ID}, {"type", ac.Type}}
+	if ac.AgentID != (primitive.ObjectID{0}) {
+		filter = bson.D{{"agent", ac.AgentID}, {"type", ac.Type}}
+	}
 
 	var timeFilter bson.M
 
@@ -127,51 +131,79 @@ func (ac *AgentCheck) Create(db *mongo.Database) error {
 	return nil
 }
 
-func (ac *AgentCheck) Get(db *mongo.Database) error {
+func (ac *AgentCheck) Get(db *mongo.Database) ([]*AgentCheck, error) {
 	var filter = bson.D{{"_id", ac.ID}}
+
+	if ac.AgentID != (primitive.ObjectID{0}) {
+		filter = bson.D{{"agent", ac.AgentID}}
+	}
 
 	cursor, err := db.Collection("agent_check").Find(context.TODO(), filter)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	var results []bson.D
 	if err = cursor.All(context.TODO(), &results); err != nil {
-		return err
+		return nil, err
 	}
 
 	//fmt.Println(results)
 
-	if len(results) > 1 {
-		return errors.New("multiple sites match when using id")
+	if ac.AgentID == (primitive.ObjectID{0}) {
+		if len(results) > 1 {
+			return nil, errors.New("multiple sites match when using id")
+		}
+
+		if len(results) == 0 {
+			return nil, errors.New("no sites match when using id")
+		}
+
+		doc, err := bson.Marshal(&results[0])
+		if err != nil {
+			log.Errorf("1 %s", err)
+			return nil, err
+		}
+
+		var agentCheck *AgentCheck
+		err = bson.Unmarshal(doc, &agentCheck)
+		if err != nil {
+			log.Errorf("2 %s", err)
+			return nil, err
+		}
+
+		ac.AgentID = agentCheck.AgentID
+		ac.Type = agentCheck.Type
+		ac.Duration = agentCheck.Duration
+		ac.Server = agentCheck.Server
+		ac.Triggered = agentCheck.Triggered
+		ac.Count = agentCheck.Count
+		ac.Pending = agentCheck.Pending
+		ac.Target = agentCheck.Target
+
+		return nil, nil
+	} else {
+		var agentChecks []*AgentCheck
+
+		for _, r := range results {
+			var acData AgentCheck
+			doc, err := bson.Marshal(r)
+			if err != nil {
+				log.Errorf("1 %s", err)
+				return nil, err
+			}
+			err = bson.Unmarshal(doc, &acData)
+			if err != nil {
+				log.Errorf("22 %s", err)
+				return nil, err
+			}
+
+			agentChecks = append(agentChecks, &acData)
+		}
+
+		return agentChecks, nil
 	}
 
-	if len(results) == 0 {
-		return errors.New("no sites match when using id")
-	}
-
-	doc, err := bson.Marshal(&results[0])
-	if err != nil {
-		log.Errorf("1 %s", err)
-		return err
-	}
-
-	var agentCheck *AgentCheck
-	err = bson.Unmarshal(doc, &agentCheck)
-	if err != nil {
-		log.Errorf("2 %s", err)
-		return err
-	}
-
-	ac.AgentID = agentCheck.AgentID
-	ac.Type = agentCheck.Type
-	ac.Duration = agentCheck.Duration
-	ac.Server = agentCheck.Server
-	ac.Triggered = agentCheck.Triggered
-	ac.Count = agentCheck.Count
-	ac.Pending = agentCheck.Pending
-	ac.Target = agentCheck.Target
-
-	return nil
+	return nil, nil
 }
 
 // GetAll get all checks based on id, and &/or type

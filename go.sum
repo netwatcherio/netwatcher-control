@@ -309,6 +309,8 @@ github.com/netwatcherio/netwatcher-agent v1.0.2-0.20230101100356-57be12111cdf h1
 github.com/netwatcherio/netwatcher-agent v1.0.2-0.20230101100356-57be12111cdf/go.mod h1:w4SiBETPWopnFy/k1OcNip5kXB0GWHXBK1WVHFXgvWY=
 github.com/netwatcherio/netwatcher-agent v1.0.5-0.20230101211444-7049e1ab2502 h1:lzzCae9OSzbf8opK96H2qD5bTt10SguSuRHmcHVm7tI=
 github.com/netwatcherio/netwatcher-agent v1.0.5-0.20230101211444-7049e1ab2502/go.mod h1:w4SiBETPWopnFy/k1OcNip5kXB0GWHXBK1WVHFXgvWY=
+github.com/netwatcherio/netwatcher-agent v1.0.5-0.20230104033829-8f5c424e4bd8 h1:rsuvqdLGS9pbPfng+VYuqNGk8BTciTmv8XH9O3hrzPk=
+github.com/netwatcherio/netwatcher-agent v1.0.5-0.20230104033829-8f5c424e4bd8/go.mod h1:a++EU7CB0QhHZaBjL2yGRHw7CRXTHHlJn4icynO2eKg=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/pascaldekloe/goe v0.0.0-20180627143212-57f6aae5913c/go.mod h1:lzWF7FIEvWOWxwDKqyGYQf6ZUaNfKdP144TG7ZOy1lc=
 github.com/pascaldekloe/goe v0.1.0/go.mod h1:lzWF7FIEvWOWxwDKqyGYQf6ZUaNfKdP144TG7ZOy1lc=
@@ -396,6 +398,8 @@ go.etcd.io/etcd/client/pkg/v3 v3.5.1/go.mod h1:IJHfcCEKxYu1Os13ZdwCwIUTUVGYTSAM3
 go.etcd.io/etcd/client/v2 v2.305.1/go.mod h1:pMEacxZW7o8pg4CrFE7pquyCJJzZvkvdD2RibOCCCGs=
 go.mongodb.org/mongo-driver v1.10.1 h1:NujsPveKwHaWuKUer/ceo9DzEe7HIj1SlJ6uvXZG0S4=
 go.mongodb.org/mongo-driver v1.10.1/go.mod h1:z4XpeoU6w+9Vht+jAFyLgVrD+jGSQQe0+CBWFHNiHt8=
+go.mongodb.org/mongo-driver v1.11.1 h1:QP0znIRTuL0jf1oBQoAoM0C6ZJfBK4kx0Uumtv1A7w8=
+go.mongodb.org/mongo-driver v1.11.1/go.mod h1:s7p5vEtfbeR1gYi6pnj3c3/urpbLv2T5Sfd6Rp2HBB8=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
 go.opencensus.io v0.22.0/go.mod h1:+kGneAE2xo2IficOXnaByMWTGM9T73dGwxeWcUqIpI8=
 go.opencensus.io v0.22.2/go.mod h1:yxeiOL68Rb0Xd1ddK5vPZ/oVn4vY4Ynel7k9FzqtOIw=

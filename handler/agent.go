@@ -22,6 +22,7 @@ type Agent struct {
 	Initialized bool               `bson:"initialized"json:"initialized"`
 	Longitude   float64            `bson:"longitude"json:"longitude"form:"longitude"'`
 	Latitude    float64            `bson:"latitude"json:"latitude"form:"latitude"`
+	Timestamp   time.Time          `bson:"timestamp"json:"timestamp"`
 	// pin can be regenerated, by setting hash blank, and when registering agents, it checks for blank hashs.
 }
 
@@ -42,7 +43,7 @@ func (a *Agent) GetAgentStats(db *mongo.Database) (*AgentStats, error) {
 	stats.Heartbeat = a.Heartbeat
 
 	// get the latest net stats
-	agentCheck := AgentCheck{AgentID: a.ID, Type: CT_NetInfo}
+	agentCheck := AgentCheck{AgentID: a.ID, Type: CtNetinfo}
 	get, err := agentCheck.GetData(1, true, nil, nil, db)
 	if err != nil {
 		return &stats, err
@@ -64,7 +65,7 @@ func (a *Agent) GetAgentStats(db *mongo.Database) (*AgentStats, error) {
 	// todo check the agent check itself to see if the speedtest is pending, else check and add the speedtest stats
 
 	// get the latest net stats
-	agentCheck = AgentCheck{AgentID: a.ID, Type: CT_SpeedTest}
+	agentCheck = AgentCheck{AgentID: a.ID, Type: CtSpeedtest}
 	get, err = agentCheck.GetData(1, true, nil, nil, db)
 	if err != nil {
 		return &stats, err
@@ -98,6 +99,7 @@ func (a *Agent) Create(db *mongo.Database) error {
 	a.Pin = GeneratePin(9)
 	a.ID = primitive.NewObjectID()
 	a.Initialized = false
+	a.Timestamp = time.Now()
 
 	mar, err := bson.Marshal(a)
 	if err != nil {
@@ -221,6 +223,19 @@ func (a *Agent) Verify(db *mongo.Database) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (a *Agent) UpdateHeartbeat(db *mongo.Database) error {
+	var filter = bson.D{{"_id", a.ID}}
+
+	update := bson.D{{"$set", bson.D{{"heartbeat", time.Now()}}}}
+
+	_, err := db.Collection("agents").UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

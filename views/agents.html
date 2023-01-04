@@ -79,28 +79,6 @@
     </div>
     <script>
         let agents = JSON.parse("{{.agents}}")
-
-            /*[{
-            "agent_id":"63b24c8364a1d1c1d4ee6bff",
-            "name":"test123",
-            "net_info":
-                {
-                    "local_address":"",
-                    "default_gateway":"",
-                    "public_address":"",
-                    "internet_provider":"",
-                    "lat":"","long":"",
-                    "timestamp":"0001-01-01T00:00:00Z"},
-            "speed_test_info":{
-                "latency":0,
-                "dl_speed":0,
-                "ul_speed":0,
-                "server":"",
-                "host":"",
-                "timestamp":"0001-01-01T00:00:00Z"
-            },
-            "speed_test_pending":false}]*/
-
         let parser = new DOMParser();
 
         let onlineCount = 0;
@@ -112,25 +90,24 @@
 
             let name = agents[i]['name']
             let id = agents[i]['agent_id']
-            let online = agents[i]['online']
             let netInfo = agents[i]['net_info']
             let isp = netInfo['internet_provider']
 
             let date1 = new Date();
             let date2 = new Date(agents[i]['heartbeat']);
 
-            let onlineMsg = '<span class="badge bg-danger">' +
-                '<i class="fa fa-arrow-down" ></i>'
-            if (online) {
-                onlineMsg = '<span class="badge bg-success">' +
-                    '<i class="fa fa-arrow-up" ></i>'
+            // To calculate the time difference of two dates
+            let Difference_In_Time = (date1.getTime() - date2.getTime()) / 1000;
+
+            let onlineMsg = '<span class="badge bg-success">' +
+                '<i class="fa fa-arrow-up" ></i>'
+            if (Difference_In_Time > 300) {
+                onlineMsg = '<span class="badge bg-danger">' +
+                    '<i class="fa fa-arrow-down" ></i>'
                 onlineCount++
             }else{
                 offlineCount++
             }
-
-            // To calculate the time difference of two dates
-            let Difference_In_Time = (date1.getTime() - date2.getTime()) / 1000;
 
             // lol
             if (isp.toLowerCase().indexOf('shaw') !== -1){

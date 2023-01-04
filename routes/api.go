@@ -64,7 +64,7 @@ func (r *Router) apiGetConfig() {
 				modifiedData := checks.CheckData{
 					Type:     string(ac.Type),
 					Target:   ac.Target,
-					ID:       ac.ID.Hex(),
+					ID:       ac.ID,
 					Duration: ac.Duration,
 					Count:    ac.Count,
 					Server:   ac.Server,
@@ -105,15 +105,10 @@ func (r *Router) apiDataPush() {
 			}
 
 			for _, cD := range dataRequest.Checks {
-				checkId, err := primitive.ObjectIDFromHex(cD.ID)
-				if err != nil {
-					respB.Error = "500 something went wrong, unable to compute object id"
-				}
-
 				data := handler.CheckData{
 					Target:    cD.Target,
 					ID:        primitive.NewObjectID(),
-					CheckID:   checkId,
+					CheckID:   cD.ID,
 					AgentID:   hexId,
 					Triggered: cD.Triggered,
 					Result:    cD.Result,

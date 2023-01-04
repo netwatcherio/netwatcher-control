@@ -11,6 +11,7 @@ import (
 	"netwatcher-control/routes"
 	"os"
 	"os/signal"
+	"runtime"
 	"syscall"
 )
 
@@ -23,6 +24,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	runtime.GOMAXPROCS(4)
 
 	log.SetFormatter(&log.TextFormatter{})
 

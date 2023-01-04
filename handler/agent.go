@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/netwatcherio/netwatcher-agent/checks"
@@ -44,46 +43,59 @@ func (a *Agent) GetAgentStats(db *mongo.Database) (*AgentStats, error) {
 
 	// get the latest net stats
 	agentCheck := AgentCheck{AgentID: a.ID, Type: CtNetinfo}
-	get, err := agentCheck.GetData(1, true, nil, nil, db)
+	netInfo, err := agentCheck.GetData(1, true, nil, nil, db)
 	if err != nil {
 		return &stats, err
 	}
 
-	bytes, err := json.Marshal(get[0])
-	if err != nil {
-		return &stats, err
-	}
-	var netInfo checks.NetResult
-
-	err = json.Unmarshal(bytes, &netInfo)
+	netB, err := bson.Marshal(netInfo[0].Result)
 	if err != nil {
 		return &stats, err
 	}
 
-	stats.NetInfo = netInfo
+	var nf checks.NetResult
+	err = bson.Unmarshal(netB, &nf)
+	if err != nil {
+		return &stats, err
+	}
+
+	stats.NetInfo.DefaultGateway = nf.DefaultGateway
+	stats.NetInfo.InternetProvider = nf.InternetProvider
+	stats.NetInfo.Timestamp = nf.Timestamp
+	stats.NetInfo.LocalAddress = nf.LocalAddress
+	stats.NetInfo.PublicAddress = nf.PublicAddress
+	stats.NetInfo.Long = nf.Long
+	stats.NetInfo.Lat = nf.Lat
 
 	// todo check the agent check itself to see if the speedtest is pending, else check and add the speedtest stats
 
 	// get the latest net stats
 	agentCheck = AgentCheck{AgentID: a.ID, Type: CtSpeedtest}
-	get, err = agentCheck.GetData(1, true, nil, nil, db)
+	speedGet, err := agentCheck.GetData(1, true, nil, nil, db)
 	if err != nil {
 		return &stats, err
 	}
 
-	bytes, err = json.Marshal(get[0])
+	speedB, err := bson.Marshal(speedGet[0].Result)
 	if err != nil {
 		return &stats, err
 	}
+
 	var speedTest checks.SpeedTest
 
-	err = json.Unmarshal(bytes, &speedTest)
+	err = bson.Unmarshal(speedB, &speedTest)
 	if err != nil {
 		return &stats, err
 	}
-	stats.SpeedTestInfo = speedTest
 
-	return &stats, nil
+	stats.SpeedTestInfo.DLSpeed = speedTest.DLSpeed
+	stats.SpeedTestInfo.ULSpeed = speedTest.ULSpeed
+	stats.SpeedTestInfo.Timestamp = speedTest.Timestamp
+	stats.SpeedTestInfo.Server = speedTest.Server
+	stats.SpeedTestInfo.Host = speedTest.Host
+	stats.SpeedTestInfo.Latency = speedTest.Latency
+
+	return &stats, err
 }
 
 /*var agent = models.Agent{

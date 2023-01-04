@@ -20,6 +20,7 @@ type CheckData struct {
 	Triggered bool               `json:"triggered"bson:"triggered,omitempty"`
 	Timestamp time.Time          `bson:"timestamp"json:"timestamp"`
 	Result    interface{}        `json:"result"bson:"result,omitempty"`
+	Type      CheckType          `bson:"type"json:"type"`
 }
 
 func (cd *CheckData) Create(db *mongo.Database) error {
@@ -31,6 +32,8 @@ func (cd *CheckData) Create(db *mongo.Database) error {
 	if err != nil {
 		log.Error(err)
 	}
+
+	cd.Type = agentC.Type
 
 	crM, err := json.Marshal(cd.Result)
 	if err != nil {

@@ -1,0 +1,198 @@
+<div class="page-titles">
+    <div class="row">
+        <div class="col-lg-8 col-md-6 col-12 align-self-center">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0 d-flex align-items-center">
+                    <li class="breadcrumb-item">
+                        <a class="link" href="/home"><i class="ri-home-3-line fs-5"></i></a>
+                    </li>
+                    {{if .siteSelected}}
+                    <li class="breadcrumb-item">
+                        {{.siteName}}
+                    </li>
+                    {{end}}
+                    <li aria-current="page" class="breadcrumb-item active">
+                        {{.title}}
+                    </li>
+                </ol>
+            </nav>
+            <h1 class="mb-0 fw-bold">{{.title}} - check</h1>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    {{if .hasData}}
+    <!--<div class="row">
+        &lt;!&ndash; column &ndash;&gt;
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    &lt;!&ndash; title &ndash;&gt;
+                    <div class="d-md-flex">
+                        <div>
+                            <h4 class="card-title">traceroutes</h4>
+                            <h5 class="card-subtitle">last day of traceroutes for AGENT NAME</h5>
+                        </div>
+                    </div>
+                    &lt;!&ndash; title &ndash;&gt;
+                    <div class="table-responsive">
+                        <div class="table-responsive mt-4">
+                            <table class="
+                        table
+                        mb-0
+                        text-nowrap
+                        varient-table
+                        align-middle
+                        fs-3
+                      " id="stats">
+                                <thead>
+                                <tr>
+                                    <th class="px-0 text-muted" scope="col">timestamp</th>
+                                    <th class="px-0 text-muted" scope="col">target</th>
+                                    <th class="px-0 text-muted" scope="col">triggered</th>
+                                    <th class="px-0 text-muted text-end" scope="col">view</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>-->
+    <div class="row" id="targets">
+    </div>
+    <script>
+        let checkData = JSON.parse("{{.checkData}}")
+        let check = JSON.parse("{{.check}}")
+
+        let parser = new DOMParser();
+
+        let targets = []
+
+        Array.prototype.contains = function (element) {
+            return this.indexOf(element) > -1;
+        };
+
+        for (let i = 0; i < traceroutes.length; i++) {
+            let id = traceroutes[i]['id']
+            // Find a <table> element with id="myTable":
+            for (let i2 = 0; i2 < traceroutes[i]['data'].length; i2++) {
+                let address = traceroutes[i]['data'][i2]['address']
+                let triggered  = traceroutes[i]['data'][i2]['result']['triggered']
+                let row = document.getElementById("targets")
+                let triggeredText = ' <span class="badge bg-light-success text-success"><i class="fa fa-check"></i> not triggered</span>'
+
+                if (triggered) {
+                    triggeredText = ' <span class="badge bg-light-success text-success"><i class="fa fa-exclamation-triangle"></i> triggered</span>'
+                }
+
+                if (!targets.contains(address)) {
+                    row.innerHTML += '<div class="col-12">' +
+                        '<div class="card border-dark">' +
+                        '                <div class="card-body">' +
+                        '                    <!-- title -->' +
+                        '                    <div class="d-md-flex">' +
+                        '                        <div>' +
+                        '                            <h4 class="card-title">'+address+'</h4>' +
+                        '                            <h5 class="card-subtitle">traceroutes for<code> '+address+'</code></h5>' +
+                        '                        </div>' +
+                        '                    </div>' +
+                        '                    <div class="col-lg-12 col-md-6 col-12 align-self-center">' +
+                        '                        <div class="accordion" id="' + address.replaceAll(".","") + '">' +
+                        '</div>' +
+                        '                                        </div>' +
+                        '                                    </div>' +
+                        '                                </div>' +
+                        '                            </div>'
+                    targets.push(address)
+                }
+
+                let result = traceroutes[i]['data'][i2]['result']
+                let timestamp = result['stop_timestamp']
+                squish = document.getElementById(address.replaceAll(".",""))
+                let modifiedName = (address + timestamp)
+                    .replaceAll("-", "")
+                    .replaceAll(":", "")
+                    .replaceAll("-", "")
+                    .replaceAll(".", "")
+
+                squish.innerHTML +=
+                    (triggered ? '<div class="accordion-item border-danger">' : '<div class="accordion-item border-success">') +
+                    '                                <h2 class="accordion-header" id="heading' + modifiedName + '">' +
+                    '                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse' + modifiedName + '" aria-expanded="false" aria-controls="collapse' + modifiedName + '">' +
+                    timestamp + triggeredText +
+                    '                                    </button>' +
+                    '                                </h2>' +
+                    '                                <div id="collapse' + modifiedName + '" class="accordion-collapse collapse" aria-labelledby="heading' + modifiedName + '" data-bs-parent="#'+address.replaceAll("." )+'" style="">' +
+                    '                                    <div class="accordion-body">' +
+                    '                                        <div class="text-center" id="traceData' + modifiedName + '">' +
+                    '                                        </div>' +
+                    '                                    </div>' +
+                    '                                </div>' +
+                    '                            </div>';
+            }
+        }
+
+        for (let i = 0; i < traceroutes.length; i++) {
+            let id = traceroutes[i]['id']
+            // Find a <table> element with id="myTable":
+            for (let i2 = 0; i2 < traceroutes[i]['data'].length; i2++) {
+                let address = traceroutes[i]['data'][i2]['address']
+                let result = traceroutes[i]['data'][i2]['result']
+                let timestamp = result['stop_timestamp']
+                let modifiedName = (address + timestamp)
+                    .replaceAll("-", "")
+                    .replaceAll(":", "")
+                    .replaceAll("-", "")
+                    .replaceAll(".", "")
+
+                let statistics = result.metrics
+                //console.log(Object.keys(statistics).length + statistics)
+
+                for (let hopNum = 1; hopNum <= Object.keys(statistics).length; hopNum++) {
+                    let statistic = statistics['' + hopNum]
+                    let resultD = document.getElementById("traceData" + modifiedName)
+                    if (hopNum == 1) {
+                        resultD.innerHTML += '<pre><code>\n' +
+                            '+---+-------------------------------------------------------------------------+-------+-----+------+------+------+------+\n' +
+                            '| # | Hostname                                                                | Snt | Rcv | Last |  Avg | Best | Wrst |\n' +
+                            '+---+-------------------------------------------------------------------------+-------+-----+------+------+------+------+\n';
+                    }
+
+                    //let statistic = statistics[hopNum]
+                    console.log(hopNum + statistics)
+                    resultD.innerHTML += '\n<pre><code>| ' + hopNum + ' | ' + statistic['address'] + '                                                              |     '
+                        + statistic['sent'] +
+                        ' |  ' + statistic['received'] +
+                        ' |  ' + statistic['last'] +
+                        ' |  ' + statistic['avg'] +
+                        ' |  ' + statistic['best'] +
+                        ' |  ' + statistic['worst'] + ' |\n</code></pre>';
+
+                    if (hopNum == Object.keys(statistics).length) {
+                        resultD.innerHTML +=
+                            '<pre><code>\n+---+-------------------------------------------------------------------------+-------+-----+------+------+------+------+\n' +
+                            '</code></pre>';
+                    }
+                }
+            }
+        }
+    </script>
+    {{else}}
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="error-body text-center">
+                <h1 class="error-title text-danger">no data</h1>
+                <h3 class="text-error-subtitle">please check back later</h3>
+                <!-- <p class="text-muted m-t-30 m-b-30">YOU SEEM TO BE TRYING TO FIND HIS WAY HOME</p>
+                 <a href="/" class="btn btn-danger btn-rounded waves-effect waves-light m-b-40 text-white">Back to home</a>-->
+            </div>
+        </div>
+    </div>
+    {{end}}
+</div>
+

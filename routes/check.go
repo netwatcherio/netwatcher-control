@@ -1,91 +1,90 @@
 package routes
 
 import (
+	"encoding/json"
 	"github.com/gofiber/fiber/v2"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"html"
 	"netwatcher-control/handler"
 )
 
 // TODO authenticate & verify that the user is infact apart of the site etc.
 
 func (r *Router) check() {
-	r.App.Get("/check/:checkid?", func(c *fiber.Ctx) error {
+	r.App.Get("/check/:check?", func(c *fiber.Ctx) error {
 		user, err := validateUser(r, c)
 		if err != nil {
-			return c.Redirect("/auth")
+			return err
 		}
 
-		if c.Params("agent") == "" {
-			return c.RedirectBack("/home")
+		if c.Params("check") == "" {
+			return c.RedirectBack("/agents")
 		}
-		objId, err := primitive.ObjectIDFromHex(c.Params("agent"))
+		objId, err := primitive.ObjectIDFromHex(c.Params("check"))
 		if err != nil {
 			return c.RedirectBack("/home")
 		}
 
-		agent := handler.Agent{ID: objId}
-		err = agent.Get(r.DB)
+		ac := handler.AgentCheck{ID: objId}
+		_, err = ac.Get(r.DB)
 		if err != nil {
 			log.Error(err)
 			return c.Redirect("/agents")
 		}
 
-		site := handler.Site{ID: objId}
+		agent := handler.Agent{ID: ac.AgentID}
+		err = agent.Get(r.DB)
+		if err != nil {
+			log.Error(err)
+			return c.Redirect("/home")
+		}
+
+		site := handler.Site{ID: agent.Site}
 		err = site.Get(r.DB)
 		if err != nil {
 			log.Error(err)
 			return c.Redirect("/home")
 		}
-		/*var agentStatList models.AgentStatsList
 
-		  stats, err := getAgentStatsForSite(objId, db)
-		  if err != nil {
-		  	//todo handle error
-		  	//return err
-		  }
-		  agentStatList.List = stats
+		marshal, err := json.Marshal(agent)
+		if err != nil {
+			log.Errorf("13 %s", err)
+		}
 
-		  var hasAgents = true
-		  if len(agentStatList.List) == 0 {
-		  	hasAgents = false
-		  }
+		data, err := ac.GetData(10, true, nil, nil, r.DB)
+		if err != nil {
+			return err
+		}
 
-		  doc, err := json.Marshal(agentStatList)
-		  if err != nil {
-		  	log.Errorf("1 %s", err)
-		  }*/
+		cdBytes, err := json.Marshal(data)
+		if err != nil {
+			log.Error(err)
+		}
 
-		/*agents, err := getAgents(objId, db)
-		  if err != nil {
-		  	// todo handle error
-		  	//return err
-		  }
+		acBytes, err := json.Marshal(ac)
+		if err != nil {
+			return err
+		}
 
-		  doc, err := json.Marshal(agents)
-		  if err != nil {
-		  	log.Errorf("1 %s", err)
-		  }
+		hasData := len(data) > 0
 
-		  var hasAgentsBool = true
-		  if len(agents) == 0 {
-		  	hasAgentsBool = false
-		  	log.Warnf("%s", "site does NOT have agents")
-		  }*/
-
-		// Render index within layouts/main
 		// TODO process if they are logged in or not, otherwise send them to registration/login
-		//log.Errorf("%s", string(doc))
-		return c.Render("agents", fiber.Map{
-			"title":        "agents",
+		return c.Render("check", fiber.Map{
+			"title":        agent.Name,
 			"siteSelected": true,
-			"siteId":       site.ID.Hex(),
 			"siteName":     site.Name,
-			"firstName":    user.FirstName,
-			"lastName":     user.LastName,
-			"email":        user.Email},
-			/*"agents":       html.UnescapeString(string(doc)),
-			  "hasAgents":    hasAgents},*/
+			"siteId":       site.ID.Hex(),
+			"agents":       html.UnescapeString(string(marshal)),
+			"check":        html.UnescapeString(string(acBytes)),
+			"checkData":    html.UnescapeString(string(cdBytes)),
+			"hasData":      hasData,
+			/*"speedtestPending": agent.AgentConfig.SpeedTestPending,*/
+			"agentId":   agent.ID.Hex(),
+			"firstName": user.FirstName,
+			"lastName":  user.LastName,
+			"email":     user.Email,
+		},
 			"layouts/main")
 	})
 }

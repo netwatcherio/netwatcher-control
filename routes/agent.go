@@ -9,6 +9,7 @@ import (
 	"math"
 	"netwatcher-control/handler"
 	_ "strings"
+	"time"
 )
 
 // TODO authenticate & verify that the user is infact apart of the site etc.
@@ -52,6 +53,24 @@ func (r *Router) agent() {
 			log.Error(err)
 		}
 
+		online := true
+		if time.Now().Sub(getAgentStats.Heartbeat).Minutes() > 5 {
+			online = false
+		}
+
+		agentChecks := handler.AgentCheck{AgentID: agent.ID}
+		all, err := agentChecks.GetAll(r.DB)
+		if err != nil {
+			log.Error(err)
+		}
+
+		acBytes, err := json.Marshal(all)
+		if err != nil {
+			log.Error(err)
+		}
+
+		hasAC := len(all) > 0
+
 		// TODO process if they are logged in or not, otherwise send them to registration/login
 		return c.Render("agent", fiber.Map{
 			"title":            agent.Name,
@@ -65,7 +84,10 @@ func (r *Router) agent() {
 			"internetProvider": &getAgentStats.NetInfo.InternetProvider,
 			"uploadSpeed":      math.Round(getAgentStats.SpeedTestInfo.ULSpeed),
 			"downloadSpeed":    math.Round(getAgentStats.SpeedTestInfo.DLSpeed),
+			"agentChecks":      html.UnescapeString(string(acBytes)),
+			"hasAC":            hasAC,
 			/*"speedtestPending": agent.AgentConfig.SpeedTestPending,*/
+			"online":    online,
 			"agentId":   agent.ID.Hex(),
 			"firstName": user.FirstName,
 			"lastName":  user.LastName,

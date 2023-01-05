@@ -63,7 +63,6 @@ func (cd *CheckData) Create(db *mongo.Database) error {
 		}
 		cd.Timestamp = r.StopTimestamp
 	} else if agentC.Type == CtSpeedtest {
-		cd.Result = checks.SpeedTest{}
 		var r checks.SpeedTest
 		err = json.Unmarshal(crM, &r)
 		if err != nil {

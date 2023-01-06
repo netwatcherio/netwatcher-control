@@ -1,0 +1,292 @@
+<div class="page-titles">
+    <div class="row">
+        <div class="col-lg-8 col-md-6 col-12 align-self-center">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0 d-flex align-items-center">
+                    <li class="breadcrumb-item">
+                        <a class="link" href="/home"><i class="ri-home-3-line fs-5"></i></a>
+                    </li>
+                    {{if .siteSelected}}
+                    <li class="breadcrumb-item">
+                        <a class="link" href="/site/{{.siteId}}">{{.siteName}}</a>
+                    </li>
+                    {{end}}
+                    <li aria-current="page" class="breadcrumb-item active">
+                        <a class="link" href="/agent/{{.agentId}}">{{.title}}</a>
+                    </li>
+                </ol>
+            </nav>
+            <h1 class="mb-0 fw-bold" id="title">{{.title}}</h1>
+        </div>
+        <div class="
+                col-lg-4 col-md-6
+                d-none d-md-flex
+                align-items-center
+                justify-content-end
+              " id="pending">
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid" id="container">
+    {{if .hasData}}
+    <!--<div class="row">
+        &lt;!&ndash; column &ndash;&gt;
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    &lt;!&ndash; title &ndash;&gt;
+                    <div class="d-md-flex">
+                        <div>
+                            <h4 class="card-title">traceroutes</h4>
+                            <h5 class="card-subtitle">last day of traceroutes for AGENT NAME</h5>
+                        </div>
+                    </div>
+                    &lt;!&ndash; title &ndash;&gt;
+                    <div class="table-responsive">
+                        <div class="table-responsive mt-4">
+                            <table class="
+                        table
+                        mb-0
+                        text-nowrap
+                        varient-table
+                        align-middle
+                        fs-3
+                      " id="stats">
+                                <thead>
+                                <tr>
+                                    <th class="px-0 text-muted" scope="col">timestamp</th>
+                                    <th class="px-0 text-muted" scope="col">target</th>
+                                    <th class="px-0 text-muted" scope="col">triggered</th>
+                                    <th class="px-0 text-muted text-end" scope="col">view</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>-->
+    <div class="row" id="mtr"></div>
+
+    <script>
+        let checkData = JSON.parse("{{.checkData}}")
+        let check = JSON.parse("{{.check}}")
+
+        let container = document.getElementById('container')
+        let pendingDoc = document.getElementById('pending')
+
+        let parser = new DOMParser();
+
+        if (check.type == "MTR") {
+
+            let targets = []
+
+            for (let i = 0; i < checkData.length; i++) {
+                let report = checkData[i]['report']
+
+                let timestamp = checkData[i]['stop_timestamp']
+                let triggered = checkData[i]['triggered']
+
+                let niceTimestamp = new Date(timestamp)
+
+                let mtr = report['mtr'] // general data
+                let hubs = report['hubs'] // hop data
+
+                let dst = mtr['dst']
+                let src = mtr['src']
+                let tests = mtr['tests']
+                let psize = mtr['psize']
+                let tos = mtr['tos']
+
+                let modifiedName = (dst + timestamp)
+                    .replaceAll("-", "")
+                    .replaceAll(":", "")
+                    .replaceAll("-", "")
+                    .replaceAll(".", "")
+
+                if (!targets.includes(dst)) {
+                    targets.push(dst)
+
+                    mtrDoc = document.getElementById('mtr')
+                    mtrDoc.innerHTML += '<div class=\"col-12\">' +
+                        '            <div class=\"card border-dark\">' +
+                        '                <div class=\"card-body\" id=\"card' + dst.replaceAll('.', '') + '\">' +
+                        '                    <div class=\"d-md-flex\">' +
+                        '                    <div>' +
+                        '                        <h4 class=\"card-title\">' + dst + '</h4>' +
+                        '                        <h5 class=\"card-subtitle\">mtr tests for <code>' + dst + '</code></h5>' +
+                        '                    </div>' +
+                        '                    </div>' +
+                        '</div>' +
+                        '    </div>'
+
+                }
+
+                let triggeredText = ' <span class="badge bg-light-success text-success"><i class="fa fa-check"></i> not triggered</span>'
+
+                if (triggered) {
+                    triggeredText = ' <span class="badge bg-light-success text-success"><i class="fa fa-exclamation-triangle"></i> triggered</span>'
+                }
+
+                mtrDoc2 = document.getElementById('card' + dst.replaceAll('.', ''))
+                mtrDoc2.innerHTML += '<hr><div class=\"col-lg-12 col-md-6 col-12 align-self-center\">' +
+                    '                    <div class=\"accordion\\" id=\"accord' + modifiedName + '\">' +
+                    (triggered ? '<div class="accordion-item border-danger">' : '<div class="accordion-item border-success">') +
+                    '                            <h2 class=\"accordion-header\" id=\"headingMOD\">' +
+                    '                                <button class=\"accordion-button collapsed\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#collapse' + modifiedName + '\" aria-expanded=\"false\" aria-controls=\"collapse' + modifiedName + '\">' +
+                    '                                    ' + niceTimestamp.toString() + triggeredText + ' </button>' +
+                    '                            </h2>' +
+                    '                        </div>' +
+                    '                    </div>' +
+                    '' +
+                    '                        <div id=\"collapse' + modifiedName + '\" class=\"accordion-collapse collapse\" aria-labelledby=\"heading' + modifiedName + '\" data-bs-parent=\"#accord' + modifiedName + '\" style=\"\">' +
+                    '                            <div class=\"accordion-body\">' +
+                    '                                <div class=\"text-center\" id=\"traceData' + modifiedName + '\">' +
+                    '                                </div>' +
+                    '                            </div>' +
+                    '                        </div>' +
+                    '                </div>' +
+                    '            </div>'
+
+                // Find a <table> element with id="myTable":
+
+                let row = document.getElementById("mtr")
+
+                let table = new AsciiTable(src + ' → ' + dst)
+                table
+                    .setHeading('#', 'host', 'asn', 'sent', 'received', 'loss%', 'avg','jitter','best', 'worst')
+                let resultD = document.getElementById("traceData" + modifiedName)
+
+                for (let hopNum = 0; hopNum < hubs.length; hopNum++) {
+                    let hop = hubs[hopNum]
+
+                    let asn = hop['ASN']
+                    let lossp = hop['Loss%']
+                    let sent = hop['Snt']
+                    let recv = hop['Rcv']
+                    let best = hop['Best']
+                    let avg = hop['Avg']
+                    let worst = hop['Wrst']
+                    let jitter = hop['Jttr']
+                    let host = hop['host']
+
+                    console.log(jitter)
+
+                    table.addRow(hopNum, host, asn, sent, recv, lossp, avg, jitter, best, worst)
+                }
+
+                resultD.innerHTML += '<pre><code>'+table.toString()+'</code></pre>'
+            }
+        }
+        else if(check.type == "SPEEDTEST"){
+            if (check.pending) {
+                pendingDoc.innerHTML += '<a class="btn btn-warning d-flex align-items-center ms-2">\n' +
+                    '                <i class="mdi mdi-timer-sand"></i>\n' +
+                    '                already running...\n' +
+                    '            </a>'
+            }else{
+                pendingDoc.innerHTML += '<a href="/check/new/{{.agentId}}" class="btn btn-info d-flex align-items-center ms-2">\n' +
+                    '                <i class="mdi mdi-speedometer"></i>\n' +
+                    '                run speedtest\n' +
+                    '            </a>'
+            }
+
+            container.innerHTML += '<div class="d-flex border-bottom title-part-padding px-0 mb-3 align-items-center">' +
+                '<div><h4 class="mb-0">speedtests</h4></div></div>'
+            container.innerHTML += '<div class="row" id="speedtest"></div>'
+
+            speedtestDoc = document.getElementById('speedtest')
+
+            for (let i = 0; i < checkData.length; i++) {
+                let test = checkData[i]
+                let latency = test['latency']/1000000
+                let downs = test['dl_speed']
+                let ups = test['ul_speed']
+                let serverloc = test['server']
+                let timestamp = test['timestamp']
+                let host = test['host']
+
+                let niceTimestamp = new Date(timestamp)
+
+                speedtestDoc.innerHTML += '<div class="col-lg-4 col-md-6">\n' +
+                    '            <div class="card bg-light">\n' +
+                    '                <div class="card-body">\n' +
+                    '                    <div class="carousel slide" data-ride="carousel">\n' +
+                    '                        <!-- Carousel items -->\n' +
+                    '                        <div class="carousel-inner">\n' +
+                    '                            <div class="carousel-item flex-column active">\n' +
+                    '                                <div class="d-flex no-block align-items-center me-3">\n' +
+                    '                                    <div class="mt-1">\n' +
+                    '                                        <h5 class="font-weight-medium">\n' +
+                    '                                            <code>'+niceTimestamp+'</code>\n' +
+                    '                                        </h5>\n' +
+                    '                                        <h6 title="'+host+'">'+serverloc+' <i class="ri-information-line"></i></h6>\n' +
+                    '                                    </div>\n' +
+                    '                                    <div class="ms-auto mt-3">\n' +
+                    '                                        <div class="crypto"></div>\n' +
+                    '                                    </div>\n' +
+                    '                                </div>\n' +
+                    '                                <div class="row text-center mt-4">\n' +
+                    '                                    <div class="col-4">\n' +
+                    '                                        <span class="fs-3"><i class="ri-arrow-down-line mx-1"></i> download</span>\n' +
+                    '                                        <p class="\n' +
+                    '                                    font-weight-medium\n' +
+                    '                                    d-flex\n' +
+                    '                                    align-items-center\n' +
+                    '                                    justify-content-center\n' +
+                    '                                  ">\n' +
+                    '                                            '+Math.round(downs)+'mbps \n' +
+                    '                                        </p>\n' +
+                    '                                    </div>\n' +
+                    '                                    <div class="col-4">\n' +
+                    '                                        <span class="fs-3"><i class="ri-arrow-up-line mx-1"></i> upload</span>\n' +
+                    '                                        <p class="\n' +
+                    '                                    d-flex\n' +
+                    '                                    align-items-center\n' +
+                    '                                    justify-content-center\n' +
+                    '                                    font-weight-medium\n' +
+                    '                                  ">\n' +
+                    '                                            '+Math.round(ups)+'mbps \n' +
+                    '                                        </p>\n' +
+                    '                                    </div>\n' +
+                    '                                    <div class="col-4">\n' +
+                    '                                        <span class="fs-3"><i class="ri-time-line"></i> latency</span>\n' +
+                    '                                        <p class="\n' +
+                    '                                    d-flex\n' +
+                    '                                    align-items-center\n' +
+                    '                                    justify-content-center\n' +
+                    '                                    font-weight-medium\n' +
+                    '                                  ">\n' +
+                    '                                            '+Math.round(latency)+'ms \n' +
+                    '                                        </p>\n' +
+                    '                                    </div>\n' +
+                    '                                </div>\n' +
+                    '                            </div>\n' +
+                    '                        </div>\n' +
+                    '                    </div>\n' +
+                    '                </div>\n' +
+                    '            </div>\n' +
+                    '        </div>'
+            }
+
+
+        }
+
+    </script>
+    {{else}}
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="error-body text-center">
+                <h1 class="error-title text-danger">no data</h1>
+                <h3 class="text-error-subtitle">please check back later</h3>
+                <!-- <p class="text-muted m-t-30 m-b-30">YOU SEEM TO BE TRYING TO FIND HIS WAY HOME</p>
+                 <a href="/" class="btn btn-danger btn-rounded waves-effect waves-light m-b-40 text-white">Back to home</a>-->
+            </div>
+        </div>
+    </div>
+    {{end}}
+</div>

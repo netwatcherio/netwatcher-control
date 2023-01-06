@@ -1,4 +1,4 @@
-package control_models
+package handler
 
 import (
 	"context"
@@ -107,7 +107,7 @@ func (u *User) UserExistsEmail(db *mongo.Database) (bool, error) {
 
 // UserExistsID check based on wether a user with the email in user exists
 func (u *User) UserExistsID(db *mongo.Database) (bool, error) {
-	var filter = bson.D{{"id", u.ID}}
+	var filter = bson.D{{"_id", u.ID}}
 
 	cursor, err := db.Collection("users").Find(context.TODO(), filter)
 	if err != nil {
@@ -147,6 +147,9 @@ func (u *User) GetUserFromEmail(db *mongo.Database) (*User, error) {
 		return nil, err
 	}
 
+	if len(results) < 1 {
+		return nil, errors.New("no user found")
+	}
 	doc, err := bson.Marshal(&results[0])
 	if err != nil {
 		log.Errorf("1 %s", err)

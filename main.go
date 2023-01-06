@@ -7,8 +7,11 @@ import (
 	"github.com/gofiber/template/html"
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
+	"netwatcher-control/handler"
+	"netwatcher-control/routes"
 	"os"
 	"os/signal"
+	"runtime"
 	"syscall"
 )
 
@@ -22,6 +25,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	runtime.GOMAXPROCS(4)
+
 	log.SetFormatter(&log.TextFormatter{})
 
 	// Load .env
@@ -31,10 +36,10 @@ func main() {
 	}
 
 	// connect to database
-	mongoUri = os.Getenv("MONGO_URI")
+	handler.MongoUri = os.Getenv("MONGO_URI")
 
-	var mongoData *MongoDatastore
-	mongoData = NewDatastore(os.Getenv("MAIN_DB"), log.New())
+	var mongoData *handler.MongoDatastore
+	mongoData = handler.NewDatastore(os.Getenv("MAIN_DB"), log.New())
 
 	// Signal Termination if using CLI
 	signals := make(chan os.Signal, 1)
@@ -49,7 +54,7 @@ func main() {
 
 	// Initialize custom config
 	sessionStore := mongodb.New(mongodb.Config{
-		ConnectionURI: mongoUri,
+		ConnectionURI: handler.MongoUri,
 		Collection:    os.Getenv("SESSIONS_COLLECTION"),
 		Database:      os.Getenv("SESSIONS_DB"),
 		Reset:         false,
@@ -67,7 +72,7 @@ func main() {
 	})
 
 	// Reload the templates on each render, good for development
-	//engine.Reload(true) // Optional. Default: false
+	engine.Reload(true) // Optional. Default: false
 
 	// Debug will print each template that is parsed, good for debugging
 	engine.Debug(true) // Optional. Default: false
@@ -84,8 +89,13 @@ func main() {
 	//createAgent(mongoData.db)
 	//createSite(mongoData.db)
 
-	LoadApiRoutes(app, store, mongoData.db)
-	LoadFrontendRoutes(app, store, mongoData.db)
+	router := routes.Router{
+		App:     app,
+		Session: store,
+		DB:      mongoData.Db,
+	}
+
+	router.Init()
 
 	// Listen website
 	app.Listen(os.Getenv("LISTEN"))

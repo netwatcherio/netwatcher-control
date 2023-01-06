@@ -1,4 +1,4 @@
-package control_models
+package handler
 
 import (
 	"context"
@@ -90,11 +90,6 @@ func (s *Site) AddMember(id primitive.ObjectID, role int, db *mongo.Database) (b
 	j, _ := json.Marshal(s.Members)
 	log.Warnf("%s", j)
 
-	/*memB, err := bson.Marshal(s.Members)
-	if err != nil {
-		log.Errorf("69 %s", err)
-	}*/
-
 	sites := db.Collection("sites")
 	_, err := sites.UpdateOne(
 		context.TODO(),
@@ -108,6 +103,107 @@ func (s *Site) AddMember(id primitive.ObjectID, role int, db *mongo.Database) (b
 		return false, err
 	}
 	return true, nil
+}
+
+func (s *Site) GetAgents(db *mongo.Database) ([]*Agent, error) {
+	var filter = bson.D{{"site", s.ID}}
+
+	cursor, err := db.Collection("agents").Find(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+	var results []bson.D
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		return nil, err
+	}
+
+	if len(results) == 0 {
+		return nil, errors.New("no agents match when using id")
+	}
+
+	var agent []*Agent
+	for i := range results {
+		doc, err := bson.Marshal(&results[i])
+		if err != nil {
+			return nil, err
+		}
+		var a *Agent
+		err = bson.Unmarshal(doc, &a)
+		if err != nil {
+			return nil, err
+		}
+
+		agent = append(agent, a)
+	}
+
+	return agent, nil
+}
+
+func (s *Site) AgentCount(db *mongo.Database) (int, error) {
+	var filter = bson.D{{"site", s.ID}}
+
+	count, err := db.Collection("agents").CountDocuments(context.TODO(), filter)
+	if err != nil {
+		return 0, err
+	}
+
+	return int(count), nil
+}
+
+func (s *Site) Get(db *mongo.Database) error {
+	var filter = bson.D{{"_id", s.ID}}
+
+	cursor, err := db.Collection("sites").Find(context.TODO(), filter)
+	if err != nil {
+		return err
+	}
+	var results []bson.D
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		return err
+	}
+
+	//fmt.Println(results)
+
+	if len(results) > 1 {
+		return errors.New("multiple sites match when using id")
+	}
+
+	if len(results) == 0 {
+		return errors.New("no sites match when using id")
+	}
+
+	doc, err := bson.Marshal(&results[0])
+	if err != nil {
+		return err
+	}
+
+	var site Site
+	err = bson.Unmarshal(doc, &site)
+	if err != nil {
+		return err
+	}
+
+	s.Name = site.Name
+	s.Members = site.Members
+	s.CreateTimestamp = site.CreateTimestamp
+
+	return nil
+}
+
+func (s *Site) GetAgentSiteStats(db *mongo.Database) ([]*AgentStats, error) {
+	var agentStats []*AgentStats
+
+	agents, err := s.GetAgents(db)
+	if err != nil {
+		return nil, err
+	}
+	for _, a := range agents {
+		stats, err := a.GetAgentStats(db)
+		log.Error(err)
+		agentStats = append(agentStats, stats)
+	}
+
+	return agentStats, nil
 }
 
 // todo handle if site already exists, or already has the member in it

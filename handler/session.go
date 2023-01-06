@@ -1,11 +1,10 @@
-package main
+package handler
 
 import (
 	"errors"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
-	"github.com/netwatcherio/netwatcher-control/control_models"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -23,7 +22,7 @@ func LoginSession(c *fiber.Ctx, session *session.Store, db *mongo.Database, id p
 	return true, nil
 }
 
-func GetUserFromSession(c *fiber.Ctx, session *session.Store, db *mongo.Database) (*control_models.User, error) {
+func GetUserFromSession(c *fiber.Ctx, session *session.Store, db *mongo.Database) (*User, error) {
 	store, err := session.Get(c) // get/create new session
 	if err != nil {
 		log.Errorf("%s", err)
@@ -37,7 +36,7 @@ func GetUserFromSession(c *fiber.Ctx, session *session.Store, db *mongo.Database
 	str := fmt.Sprintf("%v", store.Get("id"))
 
 	userId, err := primitive.ObjectIDFromHex(str)
-	userGet := control_models.User{ID: userId}
+	userGet := User{ID: userId}
 
 	usr, err := userGet.GetUserFromID(db)
 	if err != nil {

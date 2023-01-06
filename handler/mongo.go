@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"context"
@@ -9,11 +9,11 @@ import (
 )
 
 var (
-	mongoUri string
+	MongoUri string
 )
 
 type MongoDatastore struct {
-	db      *mongo.Database
+	Db      *mongo.Database
 	Session *mongo.Client
 	logger  *logrus.Logger
 }
@@ -21,38 +21,38 @@ type MongoDatastore struct {
 func NewDatastore(dbName string, logger *logrus.Logger) *MongoDatastore {
 
 	var mongoDataStore *MongoDatastore
-	db, session := connect(dbName, logger)
+	db, session := Connect(dbName, logger)
 	if db != nil && session != nil {
 
 		// log statements here as well
 
 		mongoDataStore = new(MongoDatastore)
-		mongoDataStore.db = db
+		mongoDataStore.Db = db
 		mongoDataStore.logger = logger
 		mongoDataStore.Session = session
 		return mongoDataStore
 	}
 
-	logger.Fatalf("Failed to connect to database: %s", dbName)
+	logger.Fatalf("Failed to Connect to database: %s", dbName)
 
 	return nil
 }
 
-func connect(dbName string, logger *logrus.Logger) (a *mongo.Database, b *mongo.Client) {
+func Connect(dbName string, logger *logrus.Logger) (a *mongo.Database, b *mongo.Client) {
 	var connectOnce sync.Once
 	var db *mongo.Database
 	var session *mongo.Client
 	connectOnce.Do(func() {
-		db, session = connectToMongo(dbName, logger)
+		db, session = ConnectToMongo(dbName, logger)
 	})
 
 	return db, session
 }
 
-func connectToMongo(db string, logger *logrus.Logger) (a *mongo.Database, b *mongo.Client) {
+func ConnectToMongo(db string, logger *logrus.Logger) (a *mongo.Database, b *mongo.Client) {
 
 	var err error
-	session := options.Client().ApplyURI(mongoUri)
+	session := options.Client().ApplyURI(MongoUri)
 	if err != nil {
 		logger.Fatal(err)
 	}

@@ -315,6 +315,8 @@ github.com/netwatcherio/netwatcher-agent v1.0.5-0.20230106054009-0f02d4e24f9e h1
 github.com/netwatcherio/netwatcher-agent v1.0.5-0.20230106054009-0f02d4e24f9e/go.mod h1:a++EU7CB0QhHZaBjL2yGRHw7CRXTHHlJn4icynO2eKg=
 github.com/netwatcherio/netwatcher-agent v1.0.5-0.20230106190816-a21f141c1202 h1:M6BBMeshsa1AdrExZ0E/oZtgE8QOSRibo6/9kP7d1Qg=
 github.com/netwatcherio/netwatcher-agent v1.0.5-0.20230106190816-a21f141c1202/go.mod h1:a++EU7CB0QhHZaBjL2yGRHw7CRXTHHlJn4icynO2eKg=
+github.com/netwatcherio/netwatcher-agent v1.0.5-0.20230106204332-b8e7503729e0 h1:6W/lrY2PdRMkVrGgTtqlI7b7Z5UVz0rrRQSMW7s8dhM=
+github.com/netwatcherio/netwatcher-agent v1.0.5-0.20230106204332-b8e7503729e0/go.mod h1:a++EU7CB0QhHZaBjL2yGRHw7CRXTHHlJn4icynO2eKg=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/pascaldekloe/goe v0.0.0-20180627143212-57f6aae5913c/go.mod h1:lzWF7FIEvWOWxwDKqyGYQf6ZUaNfKdP144TG7ZOy1lc=
 github.com/pascaldekloe/goe v0.1.0/go.mod h1:lzWF7FIEvWOWxwDKqyGYQf6ZUaNfKdP144TG7ZOy1lc=

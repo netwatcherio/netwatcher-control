@@ -158,28 +158,25 @@
 
                 let table = new AsciiTable(src + ' → ' + dst)
                 table
-                    .setHeading('#', 'host', 'sent', 'loss%', 'best', 'jitter', 'avg', 'worst', 'last')
+                    .setHeading('#', 'host', 'asn', 'sent', 'received', 'loss%', 'avg','jitter','best', 'worst')
                 let resultD = document.getElementById("traceData" + modifiedName)
 
                 for (let hopNum = 0; hopNum < hubs.length; hopNum++) {
                     let hop = hubs[hopNum]
 
-                    let triggered = hop['triggered']
-                    let timestamp = hop['stop_timestamp']
-
-                    let best = hop['Best']
-                    let avg = hop['Avg']
-                    let last = hop['Last']
-                    let loss = hop['Loss']
+                    let asn = hop['ASN']
                     let lossp = hop['Loss%']
                     let sent = hop['Snt']
+                    let recv = hop['Rcv']
+                    let best = hop['Best']
+                    let avg = hop['Avg']
                     let worst = hop['Wrst']
-                    let jitter = hop['StDev']
+                    let jitter = hop['Jttr']
                     let host = hop['host']
 
                     console.log(jitter)
 
-                    table.addRow(hopNum, host, sent, lossp, best, jitter, avg, worst, last)
+                    table.addRow(hopNum, host, asn, sent, recv, lossp, avg, jitter, best, worst)
                 }
 
                 resultD.innerHTML += '<pre><code>'+table.toString()+'</code></pre>'

@@ -112,12 +112,14 @@
 
                 let result = traceroutes[i]['data'][i2]['result']
                 let timestamp = result['stop_timestamp']
-                squish = document.getElementById(address.replaceAll(".",""))
+
                 let modifiedName = (address + timestamp)
                     .replaceAll("-", "")
                     .replaceAll(":", "")
                     .replaceAll("-", "")
                     .replaceAll(".", "")
+
+                squish = document.getElementById("accord" + modifiedName)
 
                 squish.innerHTML +=
                     (triggered ? '<div class="accordion-item border-danger">' : '<div class="accordion-item border-success">') +
@@ -149,11 +151,9 @@
                     .replaceAll("-", "")
                     .replaceAll(".", "")
 
-                let statistics = result.metrics
                 //console.log(Object.keys(statistics).length + statistics)
 
                 for (let hopNum = 1; hopNum <= Object.keys(statistics).length; hopNum++) {
-                    let statistic = statistics['' + hopNum]
                     let resultD = document.getElementById("traceData" + modifiedName)
                     if (hopNum == 1) {
                         resultD.innerHTML += '<pre><code>\n' +

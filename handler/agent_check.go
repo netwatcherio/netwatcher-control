@@ -23,7 +23,7 @@ const (
 
 type AgentCheck struct {
 	Type            CheckType          `json:"type"bson:"type""`
-	Target          string             `json:"address,omitempty"bson:"target,omitempty"`
+	Target          string             `json:"target,omitempty"bson:"target,omitempty"`
 	ID              primitive.ObjectID `json:"id"bson:"_id"`
 	AgentID         primitive.ObjectID `json:"agent"bson:"agent"`
 	Duration        int                `json:"duration,omitempty'"bson:"duration,omitempty"`
@@ -34,11 +34,14 @@ type AgentCheck struct {
 	CreateTimestamp time.Time          `bson:"create_timestamp"json:"create_timestamp"`
 }
 
-func (ac *AgentCheck) GetData(limit int64, recent bool, timeStart *time.Time, timeEnd *time.Time, db *mongo.Database) ([]*CheckData, error) {
+func (ac *AgentCheck) GetData(limit int64, justCheckId bool, recent bool, timeStart *time.Time, timeEnd *time.Time, db *mongo.Database) ([]*CheckData, error) {
 	opts := options.Find().SetLimit(limit)
 	var filter = bson.D{{"check", ac.ID}, {"type", ac.Type}}
 	if ac.AgentID != (primitive.ObjectID{0}) {
 		filter = bson.D{{"agent", ac.AgentID}, {"type", ac.Type}}
+	}
+	if justCheckId {
+		filter = bson.D{{"check", ac.ID}}
 	}
 
 	var timeFilter bson.M

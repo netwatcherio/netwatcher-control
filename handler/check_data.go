@@ -13,7 +13,7 @@ import (
 )
 
 type CheckData struct {
-	Target    string             `json:"address,omitempty"bson:"target,omitempty"`
+	Target    string             `json:"target,omitempty"bson:"target,omitempty"`
 	ID        primitive.ObjectID `json:"id"bson:"_id"`
 	CheckID   primitive.ObjectID `json:"check"bson:"check"`
 	AgentID   primitive.ObjectID `json:"agent"bson:"agent"`

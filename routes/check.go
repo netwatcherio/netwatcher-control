@@ -3,6 +3,7 @@ package routes
 import (
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
+	"github.com/netwatcherio/netwatcher-agent/checks"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"html"
@@ -52,19 +53,72 @@ func (r *Router) check() {
 			log.Errorf("13 %s", err)
 		}
 
-		data, err := ac.GetData(10, true, nil, nil, r.DB)
+		data, err := ac.GetData(10, true, true, nil, nil, r.DB)
 		if err != nil {
 			return err
 		}
 
-		cdBytes, err := json.Marshal(data)
+		var checkData interface{}
+
+		switch ac.Type {
+		case handler.CtMtr:
+			var mtrD []*checks.MtrResult
+			for _, d := range data {
+				if d.Type == handler.CtMtr {
+					mtr, err := d.ConvMtr()
+					if err != nil {
+						return err
+					}
+					mtrD = append(mtrD, mtr)
+				}
+			}
+			checkData = mtrD
+		case handler.CtNetinfo:
+			var netinfoD []*checks.NetResult
+			for _, d := range data {
+				if d.Type == handler.CtNetinfo {
+					netinfo, err := d.ConvNetresult()
+					if err != nil {
+						return err
+					}
+					netinfoD = append(netinfoD, netinfo)
+				}
+			}
+			checkData = netinfoD
+		case handler.CtSpeedtest:
+			var speedD []*checks.SpeedTest
+			for _, d := range data {
+				if d.Type == handler.CtSpeedtest {
+					speed, err := d.ConvSpeedtest()
+					if err != nil {
+						return err
+					}
+					speedD = append(speedD, speed)
+				}
+			}
+			checkData = speedD
+		case handler.CtRperf:
+			var rperfD []*checks.RPerfResults
+			for _, d := range data {
+				if d.Type == handler.CtRperf {
+					rperf, err := d.ConvRperf()
+					if err != nil {
+						return err
+					}
+					rperfD = append(rperfD, rperf)
+				}
+			}
+			checkData = rperfD
+		}
+
+		bytes, err := json.Marshal(checkData)
 		if err != nil {
 			log.Error(err)
 		}
 
 		acBytes, err := json.Marshal(ac)
 		if err != nil {
-			return err
+			log.Error(err)
 		}
 
 		hasData := len(data) > 0
@@ -77,13 +131,12 @@ func (r *Router) check() {
 			"siteId":       site.ID.Hex(),
 			"agents":       html.UnescapeString(string(marshal)),
 			"check":        html.UnescapeString(string(acBytes)),
-			"checkData":    html.UnescapeString(string(cdBytes)),
+			"checkData":    html.UnescapeString(string(bytes)),
 			"hasData":      hasData,
-			/*"speedtestPending": agent.AgentConfig.SpeedTestPending,*/
-			"agentId":   agent.ID.Hex(),
-			"firstName": user.FirstName,
-			"lastName":  user.LastName,
-			"email":     user.Email,
+			"agentId":      agent.ID.Hex(),
+			"firstName":    user.FirstName,
+			"lastName":     user.LastName,
+			"email":        user.Email,
 		},
 			"layouts/main")
 	})

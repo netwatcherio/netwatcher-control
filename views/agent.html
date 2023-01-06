@@ -218,19 +218,23 @@
   const checks = document.getElementById("checks");
 
   for (let i = 0; i < agentChecks.length; i++) {
+    let type = agentChecks[i]["type"]
+    let target = agentChecks[i]["target"]
+
     let color = 'bg-danger'
     let icon = 'ri-information-line'
     let desc = 'click to view'
-    if (agentChecks[i]["type"] == "MTR"){
+    if (type == "MTR"){
       color = 'bg-success'
       icon = 'ri-route-line'
-    }else if (agentChecks[i]["type"] == "RPERF"){
+      desc = '<b>'+target+'</b>\nclick to view'
+    }else if (type == "RPERF"){
       color = 'bg-dark'
       icon = 'ri-line-chart-fill'
-    }else if (agentChecks[i]["type"] == "NETINFO"){
+    }else if (type == "NETINFO"){
       color = 'bg-purple'
       icon = 'ri-computer-line'
-    }else if (agentChecks[i]["type"] == "SPEEDTEST"){
+    }else if (type == "SPEEDTEST"){
       color = 'bg-warning'
       icon = 'ri-dashboard-2-line'
     }

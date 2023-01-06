@@ -43,7 +43,7 @@ func (a *Agent) GetAgentStats(db *mongo.Database) (*AgentStats, error) {
 
 	// get the latest net stats
 	agentCheck := AgentCheck{AgentID: a.ID, Type: CtNetinfo}
-	netInfo, err := agentCheck.GetData(1, true, nil, nil, db)
+	netInfo, err := agentCheck.GetData(1, false, true, nil, nil, db)
 	if err != nil {
 		return &stats, err
 	}
@@ -71,7 +71,7 @@ func (a *Agent) GetAgentStats(db *mongo.Database) (*AgentStats, error) {
 
 	// get the latest net stats
 	agentCheck = AgentCheck{AgentID: a.ID, Type: CtSpeedtest}
-	speedGet, err := agentCheck.GetData(1, true, nil, nil, db)
+	speedGet, err := agentCheck.GetData(1, false, true, nil, nil, db)
 	if err != nil {
 		return &stats, err
 	}

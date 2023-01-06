@@ -4,15 +4,15 @@
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb mb-0 d-flex align-items-center">
           <li class="breadcrumb-item">
-            <a href="/home" class="link"><i class="ri-home-3-line fs-5"></i></a>
+            <a class="link" href="/home"><i class="ri-home-3-line fs-5"></i></a>
           </li>
           {{if .siteSelected}}
           <li class="breadcrumb-item">
-            {{.siteName}}
+            <a class="link" href="/site/{{.siteId}}">{{.siteName}}</a>
           </li>
           {{end}}
-          <li class="breadcrumb-item active" aria-current="page">
-            {{.title}}
+          <li aria-current="page" class="breadcrumb-item active">
+            <a class="link" href="/agent/{{.agentId}}">{{.title}}</a>
           </li>
         </ol>
       </nav>
@@ -227,7 +227,7 @@
     if (type == "MTR"){
       color = 'bg-success'
       icon = 'ri-route-line'
-      desc = '<b>'+target+'</b>\nclick to view'
+      desc = target
     }else if (type == "RPERF"){
       color = 'bg-dark'
       icon = 'ri-line-chart-fill'

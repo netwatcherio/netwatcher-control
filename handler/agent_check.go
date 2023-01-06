@@ -242,4 +242,29 @@ func (ac *AgentCheck) GetAll(db *mongo.Database) ([]*AgentCheck, error) {
 	return agentCheck, nil
 }
 
+func (a *AgentCheck) Update(db *mongo.Database) error {
+	var filter = bson.D{{"_id", a.ID}}
+
+	marshal, err := bson.Marshal(&a)
+	if err != nil {
+		return err
+	}
+
+	var b *bson.D
+	err = bson.Unmarshal(marshal, &b)
+	if err != nil {
+		log.Errorf("error unmarhsalling agent data when creating: %s", err)
+		return err
+	}
+
+	update := bson.D{{"$set", b}}
+
+	_, err = db.Collection("agent_check").UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 //todo deleting checks

@@ -8,20 +8,27 @@
                     </li>
                     {{if .siteSelected}}
                     <li class="breadcrumb-item">
-                        {{.siteName}}
+                        <a class="link" href="/site/{{.siteId}}">{{.siteName}}</a>
                     </li>
                     {{end}}
                     <li aria-current="page" class="breadcrumb-item active">
-                        {{.title}}
+                        <a class="link" href="/agent/{{.agentId}}">{{.title}}</a>
                     </li>
                 </ol>
             </nav>
             <h1 class="mb-0 fw-bold" id="title">{{.title}}</h1>
         </div>
+        <div class="
+                col-lg-4 col-md-6
+                d-none d-md-flex
+                align-items-center
+                justify-content-end
+              " id="pending">
+        </div>
     </div>
 </div>
 
-<div class="container-fluid">
+<div class="container-fluid" id="container">
     {{if .hasData}}
     <!--<div class="row">
         &lt;!&ndash; column &ndash;&gt;
@@ -69,6 +76,9 @@
         let checkData = JSON.parse("{{.checkData}}")
         let check = JSON.parse("{{.check}}")
 
+        let container = document.getElementById('container')
+        let pendingDoc = document.getElementById('pending')
+
         let parser = new DOMParser();
 
         if (check.type == "MTR") {
@@ -104,11 +114,11 @@
                     mtrDoc = document.getElementById('mtr')
                     mtrDoc.innerHTML += '<div class=\"col-12\">' +
                         '            <div class=\"card border-dark\">' +
-                        '                <div class=\"card-body\" id=\"card'+dst.replaceAll('.', '')+'\">' +
+                        '                <div class=\"card-body\" id=\"card' + dst.replaceAll('.', '') + '\">' +
                         '                    <div class=\"d-md-flex\">' +
                         '                    <div>' +
-                        '                        <h4 class=\"card-title\">'+dst+'</h4>' +
-                        '                        <h5 class=\"card-subtitle\">mtr tests for <code>'+dst+'</code></h5>' +
+                        '                        <h4 class=\"card-title\">' + dst + '</h4>' +
+                        '                        <h5 class=\"card-subtitle\">mtr tests for <code>' + dst + '</code></h5>' +
                         '                    </div>' +
                         '                    </div>' +
                         '</div>' +
@@ -121,21 +131,21 @@
                 if (triggered) {
                     triggeredText = ' <span class="badge bg-light-success text-success"><i class="fa fa-exclamation-triangle"></i> triggered</span>'
                 }
-                
-                mtrDoc2 = document.getElementById('card'+dst.replaceAll('.', ''))
+
+                mtrDoc2 = document.getElementById('card' + dst.replaceAll('.', ''))
                 mtrDoc2.innerHTML += '<hr><div class=\"col-lg-12 col-md-6 col-12 align-self-center\">' +
-                    '                    <div class=\"accordion\\" id=\"accord'+modifiedName+'\">' +
+                    '                    <div class=\"accordion\\" id=\"accord' + modifiedName + '\">' +
                     (triggered ? '<div class="accordion-item border-danger">' : '<div class="accordion-item border-success">') +
                     '                            <h2 class=\"accordion-header\" id=\"headingMOD\">' +
-                    '                                <button class=\"accordion-button collapsed\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#collapse'+modifiedName+'\" aria-expanded=\"false\" aria-controls=\"collapse'+modifiedName+'\">' +
-                    '                                    '+niceTimestamp.toString() + triggeredText+' </button>' +
+                    '                                <button class=\"accordion-button collapsed\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#collapse' + modifiedName + '\" aria-expanded=\"false\" aria-controls=\"collapse' + modifiedName + '\">' +
+                    '                                    ' + niceTimestamp.toString() + triggeredText + ' </button>' +
                     '                            </h2>' +
                     '                        </div>' +
                     '                    </div>' +
                     '' +
-                    '                        <div id=\"collapse'+modifiedName+'\" class=\"accordion-collapse collapse\" aria-labelledby=\"heading'+modifiedName+'\" data-bs-parent=\"#accord'+modifiedName+'\" style=\"\">' +
+                    '                        <div id=\"collapse' + modifiedName + '\" class=\"accordion-collapse collapse\" aria-labelledby=\"heading' + modifiedName + '\" data-bs-parent=\"#accord' + modifiedName + '\" style=\"\">' +
                     '                            <div class=\"accordion-body\">' +
-                    '                                <div class=\"text-center\" id=\"traceData'+modifiedName+'\">' +
+                    '                                <div class=\"text-center\" id=\"traceData' + modifiedName + '\">' +
                     '                                </div>' +
                     '                            </div>' +
                     '                        </div>' +
@@ -146,6 +156,11 @@
 
                 let row = document.getElementById("mtr")
 
+                let table = new AsciiTable(src + ' → ' + dst)
+                table
+                    .setHeading('#', 'host', 'sent', 'loss%', 'best', 'jitter', 'avg', 'worst', 'last')
+                let resultD = document.getElementById("traceData" + modifiedName)
+
                 for (let hopNum = 0; hopNum < hubs.length; hopNum++) {
                     let hop = hubs[hopNum]
 
@@ -155,37 +170,115 @@
                     let best = hop['Best']
                     let avg = hop['Avg']
                     let last = hop['Last']
+                    let loss = hop['Loss']
                     let lossp = hop['Loss%']
                     let sent = hop['Snt']
                     let worst = hop['Wrst']
                     let jitter = hop['StDev']
                     let host = hop['host']
 
-                        let resultD = document.getElementById("traceData" + modifiedName)
-                        if (hopNum == 0) {
-                            resultD.innerHTML += '<pre><code>\n' +
-                                '+---+-------------------------------------------------------------------------+-------+-----+------+------+------+------+\n' +
-                                '| # | Hostname                                                                | Snt | Loss% | Last |  Avg | Best | Wrst |\n' +
-                                '+---+-------------------------------------------------------------------------+-------+-----+------+------+------+------+\n';
-                        }
+                    console.log(jitter)
 
-                        //let statistic = statistics[hopNum]
-                        resultD.innerHTML += '\n<pre><code>| ' + hopNum + ' | ' + host + '                                                              |     '
-                            + sent +
-                            ' |  ' + lossp +
-                            ' |  ' + jitter +
-                            ' |  ' + avg +
-                            ' |  ' + best +
-                            ' |  ' + worst + ' |\n</code></pre>';
-
-                        if (hopNum == hubs.length) {
-                            resultD.innerHTML +=
-                                '<pre><code>\n+---+-------------------------------------------------------------------------+-------+-----+------+------+------+------+\n' +
-                                '</code></pre>';
-                        }
-                    }
+                    table.addRow(hopNum, host, sent, lossp, best, jitter, avg, worst, last)
                 }
+
+                resultD.innerHTML += '<pre><code>'+table.toString()+'</code></pre>'
+            }
         }
+        else if(check.type == "SPEEDTEST"){
+            if (check.pending) {
+                pendingDoc.innerHTML += '<a class="btn btn-warning d-flex align-items-center ms-2">\n' +
+                    '                <i class="mdi mdi-timer-sand"></i>\n' +
+                    '                already running...\n' +
+                    '            </a>'
+            }else{
+                pendingDoc.innerHTML += '<a href="/check/new/{{.agentId}}" class="btn btn-info d-flex align-items-center ms-2">\n' +
+                    '                <i class="mdi mdi-speedometer"></i>\n' +
+                    '                run speedtest\n' +
+                    '            </a>'
+            }
+
+            container.innerHTML += '<div class="d-flex border-bottom title-part-padding px-0 mb-3 align-items-center">' +
+                '<div><h4 class="mb-0">speedtests</h4></div></div>'
+            container.innerHTML += '<div class="row" id="speedtest"></div>'
+
+            speedtestDoc = document.getElementById('speedtest')
+
+            for (let i = 0; i < checkData.length; i++) {
+                let test = checkData[i]
+                let latency = test['latency']/1000000
+                let downs = test['dl_speed']
+                let ups = test['ul_speed']
+                let serverloc = test['server']
+                let timestamp = test['timestamp']
+                let host = test['host']
+
+                let niceTimestamp = new Date(timestamp)
+
+                speedtestDoc.innerHTML += '<div class="col-lg-4 col-md-6">\n' +
+                    '            <div class="card bg-light">\n' +
+                    '                <div class="card-body">\n' +
+                    '                    <div class="carousel slide" data-ride="carousel">\n' +
+                    '                        <!-- Carousel items -->\n' +
+                    '                        <div class="carousel-inner">\n' +
+                    '                            <div class="carousel-item flex-column active">\n' +
+                    '                                <div class="d-flex no-block align-items-center me-3">\n' +
+                    '                                    <div class="mt-1">\n' +
+                    '                                        <h5 class="font-weight-medium">\n' +
+                    '                                            <code>'+niceTimestamp+'</code>\n' +
+                    '                                        </h5>\n' +
+                    '                                        <h6 title="'+host+'">'+serverloc+' <i class="ri-information-line"></i></h6>\n' +
+                    '                                    </div>\n' +
+                    '                                    <div class="ms-auto mt-3">\n' +
+                    '                                        <div class="crypto"></div>\n' +
+                    '                                    </div>\n' +
+                    '                                </div>\n' +
+                    '                                <div class="row text-center mt-4">\n' +
+                    '                                    <div class="col-4">\n' +
+                    '                                        <span class="fs-3"><i class="ri-arrow-down-line mx-1"></i> download</span>\n' +
+                    '                                        <p class="\n' +
+                    '                                    font-weight-medium\n' +
+                    '                                    d-flex\n' +
+                    '                                    align-items-center\n' +
+                    '                                    justify-content-center\n' +
+                    '                                  ">\n' +
+                    '                                            '+Math.round(downs)+'mbps \n' +
+                    '                                        </p>\n' +
+                    '                                    </div>\n' +
+                    '                                    <div class="col-4">\n' +
+                    '                                        <span class="fs-3"><i class="ri-arrow-up-line mx-1"></i> upload</span>\n' +
+                    '                                        <p class="\n' +
+                    '                                    d-flex\n' +
+                    '                                    align-items-center\n' +
+                    '                                    justify-content-center\n' +
+                    '                                    font-weight-medium\n' +
+                    '                                  ">\n' +
+                    '                                            '+Math.round(ups)+'mbps \n' +
+                    '                                        </p>\n' +
+                    '                                    </div>\n' +
+                    '                                    <div class="col-4">\n' +
+                    '                                        <span class="fs-3"><i class="ri-time-line"></i> latency</span>\n' +
+                    '                                        <p class="\n' +
+                    '                                    d-flex\n' +
+                    '                                    align-items-center\n' +
+                    '                                    justify-content-center\n' +
+                    '                                    font-weight-medium\n' +
+                    '                                  ">\n' +
+                    '                                            '+Math.round(latency)+'ms \n' +
+                    '                                        </p>\n' +
+                    '                                    </div>\n' +
+                    '                                </div>\n' +
+                    '                            </div>\n' +
+                    '                        </div>\n' +
+                    '                    </div>\n' +
+                    '                </div>\n' +
+                    '            </div>\n' +
+                    '        </div>'
+            }
+
+
+        }
+
     </script>
     {{else}}
     <div class="row">

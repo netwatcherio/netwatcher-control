@@ -68,6 +68,7 @@ func (r *Router) apiGetConfig() {
 					Duration: ac.Duration,
 					Count:    ac.Count,
 					Server:   ac.Server,
+					Pending:  ac.Pending,
 				}
 
 				che = append(che, modifiedData)
@@ -116,6 +117,19 @@ func (r *Router) apiDataPush() {
 				err = data.Create(r.DB)
 				if err != nil {
 					respB.Error = "500 unable to create check data"
+				}
+
+				if cD.Type == string(handler.CtSpeedtest) {
+					ac := handler.AgentCheck{ID: cD.ID}
+					_, err := ac.Get(r.DB)
+					if err != nil {
+						log.Error(err)
+					}
+					ac.Pending = false
+					err = ac.Update(r.DB)
+					if err != nil {
+						log.Error(err)
+					}
 				}
 			}
 		} else {

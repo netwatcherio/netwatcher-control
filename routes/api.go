@@ -69,6 +69,7 @@ func (r *Router) apiGetConfig() {
 					Count:    ac.Count,
 					Server:   ac.Server,
 					Pending:  ac.Pending,
+					Interval: ac.Interval,
 				}
 
 				che = append(che, modifiedData)

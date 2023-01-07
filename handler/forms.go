@@ -6,4 +6,5 @@ type CheckNewForm struct {
 	RperfServerEnable bool   `json:"target"form:"rperfServerEnable"`
 	Duration          int    `json:"omitempty'"form:"duration"`
 	Count             int    `json:"count,omitempty"form:"count"`
+	Interval          int    `json:"interval,omitempty"form:"interval"`
 }

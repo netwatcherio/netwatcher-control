@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/netwatcherio/netwatcher-agent/api"
-	"github.com/netwatcherio/netwatcher-agent/checks"
 	_ "github.com/netwatcherio/netwatcher-agent/checks"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -15,9 +14,9 @@ import (
 func (r *Router) apiGetConfig() {
 	r.App.Post("/api/v2/config/", func(c *fiber.Ctx) error {
 		c.Accepts("Application/json") // "Application/json"
-		respB := api.Data{}
+		respB := handler.ApiRequest{}
 
-		var dataRequest api.Data
+		var dataRequest handler.ApiRequest
 
 		err := json.Unmarshal(c.Body(), &dataRequest)
 		if err != nil {
@@ -58,22 +57,7 @@ func (r *Router) apiGetConfig() {
 				respB.Error = "500"
 			}
 
-			var che []checks.CheckData
-
-			for _, ac := range all {
-				modifiedData := checks.CheckData{
-					Type:     string(ac.Type),
-					Target:   ac.Target,
-					ID:       ac.ID,
-					Duration: ac.Duration,
-					Count:    ac.Count,
-					Server:   ac.Server,
-					Pending:  ac.Pending,
-				}
-
-				che = append(che, modifiedData)
-			}
-			respB.Checks = che
+			respB.Data = all
 		}
 
 		jRespB, err := json.Marshal(respB)

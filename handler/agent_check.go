@@ -29,9 +29,10 @@ type AgentCheck struct {
 	Duration        int                `json:"duration,omitempty'"bson:"duration,omitempty"`
 	Count           int                `json:"count,omitempty"bson:"count,omitempty"`
 	Triggered       bool               `json:"triggered"bson:"triggered,omitempty"`
+	Interval        int                `json:"interval"bson:"interval"`
 	Server          bool               `json:"server,omitempty"bson:"server,omitempty"`
 	Pending         bool               `json:"pending,omitempty"bson:"pending,omitempty"`
-	CreateTimestamp time.Time          `bson:"create_timestamp"json:"create_timestamp"`
+	CreateTimestamp time.Time          `json:"create_timestamp"bson:"create_timestamp"`
 }
 
 func (ac *AgentCheck) GetData(limit int64, justCheckId bool, recent bool, timeStart *time.Time, timeEnd *time.Time, db *mongo.Database) ([]*CheckData, error) {
@@ -182,6 +183,7 @@ func (ac *AgentCheck) Get(db *mongo.Database) ([]*AgentCheck, error) {
 		ac.Count = agentCheck.Count
 		ac.Pending = agentCheck.Pending
 		ac.Target = agentCheck.Target
+		ac.Interval = agentCheck.Interval
 
 		return nil, nil
 	} else {
@@ -242,10 +244,10 @@ func (ac *AgentCheck) GetAll(db *mongo.Database) ([]*AgentCheck, error) {
 	return agentCheck, nil
 }
 
-func (a *AgentCheck) Update(db *mongo.Database) error {
-	var filter = bson.D{{"_id", a.ID}}
+func (ac *AgentCheck) Update(db *mongo.Database) error {
+	var filter = bson.D{{"_id", ac.ID}}
 
-	marshal, err := bson.Marshal(&a)
+	marshal, err := bson.Marshal(&ac)
 	if err != nil {
 		return err
 	}

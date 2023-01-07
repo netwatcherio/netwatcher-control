@@ -18,7 +18,6 @@ require (
 	github.com/jackpal/gateway v1.0.7 // indirect
 	github.com/klauspost/compress v1.15.9 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
-	github.com/netwatcherio/netwatcher-agent v1.0.5-0.20230106204332-b8e7503729e0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/showwin/speedtest-go v1.1.5 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect

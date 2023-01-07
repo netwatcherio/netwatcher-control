@@ -187,6 +187,7 @@ func (r *Router) checkNew() {
 		c.Accepts("application/x-www-form-urlencoded") // "Application/json"
 
 		// todo recevied body is in url format, need to convert to new struct??
+		//
 
 		_, err := validateUser(r, c)
 		if err != nil {
@@ -236,7 +237,6 @@ func (r *Router) checkNew() {
 				Target:   cCheck.Target,
 				AgentID:  agent.ID,
 				Duration: cCheck.Duration,
-				Interval: cCheck.Interval,
 			}
 		} else if cCheck.Type == string(handler.CtRperf) {
 			aC = handler.AgentCheck{

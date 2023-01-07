@@ -3,11 +3,11 @@ package routes
 import (
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
+	"github.com/netwatcherio/netwatcher-control/handler"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"html"
 	"math"
-	"netwatcher-control/handler"
 	_ "strings"
 	"time"
 )

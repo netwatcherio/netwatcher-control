@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/netwatcherio/netwatcher-agent/checks"
+	"github.com/netwatcherio/netwatcher-control/handler"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"html"
-	"netwatcher-control/handler"
 )
 
 // TODO authenticate & verify that the user is infact apart of the site etc.

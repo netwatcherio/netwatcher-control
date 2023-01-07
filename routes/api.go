@@ -4,20 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
-	"github.com/netwatcherio/netwatcher-agent/api"
-	"github.com/netwatcherio/netwatcher-agent/checks"
-	_ "github.com/netwatcherio/netwatcher-agent/checks"
+	"github.com/netwatcherio/netwatcher-control/handler"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"netwatcher-control/handler"
 )
 
 func (r *Router) apiGetConfig() {
 	r.App.Post("/api/v2/config/", func(c *fiber.Ctx) error {
 		c.Accepts("Application/json") // "Application/json"
-		respB := api.Data{}
+		respB := handler.ApiRequest{}
 
-		var dataRequest api.Data
+		var dataRequest handler.ApiRequest
 
 		err := json.Unmarshal(c.Body(), &dataRequest)
 		if err != nil {
@@ -58,22 +55,7 @@ func (r *Router) apiGetConfig() {
 				respB.Error = "500"
 			}
 
-			var che []checks.CheckData
-
-			for _, ac := range all {
-				modifiedData := checks.CheckData{
-					Type:     string(ac.Type),
-					Target:   ac.Target,
-					ID:       ac.ID,
-					Duration: ac.Duration,
-					Count:    ac.Count,
-					Server:   ac.Server,
-					Pending:  ac.Pending,
-				}
-
-				che = append(che, modifiedData)
-			}
-			respB.Checks = che
+			respB.Data = all
 		}
 
 		jRespB, err := json.Marshal(respB)
@@ -87,9 +69,9 @@ func (r *Router) apiGetConfig() {
 func (r *Router) apiDataPush() {
 	r.App.Post("/api/v2/agent/push", func(c *fiber.Ctx) error {
 		c.Accepts("Application/json") // "Application/json"
-		respB := api.Data{}
+		respB := handler.ApiRequest{}
 
-		var dataRequest api.Data
+		var dataRequest handler.ApiRequest
 
 		fmt.Println(string(c.Body()))
 
@@ -99,39 +81,8 @@ func (r *Router) apiDataPush() {
 			log.Fatal(err)
 		}
 
-		if dataRequest.ID != "000000000000000000000000" && dataRequest.PIN != "" && len(dataRequest.Checks) > 0 {
-			hexId, err := primitive.ObjectIDFromHex(dataRequest.ID)
-			if err != nil {
-				respB.Error = "500 something went wrong, unable to compute object id"
-			}
-
-			for _, cD := range dataRequest.Checks {
-				data := handler.CheckData{
-					Target:    cD.Target,
-					ID:        primitive.NewObjectID(),
-					CheckID:   cD.ID,
-					AgentID:   hexId,
-					Triggered: cD.Triggered,
-					Result:    cD.Result,
-				}
-				err = data.Create(r.DB)
-				if err != nil {
-					respB.Error = "500 unable to create check data"
-				}
-
-				if cD.Type == string(handler.CtSpeedtest) {
-					ac := handler.AgentCheck{ID: cD.ID}
-					_, err := ac.Get(r.DB)
-					if err != nil {
-						log.Error(err)
-					}
-					ac.Pending = false
-					err = ac.Update(r.DB)
-					if err != nil {
-						log.Error(err)
-					}
-				}
-			}
+		if dataRequest.ID != "000000000000000000000000" && dataRequest.PIN != "" {
+			// todo
 		} else {
 			respB.Error = "500 unable to verify auth"
 		}

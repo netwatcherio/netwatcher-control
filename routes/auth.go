@@ -2,10 +2,10 @@ package routes
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/netwatcherio/netwatcher-control/handler"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
-	"netwatcher-control/handler"
 )
 
 func validateUser(r *Router, c *fiber.Ctx) (*handler.User, error) {

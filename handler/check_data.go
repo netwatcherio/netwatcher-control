@@ -16,7 +16,7 @@ type CheckData struct {
 	ID        primitive.ObjectID `json:"id"bson:"_id"`
 	CheckID   primitive.ObjectID `json:"check"bson:"check"`
 	AgentID   primitive.ObjectID `json:"agent"bson:"agent"`
-	Triggered bool               `json:"triggered"bson:"triggered,omitempty"`
+	Triggered bool               `json:"triggered"bson:"triggered"`
 	Timestamp time.Time          `bson:"timestamp"json:"timestamp"`
 	Result    interface{}        `json:"result"bson:"result,omitempty"`
 	Type      CheckType          `bson:"type"json:"type"`

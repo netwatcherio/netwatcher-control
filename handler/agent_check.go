@@ -13,17 +13,17 @@ import (
 )
 
 type AgentCheck struct {
-	Type            CheckType          `json:"type"bson:"type""`
+	Type            CheckType          `json:"type"bson:"type,omitempty"`
 	Target          string             `json:"target,omitempty"bson:"target,omitempty"`
-	ID              primitive.ObjectID `json:"id"bson:"_id"`
-	AgentID         primitive.ObjectID `json:"agent"bson:"agent"`
-	Duration        int                `json:"duration,omitempty'"bson:"duration,omitempty"`
+	ID              primitive.ObjectID `json:"id"bson:"_id,omitempty"`
+	AgentID         primitive.ObjectID `json:"agent"bson:"agent,omitempty"`
+	Duration        int                `json:"duration,omitempty'"bson:"duration"`
 	Count           int                `json:"count,omitempty"bson:"count,omitempty"`
 	Triggered       bool               `json:"triggered"bson:"triggered,omitempty"`
 	Server          bool               `json:"server,omitempty"bson:"server,omitempty"`
-	Pending         bool               `json:"pending,omitempty"bson:"pending,omitempty"`
-	Interval        int                `json:"interval"bson:"interval"`
-	CreateTimestamp time.Time          `bson:"create_timestamp"json:"create_timestamp"`
+	Pending         bool               `json:"pending,omitempty"bson:"pending"`
+	Interval        int                `json:"interval"bson:"interval,omitempty"`
+	CreateTimestamp time.Time          `bson:"create_timestamp"json:"create_timestamp,omitempty"`
 }
 
 func (ac *AgentCheck) GetData(limit int64, justCheckId bool, recent bool, timeStart *time.Time, timeEnd *time.Time, db *mongo.Database) ([]*CheckData, error) {
@@ -237,12 +237,12 @@ func (ac *AgentCheck) GetAll(db *mongo.Database) ([]*AgentCheck, error) {
 func (ac *AgentCheck) Update(db *mongo.Database) error {
 	var filter = bson.D{{"_id", ac.ID}}
 
-	marshal, err := bson.Marshal(&ac)
+	marshal, err := bson.Marshal(ac)
 	if err != nil {
 		return err
 	}
 
-	var b *bson.D
+	var b bson.D
 	err = bson.Unmarshal(marshal, &b)
 	if err != nil {
 		log.Errorf("error unmarhsalling agent data when creating: %s", err)

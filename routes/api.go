@@ -65,7 +65,7 @@ func (r *Router) apiGetConfig() {
 	})
 }
 
-func (r *Router) apiDataPush() {
+func (r *Router) apiDataPush(ch chan handler.CheckData) {
 	r.App.Post("/api/v2/agent/push", func(c *fiber.Ctx) error {
 		c.Accepts("Application/json") // "Application/json"
 		respB := handler.ApiRequest{}
@@ -110,11 +110,9 @@ func (r *Router) apiDataPush() {
 
 			respB.Error = ""
 
+			// use channels to process these async
 			for _, cd := range checkD {
-				err := cd.Create(r.DB)
-				if err != nil {
-					log.Error(err)
-				}
+				ch <- cd
 			}
 		}
 

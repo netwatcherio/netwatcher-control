@@ -16,7 +16,7 @@ type Agent struct {
 	Name        string             `bson:"name"json:"name"form:"name"`
 	Site        primitive.ObjectID `bson:"site"json:"site"` // _id of mongo object
 	Pin         string             `bson:"pin"json:"pin"`   // used for registration & authentication
-	Heartbeat   time.Time          `bson:"heartbeat,omitempty"json:"heartbeat,omitempty"`
+	Heartbeat   time.Time          `bson:"heartbeat,omitempty"json:"heartbeat"`
 	Initialized bool               `bson:"initialized"json:"initialized"`
 	Longitude   float64            `bson:"longitude"json:"longitude"form:"longitude"'`
 	Latitude    float64            `bson:"latitude"json:"latitude"form:"latitude"`
@@ -253,12 +253,12 @@ func (a *Agent) UpdateHeartbeat(db *mongo.Database) error {
 func (a *Agent) Update(db *mongo.Database) error {
 	var filter = bson.D{{"_id", a.ID}}
 
-	marshal, err := bson.Marshal(&a)
+	marshal, err := bson.Marshal(a)
 	if err != nil {
 		return err
 	}
 
-	var b *bson.D
+	var b bson.D
 	err = bson.Unmarshal(marshal, &b)
 	if err != nil {
 		log.Errorf("error unmarhsalling agent data when creating: %s", err)

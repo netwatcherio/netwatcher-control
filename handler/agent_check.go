@@ -26,10 +26,10 @@ type AgentCheck struct {
 	Target          string             `json:"target,omitempty"bson:"target,omitempty"`
 	ID              primitive.ObjectID `json:"id"bson:"_id"`
 	AgentID         primitive.ObjectID `json:"agent"bson:"agent"`
-	Duration        int32              `json:"duration,omitempty'"bson:"duration,omitempty"`
-	Count           int32              `json:"count,omitempty"bson:"count,omitempty"`
+	Duration        int                `json:"duration,omitempty'"bson:"duration,omitempty"`
+	Count           int                `json:"count,omitempty"bson:"count,omitempty"`
 	Triggered       bool               `json:"triggered"bson:"triggered,omitempty"`
-	Interval        int32              `json:"interval"bson:"interval"`
+	Interval        int                `json:"interval"bson:"interval"`
 	Server          bool               `json:"server,omitempty"bson:"server,omitempty"`
 	Pending         bool               `json:"pending,omitempty"bson:"pending,omitempty"`
 	CreateTimestamp time.Time          `json:"create_timestamp"bson:"create_timestamp"`

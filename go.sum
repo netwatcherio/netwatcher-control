@@ -338,8 +338,6 @@ github.com/sagikazarmark/crypt v0.3.0/go.mod h1:uD/D+6UF4SrIR1uGEv7bBNkNqLGqUr43
 github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529/go.mod h1:DxrIzT+xaE7yg65j358z/aeFdxmN0P9QXhEzd20vsDc=
 github.com/showwin/speedtest-go v1.1.5 h1:dud1cS2Qppbm50BrTKzrBj78wY78ORL5LIiRjKexmdY=
 github.com/showwin/speedtest-go v1.1.5/go.mod h1:dJugxvC/AQDt4HQQKZ9lKNa2+b1c8nzj9IL0a/F8l1U=
-github.com/showwin/speedtest-go v1.3.1 h1:OmscWPrxIUDjn9wumjbB8EDu3KdFri86DzO6lPh4Crc=
-github.com/showwin/speedtest-go v1.3.1/go.mod h1:dJugxvC/AQDt4HQQKZ9lKNa2+b1c8nzj9IL0a/F8l1U=
 github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
 github.com/sirupsen/logrus v1.4.2/go.mod h1:tLMulIdttU9McNUspp0xgXVQah82FyeX6MwdIuYE2rE=
 github.com/sirupsen/logrus v1.9.0 h1:trlNQbNUG3OdDrDil03MCb1H2o9nJ1x4/5LYw7byDE0=

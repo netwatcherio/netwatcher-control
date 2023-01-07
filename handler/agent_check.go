@@ -22,6 +22,7 @@ type AgentCheck struct {
 	Triggered       bool               `json:"triggered"bson:"triggered,omitempty"`
 	Server          bool               `json:"server,omitempty"bson:"server,omitempty"`
 	Pending         bool               `json:"pending,omitempty"bson:"pending,omitempty"`
+	Interval        int                `json:"interval"bson:"interval"`
 	CreateTimestamp time.Time          `bson:"create_timestamp"json:"create_timestamp"`
 }
 
@@ -233,10 +234,10 @@ func (ac *AgentCheck) GetAll(db *mongo.Database) ([]*AgentCheck, error) {
 	return agentCheck, nil
 }
 
-func (a *AgentCheck) Update(db *mongo.Database) error {
-	var filter = bson.D{{"_id", a.ID}}
+func (ac *AgentCheck) Update(db *mongo.Database) error {
+	var filter = bson.D{{"_id", ac.ID}}
 
-	marshal, err := bson.Marshal(&a)
+	marshal, err := bson.Marshal(&ac)
 	if err != nil {
 		return err
 	}

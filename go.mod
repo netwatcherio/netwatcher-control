@@ -1,4 +1,4 @@
-module netwatcher-control
+module github.com/netwatcherio/netwatcher-control
 
 go 1.17
 

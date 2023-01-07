@@ -232,6 +232,13 @@ func (r *Router) agentNew() {
 			return err
 		}
 
+		check2 := handler.AgentCheck{AgentID: cAgent.ID, Pending: true}
+		check2.Type = handler.CtSpeedtest
+		err = check2.Create(r.DB)
+		if err != nil {
+			return err
+		}
+
 		// todo create default checks such as network info and that sort of thing
 
 		// todo handle error/success and return to home also display message for error if error

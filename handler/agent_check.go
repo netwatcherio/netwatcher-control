@@ -12,15 +12,6 @@ import (
 	"time"
 )
 
-type CheckType string
-
-const (
-	CtRperf     CheckType = "RPERF"
-	CtMtr       CheckType = "MTR"
-	CtSpeedtest CheckType = "SPEEDTEST"
-	CtNetinfo   CheckType = "NETINFO"
-)
-
 type AgentCheck struct {
 	Type            CheckType          `json:"type"bson:"type""`
 	Target          string             `json:"target,omitempty"bson:"target,omitempty"`

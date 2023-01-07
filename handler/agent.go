@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/netwatcherio/netwatcher-agent/checks"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -30,8 +29,8 @@ type AgentStats struct {
 	AgentID          primitive.ObjectID `json:"agent_id"`
 	Name             string             `json:"name"`
 	Heartbeat        time.Time          `json:"heartbeat"`
-	NetInfo          checks.NetResult   `json:"net_info"`
-	SpeedTestInfo    checks.SpeedTest   `json:"speed_test_info"`
+	NetInfo          NetResult          `json:"net_info"`
+	SpeedTestInfo    SpeedTest          `json:"speed_test_info"`
 	SpeedTestPending bool               `json:"speed_test_pending"`
 }
 
@@ -53,7 +52,7 @@ func (a *Agent) GetAgentStats(db *mongo.Database) (*AgentStats, error) {
 		return &stats, err
 	}
 
-	var nf checks.NetResult
+	var nf NetResult
 	err = bson.Unmarshal(netB, &nf)
 	if err != nil {
 		return &stats, err
@@ -81,7 +80,7 @@ func (a *Agent) GetAgentStats(db *mongo.Database) (*AgentStats, error) {
 		return &stats, err
 	}
 
-	var speedTest checks.SpeedTest
+	var speedTest SpeedTest
 
 	err = bson.Unmarshal(speedB, &speedTest)
 	if err != nil {

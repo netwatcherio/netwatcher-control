@@ -3,7 +3,6 @@ package routes
 import (
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
-	"github.com/netwatcherio/netwatcher-agent/checks"
 	"github.com/netwatcherio/netwatcher-control/handler"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -62,7 +61,7 @@ func (r *Router) check() {
 
 		switch ac.Type {
 		case handler.CtMtr:
-			var mtrD []*checks.MtrResult
+			var mtrD []*handler.MtrResult
 			for _, d := range data {
 				if d.Type == handler.CtMtr {
 					mtr, err := d.ConvMtr()
@@ -74,7 +73,7 @@ func (r *Router) check() {
 			}
 			checkData = mtrD
 		case handler.CtNetinfo:
-			var netinfoD []*checks.NetResult
+			var netinfoD []*handler.NetResult
 			for _, d := range data {
 				if d.Type == handler.CtNetinfo {
 					netinfo, err := d.ConvNetresult()
@@ -86,7 +85,7 @@ func (r *Router) check() {
 			}
 			checkData = netinfoD
 		case handler.CtSpeedtest:
-			var speedD []*checks.SpeedTest
+			var speedD []*handler.SpeedTest
 			for _, d := range data {
 				if d.Type == handler.CtSpeedtest {
 					speed, err := d.ConvSpeedtest()
@@ -98,7 +97,7 @@ func (r *Router) check() {
 			}
 			checkData = speedD
 		case handler.CtRperf:
-			var rperfD []*checks.RPerfResults
+			var rperfD []*handler.RPerfResults
 			for _, d := range data {
 				if d.Type == handler.CtRperf {
 					rperf, err := d.ConvRperf()

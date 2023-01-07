@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/netwatcherio/netwatcher-agent/checks"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -42,28 +41,28 @@ func (cd *CheckData) Create(db *mongo.Database) error {
 
 	// load types
 	if agentC.Type == CtNetinfo {
-		var r checks.NetResult
+		var r NetResult
 		err = json.Unmarshal(crM, &r)
 		if err != nil {
 			log.Error(err)
 		}
 		cd.Timestamp = r.Timestamp
 	} else if agentC.Type == CtMtr {
-		var r checks.MtrResult
+		var r MtrResult
 		err = json.Unmarshal(crM, &r)
 		if err != nil {
 			log.Error(err)
 		}
 		cd.Timestamp = r.StopTimestamp
 	} else if agentC.Type == CtRperf {
-		var r checks.RPerfResults
+		var r RPerfResults
 		err = json.Unmarshal(crM, &r)
 		if err != nil {
 			log.Error(err)
 		}
 		cd.Timestamp = r.StopTimestamp
 	} else if agentC.Type == CtSpeedtest {
-		var r checks.SpeedTest
+		var r SpeedTest
 		err = json.Unmarshal(crM, &r)
 		if err != nil {
 			log.Error(err)

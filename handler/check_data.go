@@ -34,40 +34,41 @@ func (cd *CheckData) Create(db *mongo.Database) error {
 
 	cd.Type = agentC.Type
 
-	crM, err := json.Marshal(cd.Result)
-	if err != nil {
-		log.Error(err)
-	}
+	crM := cd.Result.(string)
 
 	// load types
 	if agentC.Type == CtNetinfo {
 		var r NetResult
-		err = json.Unmarshal(crM, &r)
+		err = json.Unmarshal([]byte(crM), &r)
 		if err != nil {
 			log.Error(err)
 		}
 		cd.Timestamp = r.Timestamp
+		cd.Result = r
 	} else if agentC.Type == CtMtr {
 		var r MtrResult
-		err = json.Unmarshal(crM, &r)
+		err = json.Unmarshal([]byte(crM), &r)
 		if err != nil {
 			log.Error(err)
 		}
 		cd.Timestamp = r.StopTimestamp
+		cd.Result = r
 	} else if agentC.Type == CtRperf {
 		var r RPerfResults
-		err = json.Unmarshal(crM, &r)
+		err = json.Unmarshal([]byte(crM), &r)
 		if err != nil {
 			log.Error(err)
 		}
 		cd.Timestamp = r.StopTimestamp
+		cd.Result = r
 	} else if agentC.Type == CtSpeedtest {
 		var r SpeedTest
-		err = json.Unmarshal(crM, &r)
+		err = json.Unmarshal([]byte(crM), &r)
 		if err != nil {
 			log.Error(err)
 		}
 		cd.Timestamp = r.Timestamp
+		cd.Result = r
 	}
 
 	mar, err := bson.Marshal(cd)

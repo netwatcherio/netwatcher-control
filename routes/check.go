@@ -235,8 +235,8 @@ func (r *Router) checkNew() {
 				Type:     handler.CtMtr,
 				Target:   cCheck.Target,
 				AgentID:  agent.ID,
-				Duration: cCheck.Duration,
-				Interval: cCheck.Interval,
+				Duration: int32(cCheck.Duration),
+				Interval: int32(cCheck.Interval),
 			}
 		} else if cCheck.Type == string(handler.CtRperf) {
 			aC = handler.AgentCheck{

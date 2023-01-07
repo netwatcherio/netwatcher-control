@@ -15,9 +15,9 @@ import (
 func (r *Router) apiGetConfig() {
 	r.App.Post("/api/v2/config/", func(c *fiber.Ctx) error {
 		c.Accepts("Application/json") // "Application/json"
-		respB := api.Data{}
+		respB := handler.Data{}
 
-		var dataRequest api.Data
+		var dataRequest handler.Data
 
 		err := json.Unmarshal(c.Body(), &dataRequest)
 		if err != nil {
@@ -57,10 +57,10 @@ func (r *Router) apiGetConfig() {
 			if err != nil {
 				respB.Error = "500"
 			}
+			var cde []checks.CheckData
 
-			var che []checks.CheckData
-
-			for _, ac := range all {
+			for n := range all {
+				ac := all[n]
 				modifiedData := checks.CheckData{
 					Type:     string(ac.Type),
 					Target:   ac.Target,
@@ -72,9 +72,10 @@ func (r *Router) apiGetConfig() {
 					Interval: ac.Interval,
 				}
 
-				che = append(che, modifiedData)
+				cde = append(cde, modifiedData)
 			}
-			respB.Checks = che
+
+			respB.Checks = cde
 		}
 
 		jRespB, err := json.Marshal(respB)

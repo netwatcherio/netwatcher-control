@@ -26,13 +26,13 @@ type AgentCheck struct {
 	Target          string             `json:"target,omitempty"bson:"target,omitempty"`
 	ID              primitive.ObjectID `json:"id"bson:"_id"`
 	AgentID         primitive.ObjectID `json:"agent"bson:"agent"`
-	Duration        int                `json:"duration,omitempty'"bson:"duration,omitempty"`
-	Count           int                `json:"count,omitempty"bson:"count,omitempty"`
+	Duration        int32              `json:"duration,omitempty'"bson:"duration,omitempty"`
+	Count           int32              `json:"count,omitempty"bson:"count,omitempty"`
 	Triggered       bool               `json:"triggered"bson:"triggered,omitempty"`
-	Interval        int                `bson:"interval,omitempty"json:"interval,omitempty"`
+	Interval        int32              `json:"interval"bson:"interval"`
 	Server          bool               `json:"server,omitempty"bson:"server,omitempty"`
 	Pending         bool               `json:"pending,omitempty"bson:"pending,omitempty"`
-	CreateTimestamp time.Time          `bson:"create_timestamp"json:"create_timestamp"`
+	CreateTimestamp time.Time          `json:"create_timestamp"bson:"create_timestamp"`
 }
 
 func (ac *AgentCheck) GetData(limit int64, justCheckId bool, recent bool, timeStart *time.Time, timeEnd *time.Time, db *mongo.Database) ([]*CheckData, error) {
@@ -183,6 +183,7 @@ func (ac *AgentCheck) Get(db *mongo.Database) ([]*AgentCheck, error) {
 		ac.Count = agentCheck.Count
 		ac.Pending = agentCheck.Pending
 		ac.Target = agentCheck.Target
+		ac.Interval = agentCheck.Interval
 
 		return nil, nil
 	} else {

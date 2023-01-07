@@ -12,7 +12,6 @@ func validateUser(r *Router, c *fiber.Ctx) (*handler.User, error) {
 	// Render index within layouts/main
 	b, _ := handler.ValidateSession(c, r.Session, r.DB)
 	if !b {
-		handler.LogoutSession(c, r.Session)
 		return nil, c.Redirect("/auth/login")
 	}
 

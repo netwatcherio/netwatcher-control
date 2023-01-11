@@ -71,6 +71,39 @@
         </div>
     </div>-->
     <div class="row" id="mtr"></div>
+    <div class="row" id="rperf">
+        <div class="card">
+            <div class="border-bottom title-part-padding">
+                <h4 class="mb-0">{{.title}}</h4>
+            </div>
+            <div class="card-body">
+                <div>
+                    <div class="chartjs-size-monitor"
+                         style="position: absolute; inset: 0px;
+                overflow: hidden; pointer-events: none;
+                visibility: hidden; z-index: -1;">
+                        <div class="chartjs-size-monitor-expand"
+                             style="position:absolute;left:0;top:0;
+                right:0;bottom:0;overflow:hidden;
+                pointer-events:none;visibility:hidden;
+                z-index:-1;">
+                            <div style="position:absolute;width:1000000px;height:1000000px;left:0;top:0"></div>
+                        </div>
+                        <div class="chartjs-size-monitor-shrink"
+                             style="position:absolute;left:0;top:0;
+                right:0;bottom:0;overflow:hidden;
+                pointer-events:none;visibility:hidden;
+                z-index:-1;">
+                            <div style="position:absolute;width:200%;height:200%;left:0; top:0">
+                            </div>
+                        </div>
+                    </div>
+                    <canvas class="chartjs-render-monitor" height="297" id="rperfGraph"
+                            style="display: block; width: 595px; height: 297px;" width="595"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         let checkData = JSON.parse("{{.checkData}}")
@@ -158,7 +191,7 @@
 
                 let table = new AsciiTable(src + ' → ' + dst)
                 table
-                    .setHeading('#', 'host', 'asn', 'sent', 'received', 'loss%', 'avg','jitter','best', 'worst')
+                    .setHeading('#', 'host', 'asn', 'sent', 'received', 'loss%', 'avg', 'jitter', 'best', 'worst')
                 let resultD = document.getElementById("traceData" + modifiedName)
 
                 for (let hopNum = 0; hopNum < hubs.length; hopNum++) {
@@ -179,16 +212,15 @@
                     table.addRow(hopNum, host, asn, sent, recv, lossp, avg, jitter, best, worst)
                 }
 
-                resultD.innerHTML += '<pre><code>'+table.toString()+'</code></pre>'
+                resultD.innerHTML += '<pre><code>' + table.toString() + '</code></pre>'
             }
-        }
-        else if(check.type == "SPEEDTEST"){
+        } else if (check.type == "SPEEDTEST") {
             if (check.pending) {
                 pendingDoc.innerHTML += '<a class="btn btn-warning d-flex align-items-center ms-2">\n' +
                     '                <i class="mdi mdi-timer-sand"></i>\n' +
                     '                already running...\n' +
                     '            </a>'
-            }else{
+            } else {
                 pendingDoc.innerHTML += '<a href="/check/new/{{.agentId}}" class="btn btn-info d-flex align-items-center ms-2">\n' +
                     '                <i class="mdi mdi-speedometer"></i>\n' +
                     '                run speedtest\n' +
@@ -203,7 +235,7 @@
 
             for (let i = 0; i < checkData.length; i++) {
                 let test = checkData[i]
-                let latency = test['latency']/1000000
+                let latency = test['latency'] / 1000000
                 let downs = test['dl_speed']
                 let ups = test['ul_speed']
                 let serverloc = test['server']
@@ -222,9 +254,9 @@
                     '                                <div class="d-flex no-block align-items-center me-3">\n' +
                     '                                    <div class="mt-1">\n' +
                     '                                        <h5 class="font-weight-medium">\n' +
-                    '                                            <code>'+niceTimestamp+'</code>\n' +
+                    '                                            <code>' + niceTimestamp + '</code>\n' +
                     '                                        </h5>\n' +
-                    '                                        <h6 title="'+host+'">'+serverloc+' <i class="ri-information-line"></i></h6>\n' +
+                    '                                        <h6 title="' + host + '">' + serverloc + ' <i class="ri-information-line"></i></h6>\n' +
                     '                                    </div>\n' +
                     '                                    <div class="ms-auto mt-3">\n' +
                     '                                        <div class="crypto"></div>\n' +
@@ -239,7 +271,7 @@
                     '                                    align-items-center\n' +
                     '                                    justify-content-center\n' +
                     '                                  ">\n' +
-                    '                                            '+Math.round(downs)+'mbps \n' +
+                    '                                            ' + Math.round(downs) + 'mbps \n' +
                     '                                        </p>\n' +
                     '                                    </div>\n' +
                     '                                    <div class="col-4">\n' +
@@ -250,7 +282,7 @@
                     '                                    justify-content-center\n' +
                     '                                    font-weight-medium\n' +
                     '                                  ">\n' +
-                    '                                            '+Math.round(ups)+'mbps \n' +
+                    '                                            ' + Math.round(ups) + 'mbps \n' +
                     '                                        </p>\n' +
                     '                                    </div>\n' +
                     '                                    <div class="col-4">\n' +
@@ -261,7 +293,7 @@
                     '                                    justify-content-center\n' +
                     '                                    font-weight-medium\n' +
                     '                                  ">\n' +
-                    '                                            '+Math.round(latency)+'ms \n' +
+                    '                                            ' + Math.round(latency) + 'ms \n' +
                     '                                        </p>\n' +
                     '                                    </div>\n' +
                     '                                </div>\n' +
@@ -274,7 +306,285 @@
             }
 
 
-        }
+        } else if (check.type == "RPERF" && !check.server) {
+            let rperfDoc = document.getElementById('rperf')
+            let data = {
+                "jitter_average": [], "packets_duplicated": [],
+                "packets_lost": [], "packets_out_of_order": [],
+                "packets_received": [], "packets_sent": []
+            }
+
+            //rperfDoc.innerHTML += '<div class="col-lg-12" id="rperfGraphs">'
+
+            const getOrCreateTooltip = (chart) => {
+                let tooltipEl = chart.canvas.parentNode.querySelector('div');
+
+                if (!tooltipEl) {
+                    tooltipEl = document.createElement('div');
+                    tooltipEl.style.background = 'rgba(0, 0, 0, 0.7)';
+                    tooltipEl.style.borderRadius = '3px';
+                    tooltipEl.style.color = 'white';
+                    tooltipEl.style.opacity = 1;
+                    tooltipEl.style.pointerEvents = 'none';
+                    tooltipEl.style.position = 'absolute';
+                    tooltipEl.style.transform = 'translate(-50%, 0)';
+                    tooltipEl.style.transition = 'all .1s ease';
+
+                    const table = document.createElement('table');
+                    table.style.margin = '0px';
+
+                    tooltipEl.appendChild(table);
+                    chart.canvas.parentNode.appendChild(tooltipEl);
+                }
+
+                return tooltipEl;
+            };
+
+            const externalTooltipHandler = (context) => {
+                // Tooltip Element
+                const {chart, tooltip} = context;
+                const tooltipEl = getOrCreateTooltip(chart);
+
+                // Hide if no tooltip
+                if (tooltip.opacity === 0) {
+                    tooltipEl.style.opacity = 0;
+                    return;
+                }
+
+                // Set Text
+                if (tooltip.body) {
+                    const titleLines = tooltip.title || [];
+                    const bodyLines = tooltip.body.map(b => b.lines);
+
+                    const tableHead = document.createElement('thead');
+
+                    titleLines.forEach(title => {
+                        const tr = document.createElement('tr');
+                        tr.style.borderWidth = 0;
+
+                        const th = document.createElement('th');
+                        th.style.borderWidth = 0;
+                        const text = document.createTextNode(title);
+
+                        th.appendChild(text);
+                        tr.appendChild(th);
+                        tableHead.appendChild(tr);
+                    });
+
+                    const tableBody = document.createElement('tbody');
+                    bodyLines.forEach((body, i) => {
+                        const colors = tooltip.labelColors[i];
+
+                        const span = document.createElement('span');
+                        span.style.background = colors.backgroundColor;
+                        span.style.borderColor = colors.borderColor;
+                        span.style.borderWidth = '2px';
+                        span.style.marginRight = '10px';
+                        span.style.height = '10px';
+                        span.style.width = '10px';
+                        span.style.display = 'inline-block';
+
+                        const tr = document.createElement('tr');
+                        tr.style.backgroundColor = 'inherit';
+                        tr.style.borderWidth = 0;
+
+                        const td = document.createElement('td');
+                        td.style.borderWidth = 0;
+
+                        const text = document.createTextNode(body);
+
+                        td.appendChild(span);
+                        td.appendChild(text);
+                        tr.appendChild(td);
+                        tableBody.appendChild(tr);
+                    });
+
+                    const tableRoot = tooltipEl.querySelector('table');
+
+                    // Remove old children
+                    while (tableRoot.firstChild) {
+                        tableRoot.firstChild.remove();
+                    }
+
+                    // Add new children
+                    tableRoot.appendChild(tableHead);
+                    tableRoot.appendChild(tableBody);
+                }
+
+                const {offsetLeft: positionX, offsetTop: positionY} = chart.canvas;
+
+                // Display, position, and set styles for font
+                tooltipEl.style.opacity = 1;
+                tooltipEl.style.left = positionX + tooltip.caretX + 'px';
+                tooltipEl.style.top = positionY + tooltip.caretY + 'px';
+                tooltipEl.style.font = tooltip.options.bodyFont.string;
+                tooltipEl.style.padding = tooltip.options.padding + 'px ' + tooltip.options.padding + 'px';
+            };
+
+            for (let i = 0; i < checkData.length; i++) {
+                let item = checkData[i].summary
+
+                let packets_lost = item.packets_lost
+                let packets_out_of_order = item.packets_out_of_order
+                let packets_received = item.packets_received
+                let packets_sent = item.packets_sent
+                let packets_duplicated = item.packets_duplicated
+                let jitter_average = item.jitter_average
+                let stop_time = checkData[i].stop_timestamp
+
+                let packet_lossp = (packets_lost / packets_sent * 100)
+
+                data.packets_lost.push({
+                    x: stop_time,
+                    y: packet_lossp
+                })
+
+                data.packets_out_of_order.push({
+                    x: stop_time,
+                    y: packets_out_of_order
+                })
+
+                data.jitter_average.push({
+                    x: stop_time,
+                    y: jitter_average
+                })
+                data.packets_duplicated.push({
+                    x: stop_time,
+                    y: packets_duplicated
+                })
+
+            }
+
+            console.log(data)
+
+            console.log(data)
+            generateChart(data)
+
+            //Line Chart
+
+            function generateChart(d) {
+                new Chart(document.getElementById("rperfGraph"), {
+                    type: "line",
+                    data: {
+                        //labels: timeStamps,
+                        title: check.target,
+                        datasets: [
+                            {
+                                data: d.packets_lost,
+                                label: "Loss%",
+                                borderColor: "#e3213c",
+                                backgroundColor: "#ffb8c6",
+                                fill: false,
+                                spanGaps: true,
+                            },
+                            {
+                                data: d.packets_out_of_order,
+                                label: "Out of Order",
+                                borderColor: "#a60eb4",
+                                backgroundColor: "#deb0ff",
+                                fill: false,
+                                spanGaps: true,
+                            },
+                            {
+                                data: d.jitter_average,
+                                label: "Jitter Avg.",
+                                borderColor: "#42aaee",
+                                backgroundColor: "#afe0ff",
+                                fill: false,
+                                spanGaps: true,
+                            },
+                            {
+                                data: d.packets_duplicated,
+                                label: "Duplicated Packets",
+                                borderColor: "#e05a13",
+                                backgroundColor: "#fabc98",
+                                fill: false,
+                                spanGaps: true,
+                            },
+                        ],
+                    },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    options: {
+                        scales: {
+                            y: [{
+                                ticks: {
+                                    fontColor: "#b2b9bf",
+                                    fontSize: 12,
+                                },
+                            }],
+                            x: [{
+                                display: true,
+                                type: 'time',
+                                time: {
+                                    parser: 'YYYY-MM-DDTHH:mm:ss',
+                                    tooltipFormat: 'll HH:mm',
+                                    unit: 'day',
+                                    unitStepSize: 1,
+                                    displayFormats: {
+                                        'day': 'MM/DD/YYYY'
+                                    }
+                                },
+                                ticks: {
+                                    autoSkip: true,
+                                    maxTicksLimit: 5,
+                                    fontColor: "#b2b9bf",
+                                    fontSize: 12,
+                                },
+                            }],
+                        },
+                        pan: {
+                            enabled: true,
+                            mode: 'xy',
+                            rangeMin: {
+                                x: null,
+                                y: null
+                            },
+                            rangeMax: {
+                                x: null,
+                                y: null
+                            }
+                        },
+                        zoom: {
+                            enabled: true,
+                            drag: true,
+                            mode: 'xy',
+                            rangeMin: {
+                                x: null,
+                                y: null
+                            },
+                            rangeMax: {
+                                x: null,
+                                y: null
+                            },
+                            elements: {
+                                point: {
+                                    radius: 0,
+                                    hitRadius: 5,
+                                    hoverRadius: 5
+                                },
+                                line: {
+                                    tension: 0
+                                }
+                            }
+                        },
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'icmp'
+                                },
+                                tooltip: {
+                                    enabled: false,
+                                    position: 'nearest',
+                                    external: externalTooltipHandler
+                                }
+                            }
+                        },
+                    });
+            }
+            }
 
     </script>
     {{else}}

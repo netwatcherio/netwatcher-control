@@ -7,6 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"html"
+	"time"
 )
 
 // TODO authenticate & verify that the user is infact apart of the site etc.
@@ -52,9 +53,20 @@ func (r *Router) check() {
 			log.Errorf("13 %s", err)
 		}
 
-		data, err := ac.GetData(10, true, true, nil, nil, r.DB)
-		if err != nil {
-			return err
+		var data []*handler.CheckData
+
+		// todo handle time search
+		if ac.Type == handler.CtRperf {
+			data, err = ac.GetData(120, false, false,
+				time.Now().Add(-(time.Hour * 24)), time.Now(), r.DB)
+			if err != nil {
+				return err
+			}
+		} else {
+			data, err = ac.GetData(10, true, true, time.Time{}, time.Time{}, r.DB)
+			if err != nil {
+				return err
+			}
 		}
 
 		var checkData interface{}

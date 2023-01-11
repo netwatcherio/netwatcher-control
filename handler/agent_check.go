@@ -26,7 +26,7 @@ type AgentCheck struct {
 	CreateTimestamp time.Time          `bson:"create_timestamp"json:"create_timestamp,omitempty"`
 }
 
-func (ac *AgentCheck) GetData(limit int64, justCheckId bool, recent bool, timeStart *time.Time, timeEnd *time.Time, db *mongo.Database) ([]*CheckData, error) {
+func (ac *AgentCheck) GetData(limit int64, justCheckId bool, recent bool, timeStart time.Time, timeEnd time.Time, db *mongo.Database) ([]*CheckData, error) {
 	opts := options.Find().SetLimit(limit)
 	var filter = bson.D{{"check", ac.ID}, {"type", ac.Type}}
 	if ac.AgentID != (primitive.ObjectID{0}) {
@@ -41,15 +41,24 @@ func (ac *AgentCheck) GetData(limit int64, justCheckId bool, recent bool, timeSt
 	if recent {
 		opts = opts.SetSort(bson.D{{"timestamp", -1}})
 	} else {
-		timeFilter = bson.M{
-			"check": ac.ID,
-			"timestamp": bson.M{
-				"$gt": timeStart,
-				"$lt": timeEnd,
-			}}
+		if ac.Type == CtRperf {
+			timeFilter = bson.M{
+				"check": ac.ID,
+				"result.stop_timestamp": bson.M{
+					"$gt": timeStart,
+					"$lt": timeEnd,
+				}}
+		} else {
+			timeFilter = bson.M{
+				"check": ac.ID,
+				"timestamp": bson.M{
+					"$gt": timeStart,
+					"$lt": timeEnd,
+				}}
+		}
 	}
 
-	if timeStart != nil && timeEnd != nil {
+	if (timeStart != time.Time{}) && (timeEnd != time.Time{}) {
 		// todo change opts to use start and end time to check latest checks
 	}
 

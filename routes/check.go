@@ -57,7 +57,7 @@ func (r *Router) check() {
 
 		// todo handle time search
 		if ac.Type == handler.CtRperf {
-			data, err = ac.GetData(120, false, false,
+			data, err = ac.GetData(1400, false, false,
 				time.Now().Add(-(time.Hour * 24)), time.Now(), r.DB)
 			if err != nil {
 				return err

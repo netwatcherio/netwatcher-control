@@ -504,11 +504,11 @@
                         ],
                     },
                     interaction: {
-                        mode: 'index',
-                        intersect: false,
+                        mode: 'dataset',
+                        //intersect: false,
                     },
                     options: {
-                        scales: {
+                        /*scales: {
                             y: [{
                                 ticks: {
                                     fontColor: "#b2b9bf",
@@ -534,53 +534,17 @@
                                     fontSize: 12,
                                 },
                             }],
-                        },
-                        pan: {
-                            enabled: true,
-                            mode: 'xy',
-                            rangeMin: {
-                                x: null,
-                                y: null
-                            },
-                            rangeMax: {
-                                x: null,
-                                y: null
-                            }
-                        },
-                        zoom: {
-                            enabled: true,
-                            drag: true,
-                            mode: 'xy',
-                            rangeMin: {
-                                x: null,
-                                y: null
-                            },
-                            rangeMax: {
-                                x: null,
-                                y: null
-                            },
-                            elements: {
-                                point: {
-                                    radius: 0,
-                                    hitRadius: 5,
-                                    hoverRadius: 5
-                                },
-                                line: {
-                                    tension: 0
+                        },*/
+                        scales: {
+                            y: {
+                                ticks: {
+                                    // Include a dollar sign in the ticks
+                                    callback: function(value, index, ticks) {
+                                        return value;
+                                    }
                                 }
                             }
-                        },
-                            plugins: {
-                                title: {
-                                    display: true,
-                                    text: 'icmp'
-                                },
-                                tooltip: {
-                                    enabled: false,
-                                    position: 'nearest',
-                                    external: externalTooltipHandler
-                                }
-                            }
+                        }
                         },
                     });
             }

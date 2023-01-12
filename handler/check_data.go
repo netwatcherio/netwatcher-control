@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
@@ -77,6 +78,12 @@ func (cd *CheckData) Create(db *mongo.Database) error {
 		}
 		cd.Timestamp = r.StopTimestamp
 		cd.Result = r
+	}
+
+	if (cd.Timestamp == time.Time{}) {
+		log.Warn("agent sent data with empty timestamp... skipping creation...")
+		// todo handle error and send alert if data that was received was not finished
+		return errors.New("agent sent data with empty timestamp... skipping creation")
 	}
 
 	mar, err := bson.Marshal(cd)

@@ -56,16 +56,16 @@ func (r *Router) check() {
 		var data []*handler.CheckData
 
 		// todo handle time search
-		if ac.Type == handler.CtRperf {
+		if ac.Type == handler.CtRperf || ac.Type == handler.CtPing {
 			data, err = ac.GetData(1400, false, false,
-				time.Now().Add(-(time.Hour * 24)), time.Now(), r.DB)
+				time.Now().Add(-(time.Hour * 1)), time.Now(), r.DB)
 			if err != nil {
-				return err
+				log.Errorf("no data found")
 			}
 		} else {
 			data, err = ac.GetData(10, true, true, time.Time{}, time.Time{}, r.DB)
 			if err != nil {
-				return err
+				log.Errorf("no data found")
 			}
 		}
 
@@ -120,6 +120,18 @@ func (r *Router) check() {
 				}
 			}
 			checkData = rperfD
+		case handler.CtPing:
+			var pingD []*handler.PingResult
+			for _, d := range data {
+				if d.Type == handler.CtPing {
+					ping, err := d.ConvPing()
+					if err != nil {
+						return err
+					}
+					pingD = append(pingD, ping)
+				}
+			}
+			checkData = pingD
 		}
 
 		bytes, err := json.Marshal(checkData)
@@ -255,6 +267,12 @@ func (r *Router) checkNew() {
 				Target:  cCheck.Target,
 				AgentID: agent.ID,
 				Server:  cCheck.RperfServerEnable,
+			}
+		} else if cCheck.Type == string(handler.CtPing) {
+			aC = handler.AgentCheck{
+				Type:    handler.CtPing,
+				Target:  cCheck.Target,
+				AgentID: agent.ID,
 			}
 		}
 

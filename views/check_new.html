@@ -49,6 +49,7 @@
                                     <option>--- select type ---</option>
                                     <option>MTR</option>
                                     <option>RPERF</option>
+                                    <option>PING</option>
                                 </select>
                             </div>
                         </div>
@@ -149,6 +150,13 @@
                 target.style.visibility = "visible";
                 duration.style.visibility = "visible";
                 rperfServerEnable.style.visibility = "visible";
+                count.style.visibility = "hidden";
+                interval.style.visibility = "hidden";
+
+            } else if (typeT.includes("PING")) {
+                target.style.visibility = "visible";
+                duration.style.visibility = "hidden";
+                rperfServerEnable.style.visibility = "hidden";
                 count.style.visibility = "hidden";
                 interval.style.visibility = "hidden";
 

@@ -69,6 +69,14 @@ func (cd *CheckData) Create(db *mongo.Database) error {
 		}
 		cd.Timestamp = r.Timestamp
 		cd.Result = r
+	} else if agentC.Type == CtPing {
+		var r PingResult
+		err = json.Unmarshal([]byte(crM), &r)
+		if err != nil {
+			log.Error(err)
+		}
+		cd.Timestamp = r.StopTimestamp
+		cd.Result = r
 	}
 
 	mar, err := bson.Marshal(cd)

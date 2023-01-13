@@ -17,13 +17,19 @@ func validateUser(r *Router, c *fiber.Ctx) (*handler.User, error) {
 
 	user, err := handler.GetUserFromSession(c, r.Session, r.DB)
 	if err != nil {
-		handler.LogoutSession(c, r.Session)
+		_, err := handler.LogoutSession(c, r.Session)
+		if err != nil {
+			return nil, err
+		}
 		return nil, c.Redirect("/auth/login")
 	}
 	user.Password = ""
 
 	if user == nil {
-		handler.LogoutSession(c, r.Session)
+		_, err := handler.LogoutSession(c, r.Session)
+		if err != nil {
+			return nil, err
+		}
 		return nil, c.Redirect("/auth/login")
 	}
 

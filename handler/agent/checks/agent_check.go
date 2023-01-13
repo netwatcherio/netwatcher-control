@@ -1,9 +1,10 @@
-package handler
+package checks
 
 import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/netwatcherio/netwatcher-control/handler"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -26,7 +27,7 @@ type AgentCheck struct {
 	CreateTimestamp time.Time          `bson:"create_timestamp"json:"create_timestamp,omitempty"`
 }
 
-func (ac *AgentCheck) GetData(limit int64, justCheckId bool, recent bool, timeStart time.Time, timeEnd time.Time, db *mongo.Database) ([]*CheckData, error) {
+func (ac *AgentCheck) GetData(limit int64, justCheckId bool, recent bool, timeStart time.Time, timeEnd time.Time, db *mongo.Database) ([]*handler.CheckData, error) {
 	opts := options.Find().SetLimit(limit)
 	var filter = bson.D{{"check", ac.ID}, {"type", ac.Type}}
 	if ac.AgentID != (primitive.ObjectID{0}) {
@@ -89,10 +90,10 @@ func (ac *AgentCheck) GetData(limit int64, justCheckId bool, recent bool, timeSt
 		return nil, errors.New("no data found")
 	}
 
-	var checkData []*CheckData
+	var checkData []*handler.CheckData
 
 	for _, r := range results {
-		var cData CheckData
+		var cData handler.CheckData
 		doc, err := bson.Marshal(r)
 		if err != nil {
 			log.Errorf("1 %s", err)

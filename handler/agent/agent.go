@@ -1,9 +1,11 @@
-package handler
+package agent
 
 import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/netwatcherio/netwatcher-control/handler"
+	"github.com/netwatcherio/netwatcher-control/handler/agent/checks"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -24,24 +26,24 @@ type Agent struct {
 	// pin can be regenerated, by setting hash blank, and when registering agents, it checks for blank hashs.
 }
 
-type AgentStats struct {
+type Stats struct {
 	// not used in api / db
 	AgentID          primitive.ObjectID `json:"agent_id"`
 	Name             string             `json:"name"`
 	Heartbeat        time.Time          `json:"heartbeat"`
-	NetInfo          NetResult          `json:"net_info"`
-	SpeedTestInfo    SpeedTest          `json:"speed_test_info"`
+	NetInfo          checks.NetResult   `json:"net_info"`
+	SpeedTestInfo    checks.SpeedTest   `json:"speed_test_info"`
 	SpeedTestPending bool               `json:"speed_test_pending"`
 }
 
-func (a *Agent) GetAgentStats(db *mongo.Database) (*AgentStats, error) {
-	var stats AgentStats
+func (a *Agent) GetLatestStats(db *mongo.Database) (*Stats, error) {
+	var stats Stats
 	stats.AgentID = a.ID
 	stats.Name = a.Name
 	stats.Heartbeat = a.Heartbeat
 
 	// get the latest net stats
-	agentCheck := AgentCheck{AgentID: a.ID, Type: CtNetinfo}
+	agentCheck := checks.AgentCheck{AgentID: a.ID, Type: checks.CtNetinfo}
 	netInfo, err := agentCheck.GetData(1, false, true, time.Time{}, time.Time{}, db)
 	if err != nil {
 		return &stats, err
@@ -52,7 +54,7 @@ func (a *Agent) GetAgentStats(db *mongo.Database) (*AgentStats, error) {
 		return &stats, err
 	}
 
-	var nf NetResult
+	var nf checks.NetResult
 	err = bson.Unmarshal(netB, &nf)
 	if err != nil {
 		return &stats, err
@@ -69,7 +71,7 @@ func (a *Agent) GetAgentStats(db *mongo.Database) (*AgentStats, error) {
 	// todo check the agent check itself to see if the speedtest is pending, else check and add the speedtest stats
 
 	// get the latest net stats
-	agentCheck = AgentCheck{AgentID: a.ID, Type: CtSpeedtest}
+	agentCheck = checks.AgentCheck{AgentID: a.ID, Type: checks.CtSpeedtest}
 	speedGet, err := agentCheck.GetData(1, false, true, time.Time{}, time.Time{}, db)
 	if err != nil {
 		return &stats, err
@@ -80,7 +82,7 @@ func (a *Agent) GetAgentStats(db *mongo.Database) (*AgentStats, error) {
 		return &stats, err
 	}
 
-	var speedTest SpeedTest
+	var speedTest checks.SpeedTest
 
 	err = bson.Unmarshal(speedB, &speedTest)
 	if err != nil {
@@ -107,7 +109,7 @@ func (a *Agent) GetAgentStats(db *mongo.Database) (*AgentStats, error) {
 
 func (a *Agent) Create(db *mongo.Database) error {
 	// todo handle to check if agent id is set and all that...
-	a.Pin = GeneratePin(9)
+	a.Pin = handler.GeneratePin(9)
 	a.ID = primitive.NewObjectID()
 	a.Initialized = false
 	a.Timestamp = time.Now()

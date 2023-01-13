@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/json"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"io"
 	"strings"
 )
@@ -18,6 +19,15 @@ func toRawJson(v interface{}) (string, error) {
 		return "", err
 	}
 	return strings.TrimSuffix(buf.String(), "\n"), nil
+}
+
+func ContainsObjectID(s []primitive.ObjectID, str primitive.ObjectID) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+	return false
 }
 
 func GeneratePin(max int) string {

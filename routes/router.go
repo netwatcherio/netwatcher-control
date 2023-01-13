@@ -47,10 +47,10 @@ func (r *Router) Init() {
 	r.siteAddMember()
 	log.Info("SITES")
 
-	r.auth()
-	r.authLogin()
+	r.login()
+	/*r.authLogin()
 	r.authRegister()
-	r.authLogout()
+	r.authLogout()*/
 	log.Info("AUTH")
 
 	workers.CreateCheckWorker(checkCreateWorker, r.DB)

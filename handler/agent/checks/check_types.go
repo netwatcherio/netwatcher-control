@@ -1,4 +1,4 @@
-package handler
+package checks
 
 import (
 	log "github.com/sirupsen/logrus"

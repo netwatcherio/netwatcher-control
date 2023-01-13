@@ -1,10 +1,10 @@
 package main
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/session"
-	"github.com/gofiber/storage/mongodb"
-	"github.com/gofiber/template/html"
+	jwtware "github.com/gofiber/jwt/v3"
 	"github.com/joho/godotenv"
 	"github.com/netwatcherio/netwatcher-control/handler"
 	"github.com/netwatcherio/netwatcher-control/routes"
@@ -17,6 +17,13 @@ import (
 
 var (
 	Debug = false
+)
+
+var (
+	// Obviously, this is just a test example. Do not do this in production.
+	// In production, you would have the private key and public key pair generated
+	// in advance. NEVER add a private key to any GitHub repo.
+	privateKey *rsa.PrivateKey
 )
 
 func main() {
@@ -52,47 +59,27 @@ func main() {
 		os.Exit(1)
 	}()
 
-	// Initialize custom config
-	sessionStore := mongodb.New(mongodb.Config{
-		ConnectionURI: handler.MongoUri,
-		Collection:    os.Getenv("SESSIONS_COLLECTION"),
-		Database:      os.Getenv("SESSIONS_DB"),
-		Reset:         false,
-	})
+	app := fiber.New()
 
-	store := session.New(session.Config{
-		Storage: sessionStore,
-	})
+	// Just as a demo, generate a new private/public key pair on each run. See note above.
+	rng := rand.Reader
+	privateKey, err = rsa.GenerateKey(rng, 2048)
+	if err != nil {
+		log.Fatalf("rsa.GenerateKey: %v", err)
+	}
 
-	// Create a new engine
-	engine := html.New("./views", ".html")
-	// Load Fiber
-	app := fiber.New(fiber.Config{
-		Views: engine,
-	})
-
-	// Reload the templates on each render, good for development
-	engine.Reload(true) // Optional. Default: false
-
-	// Debug will print each template that is parsed, good for debugging
-	engine.Debug(true) // Optional. Default: false
-
-	// Layout defines the variable name that is used to yield templates within layouts
-	engine.Layout("embed") // Optional. Default: "embed"
-
-	// Delims sets the action delimiters to the specified strings
-	engine.Delims("{{", "}}") // Optional. Default: engine delimiters
-
-	// Public Files
-	app.Static("/", "./public")
+	// JWT Middleware
+	app.Use(jwtware.New(jwtware.Config{
+		SigningMethod: "RS256",
+		SigningKey:    privateKey.Public(),
+	}))
 
 	//createAgent(mongoData.db)
 	//createSite(mongoData.db)
 
 	router := routes.Router{
-		App:     app,
-		Session: store,
-		DB:      mongoData.Db,
+		App: app,
+		DB:  mongoData.Db,
 	}
 
 	router.Init()

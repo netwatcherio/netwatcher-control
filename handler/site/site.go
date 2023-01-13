@@ -1,9 +1,10 @@
-package handler
+package site
 
 import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/netwatcherio/netwatcher-control/handler/agent"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -105,7 +106,7 @@ func (s *Site) AddMember(id primitive.ObjectID, role int, db *mongo.Database) (b
 	return true, nil
 }
 
-func (s *Site) GetAgents(db *mongo.Database) ([]*Agent, error) {
+func (s *Site) GetAgents(db *mongo.Database) ([]*agent.Agent, error) {
 	var filter = bson.D{{"site", s.ID}}
 
 	cursor, err := db.Collection("agents").Find(context.TODO(), filter)
@@ -121,22 +122,22 @@ func (s *Site) GetAgents(db *mongo.Database) ([]*Agent, error) {
 		return nil, errors.New("no agents match when using id")
 	}
 
-	var agent []*Agent
+	var agents []*agent.Agent
 	for i := range results {
 		doc, err := bson.Marshal(&results[i])
 		if err != nil {
 			return nil, err
 		}
-		var a *Agent
+		var a *agent.Agent
 		err = bson.Unmarshal(doc, &a)
 		if err != nil {
 			return nil, err
 		}
 
-		agent = append(agent, a)
+		agents = append(agents, a)
 	}
 
-	return agent, nil
+	return agents, nil
 }
 
 func (s *Site) AgentCount(db *mongo.Database) (int, error) {
@@ -190,16 +191,18 @@ func (s *Site) Get(db *mongo.Database) error {
 	return nil
 }
 
-func (s *Site) GetAgentSiteStats(db *mongo.Database) ([]*AgentStats, error) {
-	var agentStats []*AgentStats
+func (s *Site) GetSiteStats(db *mongo.Database) ([]*agent.Stats, error) {
+	var agentStats []*agent.Stats
 
 	agents, err := s.GetAgents(db)
 	if err != nil {
 		return nil, err
 	}
 	for _, a := range agents {
-		stats, err := a.GetAgentStats(db)
-		log.Error(err)
+		stats, err := a.GetLatestStats(db)
+		if err != nil {
+			log.Error(err)
+		}
 		agentStats = append(agentStats, stats)
 	}
 

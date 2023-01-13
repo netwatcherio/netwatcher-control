@@ -28,12 +28,12 @@ type Agent struct {
 
 type Stats struct {
 	// not used in api / db
-	AgentID          primitive.ObjectID `json:"agent_id"`
-	Name             string             `json:"name"`
-	Heartbeat        time.Time          `json:"heartbeat"`
-	NetInfo          checks.NetResult   `json:"net_info"`
-	SpeedTestInfo    checks.SpeedTest   `json:"speed_test_info"`
-	SpeedTestPending bool               `json:"speed_test_pending"`
+	AgentID          primitive.ObjectID     `json:"agent_id"`
+	Name             string                 `json:"name"`
+	Heartbeat        time.Time              `json:"heartbeat"`
+	NetInfo          checks.NetResult       `json:"net_info"`
+	SpeedTestInfo    checks.SpeedTestResult `json:"speed_test_info"`
+	SpeedTestPending bool                   `json:"speed_test_pending"`
 }
 
 func (a *Agent) GetLatestStats(db *mongo.Database) (*Stats, error) {
@@ -43,7 +43,7 @@ func (a *Agent) GetLatestStats(db *mongo.Database) (*Stats, error) {
 	stats.Heartbeat = a.Heartbeat
 
 	// get the latest net stats
-	agentCheck := checks.Check{AgentID: a.ID, Type: checks.CtNetinfo}
+	agentCheck := checks.Check{AgentID: a.ID, Type: checks.CtNetworkInfo}
 	netInfo, err := agentCheck.GetData(1, false, true, time.Time{}, time.Time{}, db)
 	if err != nil {
 		return &stats, err
@@ -71,7 +71,7 @@ func (a *Agent) GetLatestStats(db *mongo.Database) (*Stats, error) {
 	// todo check the agent check itself to see if the speedtest is pending, else check and add the speedtest stats
 
 	// get the latest net stats
-	agentCheck = checks.Check{AgentID: a.ID, Type: checks.CtSpeedtest}
+	agentCheck = checks.Check{AgentID: a.ID, Type: checks.CtSpeedTest}
 	speedGet, err := agentCheck.GetData(1, false, true, time.Time{}, time.Time{}, db)
 	if err != nil {
 		return &stats, err
@@ -82,7 +82,7 @@ func (a *Agent) GetLatestStats(db *mongo.Database) (*Stats, error) {
 		return &stats, err
 	}
 
-	var speedTest checks.SpeedTest
+	var speedTest checks.SpeedTestResult
 
 	err = bson.Unmarshal(speedB, &speedTest)
 	if err != nil {

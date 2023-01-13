@@ -1,100 +1,18 @@
 package checks
 
 import (
-	log "github.com/sirupsen/logrus"
-	"go.mongodb.org/mongo-driver/bson"
 	"time"
 )
 
-type CheckType string
+type Type string
 
 const (
-	CtRperf     CheckType = "RPERF"
-	CtMtr       CheckType = "MTR"
-	CtSpeedtest CheckType = "SPEEDTEST"
-	CtNetinfo   CheckType = "NETINFO"
-	CtPing      CheckType = "PING"
+	CtRPerf       Type = "RPERF"
+	CtMtr         Type = "MTR"
+	CtSpeedTest   Type = "SPEEDTEST"
+	CtNetworkInfo Type = "NETINFO"
+	CtPing        Type = "PING"
 )
-
-func (cd *CheckData) ConvNetresult() (*NetResult, error) {
-	crM, err := bson.Marshal(cd.Result)
-	if err != nil {
-		log.Error(err)
-	}
-
-	var r NetResult
-	err = bson.Unmarshal(crM, &r)
-	if err != nil {
-		log.Error(err)
-		return nil, err
-	}
-
-	return &r, nil
-}
-
-func (cd *CheckData) ConvMtr() (*MtrResult, error) {
-	crM, err := bson.Marshal(cd.Result)
-	if err != nil {
-		log.Error(err)
-	}
-
-	var r MtrResult
-	err = bson.Unmarshal(crM, &r)
-	if err != nil {
-		log.Error(err)
-		return nil, err
-	}
-
-	return &r, nil
-}
-
-func (cd *CheckData) ConvPing() (*PingResult, error) {
-	crM, err := bson.Marshal(cd.Result)
-	if err != nil {
-		log.Error(err)
-	}
-
-	var r PingResult
-	err = bson.Unmarshal(crM, &r)
-	if err != nil {
-		log.Error(err)
-		return nil, err
-	}
-
-	return &r, nil
-}
-
-func (cd *CheckData) ConvSpeedtest() (*SpeedTest, error) {
-	crM, err := bson.Marshal(cd.Result)
-	if err != nil {
-		log.Error(err)
-	}
-
-	var r SpeedTest
-	err = bson.Unmarshal(crM, &r)
-	if err != nil {
-		log.Error(err)
-		return nil, err
-	}
-
-	return &r, nil
-}
-
-func (cd *CheckData) ConvRperf() (*RPerfResults, error) {
-	crM, err := bson.Marshal(cd.Result)
-	if err != nil {
-		log.Error(err)
-	}
-
-	var r RPerfResults
-	err = bson.Unmarshal(crM, &r)
-	if err != nil {
-		log.Error(err)
-		return nil, err
-	}
-
-	return &r, nil
-}
 
 type MtrResult struct {
 	StartTimestamp time.Time `json:"start_timestamp"bson:"start_timestamp"`
@@ -138,7 +56,7 @@ type NetResult struct {
 	Long             string    `json:"long"bson:"long"`
 	Timestamp        time.Time `json:"timestamp"bson:"timestamp"`
 }
-type SpeedTest struct {
+type SpeedTestResult struct {
 	Latency   time.Duration `json:"latency"bson:"latency"`
 	DLSpeed   float64       `json:"dl_speed"bson:"dl_speed"`
 	ULSpeed   float64       `json:"ul_speed"bson:"ul_speed"`

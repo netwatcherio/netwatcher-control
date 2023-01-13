@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/netwatcherio/netwatcher-control/handler"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -13,8 +12,8 @@ import (
 	"time"
 )
 
-type AgentCheck struct {
-	Type            CheckType          `json:"type"bson:"type,omitempty"`
+type Check struct {
+	Type            Type               `json:"type"bson:"type,omitempty"`
 	Target          string             `json:"target,omitempty"bson:"target,omitempty"`
 	ID              primitive.ObjectID `json:"id"bson:"_id,omitempty"`
 	AgentID         primitive.ObjectID `json:"agent"bson:"agent,omitempty"`
@@ -27,7 +26,7 @@ type AgentCheck struct {
 	CreateTimestamp time.Time          `bson:"create_timestamp"json:"create_timestamp,omitempty"`
 }
 
-func (ac *AgentCheck) GetData(limit int64, justCheckId bool, recent bool, timeStart time.Time, timeEnd time.Time, db *mongo.Database) ([]*handler.CheckData, error) {
+func (ac *Check) GetData(limit int64, justCheckId bool, recent bool, timeStart time.Time, timeEnd time.Time, db *mongo.Database) ([]*Data, error) {
 	opts := options.Find().SetLimit(limit)
 	var filter = bson.D{{"check", ac.ID}, {"type", ac.Type}}
 	if ac.AgentID != (primitive.ObjectID{0}) {
@@ -42,7 +41,7 @@ func (ac *AgentCheck) GetData(limit int64, justCheckId bool, recent bool, timeSt
 	if recent {
 		opts = opts.SetSort(bson.D{{"timestamp", -1}})
 	} else {
-		if ac.Type == CtRperf {
+		if ac.Type == CtRPerf {
 			timeFilter = bson.M{
 				"check": ac.ID,
 				"result.stop_timestamp": bson.M{
@@ -90,10 +89,10 @@ func (ac *AgentCheck) GetData(limit int64, justCheckId bool, recent bool, timeSt
 		return nil, errors.New("no data found")
 	}
 
-	var checkData []*handler.CheckData
+	var checkData []*Data
 
 	for _, r := range results {
-		var cData handler.CheckData
+		var cData Data
 		doc, err := bson.Marshal(r)
 		if err != nil {
 			log.Errorf("1 %s", err)
@@ -111,7 +110,7 @@ func (ac *AgentCheck) GetData(limit int64, justCheckId bool, recent bool, timeSt
 	return checkData, nil
 }
 
-func (ac *AgentCheck) Create(db *mongo.Database) error {
+func (ac *Check) Create(db *mongo.Database) error {
 	ac.ID = primitive.NewObjectID()
 
 	mar, err := bson.Marshal(ac)
@@ -136,7 +135,7 @@ func (ac *AgentCheck) Create(db *mongo.Database) error {
 	return nil
 }
 
-func (ac *AgentCheck) Get(db *mongo.Database) ([]*AgentCheck, error) {
+func (ac *Check) Get(db *mongo.Database) ([]*Check, error) {
 	var filter = bson.D{{"_id", ac.ID}}
 
 	if ac.AgentID != (primitive.ObjectID{0}) {
@@ -169,7 +168,7 @@ func (ac *AgentCheck) Get(db *mongo.Database) ([]*AgentCheck, error) {
 			return nil, err
 		}
 
-		var agentCheck *AgentCheck
+		var agentCheck *Check
 		err = bson.Unmarshal(doc, &agentCheck)
 		if err != nil {
 			log.Errorf("2 %s", err)
@@ -187,10 +186,10 @@ func (ac *AgentCheck) Get(db *mongo.Database) ([]*AgentCheck, error) {
 
 		return nil, nil
 	} else {
-		var agentChecks []*AgentCheck
+		var agentChecks []*Check
 
 		for _, r := range results {
-			var acData AgentCheck
+			var acData Check
 			doc, err := bson.Marshal(r)
 			if err != nil {
 				log.Errorf("1 %s", err)
@@ -212,7 +211,7 @@ func (ac *AgentCheck) Get(db *mongo.Database) ([]*AgentCheck, error) {
 }
 
 // GetAll get all checks based on id, and &/or type
-func (ac *AgentCheck) GetAll(db *mongo.Database) ([]*AgentCheck, error) {
+func (ac *Check) GetAll(db *mongo.Database) ([]*Check, error) {
 	var filter = bson.D{{"agent", ac.AgentID}}
 	if ac.Type != "" {
 		filter = bson.D{{"agent", ac.AgentID}, {"type", ac.Type}}
@@ -226,7 +225,7 @@ func (ac *AgentCheck) GetAll(db *mongo.Database) ([]*AgentCheck, error) {
 	if err = cursor.All(context.TODO(), &results); err != nil {
 		return nil, err
 	}
-	var agentCheck []*AgentCheck
+	var agentCheck []*Check
 
 	for _, rb := range results {
 		m, err := bson.Marshal(&rb)
@@ -234,7 +233,7 @@ func (ac *AgentCheck) GetAll(db *mongo.Database) ([]*AgentCheck, error) {
 			log.Errorf("2 %s", err)
 			return nil, err
 		}
-		var tC AgentCheck
+		var tC Check
 		err = bson.Unmarshal(m, &tC)
 		if err != nil {
 			return nil, err
@@ -244,7 +243,7 @@ func (ac *AgentCheck) GetAll(db *mongo.Database) ([]*AgentCheck, error) {
 	return agentCheck, nil
 }
 
-func (ac *AgentCheck) Update(db *mongo.Database) error {
+func (ac *Check) Update(db *mongo.Database) error {
 	var filter = bson.D{{"_id", ac.ID}}
 
 	marshal, err := bson.Marshal(ac)

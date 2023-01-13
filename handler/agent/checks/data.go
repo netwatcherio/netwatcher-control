@@ -1,10 +1,11 @@
-package handler
+package checks
 
 import (
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/netwatcherio/netwatcher-control/handler/agent"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -12,7 +13,7 @@ import (
 	"time"
 )
 
-type CheckData struct {
+type Data struct {
 	Target    string             `json:"target,omitempty"bson:"target,omitempty"`
 	ID        primitive.ObjectID `json:"id"bson:"_id"`
 	CheckID   primitive.ObjectID `json:"check"bson:"check"`
@@ -20,14 +21,14 @@ type CheckData struct {
 	Triggered bool               `json:"triggered"bson:"triggered"`
 	Timestamp time.Time          `bson:"timestamp"json:"timestamp"`
 	Result    interface{}        `json:"result"bson:"result,omitempty"`
-	Type      CheckType          `bson:"type"json:"type"`
+	Type      Type               `bson:"type"json:"type"`
 }
 
-func (cd *CheckData) Create(db *mongo.Database) error {
+func (cd *Data) Create(db *mongo.Database) error {
 	// todo handle to check if agent id is set and all that... or should it be in the api section??
 	cd.ID = primitive.NewObjectID()
 
-	agentC := AgentCheck{ID: cd.CheckID}
+	agentC := Check{ID: cd.CheckID}
 	_, err := agentC.Get(db)
 	if err != nil {
 		log.Error(err)
@@ -38,7 +39,7 @@ func (cd *CheckData) Create(db *mongo.Database) error {
 	crM := cd.Result.(string)
 
 	// load types
-	if agentC.Type == CtNetinfo {
+	if agentC.Type == CtNetworkInfo {
 		var r NetResult
 		err = json.Unmarshal([]byte(crM), &r)
 		if err != nil {
@@ -54,7 +55,7 @@ func (cd *CheckData) Create(db *mongo.Database) error {
 		}
 		cd.Timestamp = r.StopTimestamp
 		cd.Result = r
-	} else if agentC.Type == CtRperf {
+	} else if agentC.Type == CtRPerf {
 		var r RPerfResults
 		err = json.Unmarshal([]byte(crM), &r)
 		if err != nil {
@@ -62,8 +63,8 @@ func (cd *CheckData) Create(db *mongo.Database) error {
 		}
 		cd.Timestamp = r.StopTimestamp
 		cd.Result = r
-	} else if agentC.Type == CtSpeedtest {
-		var r SpeedTest
+	} else if agentC.Type == CtSpeedTest {
+		var r SpeedTestResult
 		err = json.Unmarshal([]byte(crM), &r)
 		if err != nil {
 			log.Error(err)
@@ -81,7 +82,6 @@ func (cd *CheckData) Create(db *mongo.Database) error {
 	}
 
 	if (cd.Timestamp == time.Time{}) {
-		log.Warn("agent sent data with empty timestamp... skipping creation...")
 		// todo handle error and send alert if data that was received was not finished
 		return errors.New("agent sent data with empty timestamp... skipping creation")
 	}
@@ -104,7 +104,7 @@ func (cd *CheckData) Create(db *mongo.Database) error {
 		return err
 	}
 
-	cAgent := Agent{ID: cd.AgentID}
+	cAgent := agent.Agent{ID: cd.AgentID}
 	err = cAgent.UpdateHeartbeat(db)
 	if err != nil {
 		return err

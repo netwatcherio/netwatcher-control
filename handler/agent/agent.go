@@ -43,7 +43,7 @@ func (a *Agent) GetLatestStats(db *mongo.Database) (*Stats, error) {
 	stats.Heartbeat = a.Heartbeat
 
 	// get the latest net stats
-	agentCheck := checks.AgentCheck{AgentID: a.ID, Type: checks.CtNetinfo}
+	agentCheck := checks.Check{AgentID: a.ID, Type: checks.CtNetinfo}
 	netInfo, err := agentCheck.GetData(1, false, true, time.Time{}, time.Time{}, db)
 	if err != nil {
 		return &stats, err
@@ -71,7 +71,7 @@ func (a *Agent) GetLatestStats(db *mongo.Database) (*Stats, error) {
 	// todo check the agent check itself to see if the speedtest is pending, else check and add the speedtest stats
 
 	// get the latest net stats
-	agentCheck = checks.AgentCheck{AgentID: a.ID, Type: checks.CtSpeedtest}
+	agentCheck = checks.Check{AgentID: a.ID, Type: checks.CtSpeedtest}
 	speedGet, err := agentCheck.GetData(1, false, true, time.Time{}, time.Time{}, db)
 	if err != nil {
 		return &stats, err

@@ -57,8 +57,18 @@ func ValidateSession(c *fiber.Ctx, sessions *session.Store, db *mongo.Database) 
 	if store.Get("id") == nil {
 		return false, errors.New("no id, not logged in")
 	}
+
+	usr, err := GetUserFromSession(c, sessions, db)
+	if err != nil {
+		return false, err
+	}
+
+	if usr != nil {
+		return true, nil
+	}
+
 	// todo does this work?? do i need to compare against db??
-	return true, nil
+	return false, nil
 
 	/*userId, err := primitive.ObjectIDFromHex(store.Get("id").(string))
 	if err != nil {

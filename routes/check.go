@@ -251,15 +251,15 @@ func (r *Router) checkNew() {
 		// ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]):[0-9]+$
 
 		if cCheck.Type == string(handler.CtMtr) {
-			if cCheck.Duration < 30 {
-				cCheck.Duration = 30
+			if cCheck.Interval < 5 {
+				cCheck.Interval = 5
 			}
 
 			aC = handler.AgentCheck{
 				Type:     handler.CtMtr,
 				Target:   cCheck.Target,
 				AgentID:  agent.ID,
-				Duration: cCheck.Duration,
+				Interval: cCheck.Interval,
 			}
 		} else if cCheck.Type == string(handler.CtRperf) {
 			aC = handler.AgentCheck{

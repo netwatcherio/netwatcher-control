@@ -1,11 +1,10 @@
-package checks
+package agent
 
 import (
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/netwatcherio/netwatcher-control/handler/agent"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -102,7 +101,7 @@ func (cd *Data) Create(db *mongo.Database) error {
 		return err
 	}
 
-	cAgent := agent.Agent{ID: cd.AgentID}
+	cAgent := Agent{ID: cd.AgentID}
 	err = cAgent.UpdateHeartbeat(db)
 	if err != nil {
 		return err

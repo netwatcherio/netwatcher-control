@@ -1,4 +1,4 @@
-package checks
+package agent
 
 import (
 	log "github.com/sirupsen/logrus"

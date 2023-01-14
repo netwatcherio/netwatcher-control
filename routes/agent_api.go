@@ -5,7 +5,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/netwatcherio/netwatcher-control/handler"
 	"github.com/netwatcherio/netwatcher-control/handler/agent"
-	"github.com/netwatcherio/netwatcher-control/handler/agent/checks"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -47,7 +46,7 @@ func (r *Router) apiGetConfig() {
 			respB.PIN = agentSearch.Pin
 			//todo add checks to be processed
 
-			agentCheck := checks.Check{
+			agentCheck := agent.Check{
 				AgentID: agentSearch.ID,
 			}
 
@@ -67,7 +66,7 @@ func (r *Router) apiGetConfig() {
 	})
 }
 
-func (r *Router) apiDataPush(ch chan checks.Data) {
+func (r *Router) apiDataPush(ch chan agent.Data) {
 	r.App.Post("/api/v2/agent/push", func(c *fiber.Ctx) error {
 		c.Accepts("Application/json") // "Application/json"
 		respB := handler.ApiRequest{}
@@ -104,7 +103,7 @@ func (r *Router) apiDataPush(ch chan checks.Data) {
 			respB.PIN = agentSearch.Pin
 			//todo add checks to be processed
 
-			var checkD []checks.Data
+			var checkD []agent.Data
 			err = json.Unmarshal([]byte(dataRequest.Data.(string)), &checkD)
 			if err != nil {
 				log.Error(err)

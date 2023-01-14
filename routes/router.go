@@ -3,7 +3,7 @@ package routes
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
-	"github.com/netwatcherio/netwatcher-control/handler/agent/checks"
+	"github.com/netwatcherio/netwatcher-control/handler/agent"
 	"github.com/netwatcherio/netwatcher-control/workers"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -16,7 +16,7 @@ type Router struct {
 }
 
 func (r *Router) Init() {
-	checkCreateWorker := make(chan checks.Data)
+	checkCreateWorker := make(chan agent.Data)
 
 	log.Info("Loading routes for:")
 

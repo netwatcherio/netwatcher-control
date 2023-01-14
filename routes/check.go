@@ -3,7 +3,7 @@ package routes
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/netwatcherio/netwatcher-control/handler/agent/checks"
+	"github.com/netwatcherio/netwatcher-control/handler/agent"
 	"github.com/netwatcherio/netwatcher-control/handler/auth"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -26,13 +26,13 @@ func (r *Router) getCheckData() {
 		}
 
 		// require check request
-		req := checks.CheckRequest{}
+		req := agent.CheckRequest{}
 		err = c.BodyParser(&req)
 		if err != nil {
 			return err
 		}
 
-		check := checks.Check{ID: cId}
+		check := agent.Check{ID: cId}
 		_, err = check.Get(r.DB)
 		if err != nil {
 			return c.JSON(err)
@@ -46,10 +46,10 @@ func (r *Router) getCheckData() {
 		var checkData interface{}
 
 		switch check.Type {
-		case checks.CtMtr:
-			var mtrD []*checks.MtrResult
+		case agent.CtMtr:
+			var mtrD []*agent.MtrResult
 			for _, d := range data {
-				if d.Type == checks.CtMtr {
+				if d.Type == agent.CtMtr {
 					mtr, err := d.ConvMtr()
 					if err != nil {
 						return err
@@ -58,10 +58,10 @@ func (r *Router) getCheckData() {
 				}
 			}
 			checkData = mtrD
-		case checks.CtNetworkInfo:
-			var netinfoD []*checks.NetResult
+		case agent.CtNetworkInfo:
+			var netinfoD []*agent.NetResult
 			for _, d := range data {
-				if d.Type == checks.CtNetworkInfo {
+				if d.Type == agent.CtNetworkInfo {
 					netinfo, err := d.ConvNetResult()
 					if err != nil {
 						return err
@@ -70,10 +70,10 @@ func (r *Router) getCheckData() {
 				}
 			}
 			checkData = netinfoD
-		case checks.CtSpeedTest:
-			var speedD []*checks.SpeedTestResult
+		case agent.CtSpeedTest:
+			var speedD []*agent.SpeedTestResult
 			for _, d := range data {
-				if d.Type == checks.CtSpeedTest {
+				if d.Type == agent.CtSpeedTest {
 					speed, err := d.ConvSpeedTest()
 					if err != nil {
 						return err
@@ -82,10 +82,10 @@ func (r *Router) getCheckData() {
 				}
 			}
 			checkData = speedD
-		case checks.CtRPerf:
-			var rperfD []*checks.RPerfResults
+		case agent.CtRPerf:
+			var rperfD []*agent.RPerfResults
 			for _, d := range data {
-				if d.Type == checks.CtRPerf {
+				if d.Type == agent.CtRPerf {
 					rperf, err := d.ConvRPerf()
 					if err != nil {
 						return err
@@ -94,10 +94,10 @@ func (r *Router) getCheckData() {
 				}
 			}
 			checkData = rperfD
-		case checks.CtPing:
-			var pingD []*checks.PingResult
+		case agent.CtPing:
+			var pingD []*agent.PingResult
 			for _, d := range data {
-				if d.Type == checks.CtPing {
+				if d.Type == agent.CtPing {
 					ping, err := d.ConvPing()
 					if err != nil {
 						return err
@@ -127,7 +127,7 @@ func (r *Router) checkNew() {
 		}
 
 		// require check request
-		req := checks.Check{}
+		req := agent.Check{}
 		err = c.BodyParser(&req)
 		if err != nil {
 			return c.JSON(err)
@@ -161,7 +161,7 @@ func (r *Router) getCheck() {
 
 		// todo handle edge cases? the user *could* break their install if not... hmmm...
 
-		check := checks.Check{ID: cId}
+		check := agent.Check{ID: cId}
 		cc, err := check.Get(r.DB)
 		if err != nil {
 			return c.JSON(err)
@@ -172,7 +172,7 @@ func (r *Router) getCheck() {
 }
 
 // agentChecks := handler.AgentCheck{AgentID: agent.ID}
-//		all, err := agentChecks.GetAll(r.DB)
+//		all, err := agentagent.GetAll(r.DB)
 //		if err != nil {
 //			log.Error(err)
 //		}

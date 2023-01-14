@@ -26,46 +26,47 @@ type Check struct {
 	CreateTimestamp time.Time          `bson:"create_timestamp"json:"create_timestamp"`
 }
 
-func (ac *Check) GetData(limit int64, justCheckId bool, recent bool, timeStart time.Time, timeEnd time.Time, db *mongo.Database) ([]*Data, error) {
-	opts := options.Find().SetLimit(limit)
-	var filter = bson.D{{"check", ac.ID}, {"type", ac.Type}}
+type CheckRequest struct {
+	Limit          int64     `json:"limit"`
+	StartTimestamp time.Time `json:"start_timestamp"`
+	EndTimestamp   time.Time `json:"end_timestamp"`
+	Recent         bool      `json:"recent"`
+}
+
+func (ac *Check) GetData(req CheckRequest, db *mongo.Database) ([]*Data, error) {
+	opts := options.Find().SetLimit(req.Limit)
+
+	var filter = bson.D{{"check", ac.ID}}
 	if ac.AgentID != (primitive.ObjectID{0}) {
 		filter = bson.D{{"agent", ac.AgentID}, {"type", ac.Type}}
-	}
-	if justCheckId {
-		filter = bson.D{{"check", ac.ID}}
 	}
 
 	var timeFilter bson.M
 
-	if recent {
+	if req.Recent {
 		opts = opts.SetSort(bson.D{{"timestamp", -1}})
 	} else {
 		if ac.Type == CtRPerf {
 			timeFilter = bson.M{
 				"check": ac.ID,
 				"result.stop_timestamp": bson.M{
-					"$gt": timeStart,
-					"$lt": timeEnd,
+					"$gt": req.StartTimestamp,
+					"$lt": req.EndTimestamp,
 				}}
 		} else {
 			timeFilter = bson.M{
 				"check": ac.ID,
 				"timestamp": bson.M{
-					"$gt": timeStart,
-					"$lt": timeEnd,
+					"$gt": req.StartTimestamp,
+					"$lt": req.EndTimestamp,
 				}}
 		}
-	}
-
-	if (timeStart != time.Time{}) && (timeEnd != time.Time{}) {
-		// todo change opts to use start and end time to check latest checks
 	}
 
 	var cursor *mongo.Cursor
 	var err error
 
-	if recent {
+	if req.Recent {
 		cursor, err = db.Collection("check_data").Find(context.TODO(), filter, opts)
 		if err != nil {
 			return nil, err

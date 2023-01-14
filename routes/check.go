@@ -1,81 +1,55 @@
 package routes
 
 import (
-	"encoding/json"
 	"github.com/gofiber/fiber/v2"
-	"github.com/netwatcherio/netwatcher-control/handler"
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/netwatcherio/netwatcher-control/handler/agent/checks"
+	"github.com/netwatcherio/netwatcher-control/handler/auth"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"html"
-	"time"
 )
 
 // TODO authenticate & verify that the user is infact apart of the site etc.
 
-func (r *Router) check() {
-	r.App.Get("/check/:check?", func(c *fiber.Ctx) error {
-		user, err := validateUser(r, c)
+func (r *Router) getCheckData() {
+	r.App.Post("/check/:check?", func(c *fiber.Ctx) error {
+		c.Accepts("application/json") // "Application/json"
+		t := c.Locals("user").(*jwt.Token)
+		_, err := auth.GetUser(t, r.DB)
+		if err != nil {
+			return c.JSON(err)
+		}
+
+		cId, err := primitive.ObjectIDFromHex(c.Params("check"))
+		if err != nil {
+			return c.JSON(err)
+		}
+
+		// require check request
+		req := checks.CheckRequest{}
+		err = c.BodyParser(&req)
 		if err != nil {
 			return err
 		}
 
-		if c.Params("check") == "" {
-			return c.RedirectBack("/agents")
-		}
-		objId, err := primitive.ObjectIDFromHex(c.Params("check"))
+		check := checks.Check{ID: cId}
+		_, err = check.Get(r.DB)
 		if err != nil {
-			return c.RedirectBack("/home")
+			return c.JSON(err)
 		}
 
-		ac := handler.AgentCheck{ID: objId}
-		_, err = ac.Get(r.DB)
+		data, err := check.GetData(req, r.DB)
 		if err != nil {
-			log.Error(err)
-			return c.Redirect("/agents")
-		}
-
-		agent := handler.Agent{ID: ac.AgentID}
-		err = agent.Get(r.DB)
-		if err != nil {
-			log.Error(err)
-			return c.Redirect("/home")
-		}
-
-		site := handler.Site{ID: agent.Site}
-		err = site.Get(r.DB)
-		if err != nil {
-			log.Error(err)
-			return c.Redirect("/home")
-		}
-
-		marshal, err := json.Marshal(agent)
-		if err != nil {
-			log.Errorf("13 %s", err)
-		}
-
-		var data []*handler.CheckData
-
-		// todo handle time search
-		if ac.Type == handler.CtRperf || ac.Type == handler.CtPing {
-			data, err = ac.GetData(1400, false, false,
-				time.Now().Add(-(time.Hour * 1)), time.Now(), r.DB)
-			if err != nil {
-				log.Errorf("no data found")
-			}
-		} else {
-			data, err = ac.GetData(10, true, true, time.Time{}, time.Time{}, r.DB)
-			if err != nil {
-				log.Errorf("no data found")
-			}
+			log.Errorf("no data found")
 		}
 
 		var checkData interface{}
 
-		switch ac.Type {
-		case handler.CtMtr:
-			var mtrD []*handler.MtrResult
+		switch check.Type {
+		case checks.CtMtr:
+			var mtrD []*checks.MtrResult
 			for _, d := range data {
-				if d.Type == handler.CtMtr {
+				if d.Type == checks.CtMtr {
 					mtr, err := d.ConvMtr()
 					if err != nil {
 						return err
@@ -84,11 +58,11 @@ func (r *Router) check() {
 				}
 			}
 			checkData = mtrD
-		case handler.CtNetinfo:
-			var netinfoD []*handler.NetResult
+		case checks.CtNetworkInfo:
+			var netinfoD []*checks.NetResult
 			for _, d := range data {
-				if d.Type == handler.CtNetinfo {
-					netinfo, err := d.ConvNetresult()
+				if d.Type == checks.CtNetworkInfo {
+					netinfo, err := d.ConvNetResult()
 					if err != nil {
 						return err
 					}
@@ -96,11 +70,11 @@ func (r *Router) check() {
 				}
 			}
 			checkData = netinfoD
-		case handler.CtSpeedtest:
-			var speedD []*handler.SpeedTest
+		case checks.CtSpeedTest:
+			var speedD []*checks.SpeedTestResult
 			for _, d := range data {
-				if d.Type == handler.CtSpeedtest {
-					speed, err := d.ConvSpeedtest()
+				if d.Type == checks.CtSpeedTest {
+					speed, err := d.ConvSpeedTest()
 					if err != nil {
 						return err
 					}
@@ -108,11 +82,11 @@ func (r *Router) check() {
 				}
 			}
 			checkData = speedD
-		case handler.CtRperf:
-			var rperfD []*handler.RPerfResults
+		case checks.CtRPerf:
+			var rperfD []*checks.RPerfResults
 			for _, d := range data {
-				if d.Type == handler.CtRperf {
-					rperf, err := d.ConvRperf()
+				if d.Type == checks.CtRPerf {
+					rperf, err := d.ConvRPerf()
 					if err != nil {
 						return err
 					}
@@ -120,10 +94,10 @@ func (r *Router) check() {
 				}
 			}
 			checkData = rperfD
-		case handler.CtPing:
-			var pingD []*handler.PingResult
+		case checks.CtPing:
+			var pingD []*checks.PingResult
 			for _, d := range data {
-				if d.Type == handler.CtPing {
+				if d.Type == checks.CtPing {
 					ping, err := d.ConvPing()
 					if err != nil {
 						return err
@@ -134,157 +108,71 @@ func (r *Router) check() {
 			checkData = pingD
 		}
 
-		bytes, err := json.Marshal(checkData)
-		if err != nil {
-			log.Error(err)
-		}
-
-		acBytes, err := json.Marshal(ac)
-		if err != nil {
-			log.Error(err)
-		}
-
-		hasData := len(data) > 0
-
-		// TODO process if they are logged in or not, otherwise send them to registration/login
-		return c.Render("check", fiber.Map{
-			"title":        agent.Name,
-			"siteSelected": true,
-			"siteName":     site.Name,
-			"siteId":       site.ID.Hex(),
-			"agents":       html.UnescapeString(string(marshal)),
-			"check":        html.UnescapeString(string(acBytes)),
-			"checkData":    html.UnescapeString(string(bytes)),
-			"hasData":      hasData,
-			"agentId":      agent.ID.Hex(),
-			"firstName":    user.FirstName,
-			"lastName":     user.LastName,
-			"email":        user.Email,
-		},
-			"layouts/main")
+		return c.JSON(checkData)
 	})
 }
 
 func (r *Router) checkNew() {
-	r.App.Get("/check/new/:agentid?", func(c *fiber.Ctx) error {
-		user, err := validateUser(r, c)
-		if err != nil {
-			return err
-		}
-
-		if c.Params("agentid") == "" {
-			return c.Redirect("/home")
-		}
-		objId, err := primitive.ObjectIDFromHex(c.Params("agentid"))
-		if err != nil {
-			return c.Redirect("/home")
-		}
-
-		agent := handler.Agent{ID: objId}
-		err = agent.Get(r.DB)
-		if err != nil {
-			log.Error(err)
-			return c.Redirect("/home")
-		}
-
-		site := handler.Site{ID: agent.Site}
-		err = site.Get(r.DB)
-		if err != nil {
-			log.Error(err)
-			return c.Redirect("/home")
-		}
-
-		// TODO process if they are logged in or not, otherwise send them to registration/login
-		return c.Render("check_new", fiber.Map{
-			"title":        "new check",
-			"firstName":    user.FirstName,
-			"lastName":     user.LastName,
-			"email":        user.Email,
-			"agentId":      agent.ID.Hex(),
-			"siteName":     site.Name,
-			"siteSelected": true,
-		},
-			"layouts/main")
-	})
 	r.App.Post("/check/new/:agentid?", func(c *fiber.Ctx) error {
-		c.Accepts("application/x-www-form-urlencoded") // "Application/json"
-
-		// todo recevied body is in url format, need to convert to new struct??
-		//
-
-		_, err := validateUser(r, c)
+		c.Accepts("application/json") // "Application/json"
+		t := c.Locals("user").(*jwt.Token)
+		_, err := auth.GetUser(t, r.DB)
 		if err != nil {
-			return err
+			return c.JSON(err)
 		}
 
-		if c.Params("agentid") == "" {
-			return c.Redirect("/agents")
-		}
-		objId, err := primitive.ObjectIDFromHex(c.Params("agentid"))
+		aId, err := primitive.ObjectIDFromHex(c.Params("agentid"))
 		if err != nil {
-			return c.Redirect("/agents")
+			return c.JSON(err)
 		}
 
-		agent := handler.Agent{ID: objId}
-		err = agent.Get(r.DB)
+		// require check request
+		req := checks.Check{}
+		err = c.BodyParser(&req)
 		if err != nil {
-			log.Error(err)
-			return c.Redirect("/home")
+			return c.JSON(err)
 		}
+		req.AgentID = aId
 
-		site := handler.Site{ID: agent.Site}
-		err = site.Get(r.DB)
+		// todo handle edge cases? the user *could* break their install if not... hmmm...
+
+		err = req.Create(r.DB)
 		if err != nil {
-			log.Error(err)
-			return c.Redirect("/home")
+			return c.JSON(err)
 		}
 
-		cCheck := new(handler.CheckNewForm)
-		if err := c.BodyParser(cCheck); err != nil {
-			log.Warnf("4 %s", err)
-			return err
-		}
-
-		var aC handler.AgentCheck
-
-		// todo validate target depending on check
-		// ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]):[0-9]+$
-
-		if cCheck.Type == string(handler.CtMtr) {
-			if cCheck.Interval < 5 {
-				cCheck.Interval = 5
-			}
-
-			aC = handler.AgentCheck{
-				Type:     handler.CtMtr,
-				Target:   cCheck.Target,
-				AgentID:  agent.ID,
-				Interval: cCheck.Interval,
-			}
-		} else if cCheck.Type == string(handler.CtRperf) {
-			aC = handler.AgentCheck{
-				Type:    handler.CtRperf,
-				Target:  cCheck.Target,
-				AgentID: agent.ID,
-				Server:  cCheck.RperfServerEnable,
-			}
-		} else if cCheck.Type == string(handler.CtPing) {
-			aC = handler.AgentCheck{
-				Type:    handler.CtPing,
-				Target:  cCheck.Target,
-				AgentID: agent.ID,
-			}
-		}
-
-		err = aC.Create(r.DB)
-		if err != nil {
-			log.Error(err)
-			return c.Redirect("/agents")
-		}
-
-		// todo create default checks such as network info and that sort of thing
-
-		// todo handle error/success and return to home also display message for error if error
-		return c.Redirect("/agent/" + agent.ID.Hex())
+		return c.SendStatus(fiber.StatusOK)
 	})
 }
+
+func (r *Router) getCheck() {
+	r.App.Get("/check/:check?", func(c *fiber.Ctx) error {
+		c.Accepts("application/json") // "Application/json"
+		t := c.Locals("user").(*jwt.Token)
+		_, err := auth.GetUser(t, r.DB)
+		if err != nil {
+			return c.JSON(err)
+		}
+
+		cId, err := primitive.ObjectIDFromHex(c.Params("check"))
+		if err != nil {
+			return c.JSON(err)
+		}
+
+		// todo handle edge cases? the user *could* break their install if not... hmmm...
+
+		check := checks.Check{ID: cId}
+		cc, err := check.Get(r.DB)
+		if err != nil {
+			return c.JSON(err)
+		}
+
+		return c.JSON(cc)
+	})
+}
+
+// agentChecks := handler.AgentCheck{AgentID: agent.ID}
+//		all, err := agentChecks.GetAll(r.DB)
+//		if err != nil {
+//			log.Error(err)
+//		}

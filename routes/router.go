@@ -24,17 +24,14 @@ func (r *Router) Init() {
 	r.apiDataPush(checkCreateWorker)
 	log.Info("API")
 
-	r.check()
+	r.getCheck()
+	r.getCheckData()
 	r.checkNew()
 	log.Info("CHECKS")
 
-	r.utils()
-	log.Info("UTILS")
-
-	r.agent()
-	r.agents()
 	r.agentNew()
-	r.agentInstall()
+	r.getAgent()
+	r.getGeneralAgentStats()
 	log.Info("AGENTS")
 
 	r.addSiteMember()
@@ -44,9 +41,7 @@ func (r *Router) Init() {
 	log.Info("SITES")
 
 	r.login()
-	/*r.authLogin()
-	r.authRegister()
-	r.authLogout()*/
+	r.register()
 	log.Info("AUTH")
 
 	workers.CreateCheckWorker(checkCreateWorker, r.DB)

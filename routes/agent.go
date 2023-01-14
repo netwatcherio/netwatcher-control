@@ -1,280 +1,103 @@
 package routes
 
 import (
-	"encoding/json"
 	"github.com/gofiber/fiber/v2"
-	"github.com/netwatcherio/netwatcher-control/handler"
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/netwatcherio/netwatcher-control/handler/agent"
+	"github.com/netwatcherio/netwatcher-control/handler/auth"
+	"github.com/netwatcherio/netwatcher-control/handler/site"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"html"
-	"math"
-	_ "strings"
-	"time"
 )
 
 // TODO authenticate & verify that the user is infact apart of the site etc.
 
-func (r *Router) agent() {
+func (r *Router) getAgent() {
 	r.App.Get("/agent/:agent?", func(c *fiber.Ctx) error {
-
-		agent := handler.Agent{ID: objId}
-		err = agent.Get(r.DB)
+		c.Accepts("application/json") // "Application/json"
+		t := c.Locals("user").(*jwt.Token)
+		_, err := auth.GetUser(t, r.DB)
 		if err != nil {
-			log.Error(err)
-			return c.Redirect("/agents")
+			return c.JSON(err)
 		}
 
-		site := handler.Site{ID: agent.Site}
-		err = site.Get(r.DB)
+		aId, err := primitive.ObjectIDFromHex(c.Params("agent"))
 		if err != nil {
-			log.Error(err)
-			return c.Redirect("/home")
+			return c.JSON(err)
 		}
 
-		marshal, err := json.Marshal(agent)
+		a := agent.Agent{ID: aId}
+		err = a.Get(r.DB)
 		if err != nil {
-			log.Errorf("13 %s", err)
+			return c.JSON(err)
 		}
 
-		getAgentStats, err := agent.GetAgentStats(r.DB)
-		if err != nil {
-			log.Error(err)
-		}
-
-		online := true
-		if time.Now().Sub(getAgentStats.Heartbeat).Minutes() > 5 {
-			online = false
-		}
-
-		agentChecks := handler.AgentCheck{AgentID: agent.ID}
-		all, err := agentChecks.GetAll(r.DB)
-		if err != nil {
-			log.Error(err)
-		}
-
-		acBytes, err := json.Marshal(all)
-		if err != nil {
-			log.Error(err)
-		}
-
-		hasAC := len(all) > 0
-
-		// TODO process if they are logged in or not, otherwise send them to registration/login
-		return c.Render("agent", fiber.Map{
-			"title":            agent.Name,
-			"siteSelected":     true,
-			"siteName":         site.Name,
-			"siteId":           site.ID.Hex(),
-			"agents":           html.UnescapeString(string(marshal)),
-			"publicAddress":    &getAgentStats.NetInfo.PublicAddress,
-			"localAddress":     &getAgentStats.NetInfo.LocalAddress,
-			"defaultGateway":   &getAgentStats.NetInfo.DefaultGateway,
-			"internetProvider": &getAgentStats.NetInfo.InternetProvider,
-			"uploadSpeed":      math.Round(getAgentStats.SpeedTestInfo.ULSpeed),
-			"downloadSpeed":    math.Round(getAgentStats.SpeedTestInfo.DLSpeed),
-			"agentChecks":      html.UnescapeString(string(acBytes)),
-			"hasAC":            hasAC,
-			/*"speedtestPending": agent.AgentConfig.SpeedTestPending,*/
-			"online":    online,
-			"agentId":   agent.ID.Hex(),
-			"firstName": user.FirstName,
-			"lastName":  user.LastName,
-			"email":     user.Email,
-		},
-			"layouts/main")
+		return c.JSON(a)
 	})
 }
 
-func (r *Router) agents() {
-	r.App.Get("/agents/:siteid?", func(c *fiber.Ctx) error {
-		user, err := validateUser(r, c)
+func (r *Router) getGeneralAgentStats() {
+	r.App.Get("/agent/:agent?", func(c *fiber.Ctx) error {
+		c.Accepts("application/json") // "Application/json"
+		t := c.Locals("user").(*jwt.Token)
+		_, err := auth.GetUser(t, r.DB)
 		if err != nil {
-			return c.Redirect("/auth")
+			return c.JSON(err)
 		}
 
-		if c.Params("siteid") == "" {
-			return c.Redirect("/home")
-		}
-		objId, err := primitive.ObjectIDFromHex(c.Params("siteid"))
+		aId, err := primitive.ObjectIDFromHex(c.Params("agent"))
 		if err != nil {
-			return c.Redirect("/home")
+			return c.JSON(err)
 		}
 
-		site := handler.Site{ID: objId}
-		err = site.Get(r.DB)
+		a := agent.Agent{ID: aId}
+		err = a.Get(r.DB)
 		if err != nil {
-			log.Error(err)
-			return c.Redirect("/home")
+			return c.JSON(err)
 		}
 
-		agentStats, err := site.GetAgentSiteStats(r.DB)
+		stats, err := a.GetLatestStats(r.DB)
 		if err != nil {
 			log.Error(err)
 		}
 
-		marshalAS, err := json.Marshal(agentStats)
-		if err != nil {
-			return err
-		}
-
-		hasAgents := false
-		if len(agentStats) > 0 {
-			hasAgents = true
-		}
-
-		// Render index within layouts/main
-		// TODO process if they are logged in or not, otherwise send them to registration/login
-		//log.Errorf("%s", string(doc))
-		return c.Render("agents", fiber.Map{
-			"title":        "agents",
-			"siteSelected": true,
-			"siteId":       site.ID.Hex(),
-			"siteName":     site.Name,
-			"firstName":    user.FirstName,
-			"lastName":     user.LastName,
-			"email":        user.Email,
-			"agents":       html.UnescapeString(string(marshalAS)),
-			"hasAgents":    hasAgents},
-			"layouts/main")
+		return c.JSON(stats)
 	})
 }
 
 func (r *Router) agentNew() {
-	r.App.Get("/agent/new/:siteid?", func(c *fiber.Ctx) error {
-		user, err := validateUser(r, c)
-		if err != nil {
-			return err
-		}
-
-		if c.Params("siteid") == "" {
-			return c.Redirect("/home")
-		}
-		objId, err := primitive.ObjectIDFromHex(c.Params("siteid"))
-		if err != nil {
-			return c.Redirect("/home")
-		}
-
-		site := handler.Site{ID: objId}
-		err = site.Get(r.DB)
-		if err != nil {
-			log.Error(err)
-			return c.Redirect("/home")
-		}
-
-		// TODO process if they are logged in or not, otherwise send them to registration/login
-		return c.Render("agent_new", fiber.Map{
-			"title":        "new agent",
-			"firstName":    user.FirstName,
-			"lastName":     user.LastName,
-			"email":        user.Email,
-			"siteId":       site.ID.Hex(),
-			"siteName":     site.Name,
-			"siteSelected": true,
-		},
-			"layouts/main")
-	})
 	r.App.Post("/agent/new/:siteid?", func(c *fiber.Ctx) error {
-		c.Accepts("application/x-www-form-urlencoded") // "Application/json"
-
-		// todo recevied body is in url format, need to convert to new struct??
-		//
-
-		_, err := validateUser(r, c)
+		c.Accepts("application/json") // "Application/json"
+		t := c.Locals("user").(*jwt.Token)
+		_, err := auth.GetUser(t, r.DB)
 		if err != nil {
-			return err
+			return c.JSON(err)
 		}
 
-		if c.Params("siteid") == "" {
-			return c.Redirect("/agents")
-		}
-		objId, err := primitive.ObjectIDFromHex(c.Params("siteid"))
+		sId, err := primitive.ObjectIDFromHex(c.Params("siteid"))
 		if err != nil {
-			return c.Redirect("/agents")
+			return c.JSON(err)
 		}
 
-		site := handler.Site{ID: objId}
-		err = site.Get(r.DB)
+		s := site.Site{ID: sId}
+		err = s.Get(r.DB)
 		if err != nil {
-			log.Error(err)
-			return c.Redirect("/home")
+			return c.JSON(err)
 		}
 
-		cAgent := new(handler.Agent)
+		cAgent := new(agent.Agent)
 		if err := c.BodyParser(cAgent); err != nil {
-			log.Warnf("4 %s", err)
-			return err
+			return c.JSON(err)
 		}
 
-		cAgent.Site = site.ID
+		cAgent.Site = s.ID
 
 		err = cAgent.Create(r.DB)
 		if err != nil {
 			log.Error(err)
-			return c.Redirect("/agents")
+			return c.JSON(err)
 		}
 
-		check := handler.AgentCheck{AgentID: cAgent.ID}
-		check.Type = handler.CtNetinfo
-		err = check.Create(r.DB)
-		if err != nil {
-			return err
-		}
-
-		check2 := handler.AgentCheck{AgentID: cAgent.ID, Pending: true}
-		check2.Type = handler.CtSpeedtest
-		err = check2.Create(r.DB)
-		if err != nil {
-			return err
-		}
-
-		// todo create default checks such as network info and that sort of thing
-
-		// todo handle error/success and return to home also display message for error if error
-		return c.Redirect("/agent/install/" + cAgent.ID.Hex())
-	})
-}
-
-func (r *Router) agentInstall() {
-	r.App.Get("/agent/install/:agentid", func(c *fiber.Ctx) error {
-		user, err := validateUser(r, c)
-		if err != nil {
-			return err
-		}
-
-		if c.Params("agentid") == "" {
-			return c.Redirect("/home")
-		}
-		objId, err := primitive.ObjectIDFromHex(c.Params("agentid"))
-		if err != nil {
-			return c.Redirect("/home")
-		}
-
-		agent := handler.Agent{ID: objId}
-		err = agent.Get(r.DB)
-		if err != nil {
-			log.Error(err)
-			return c.Redirect("/agents")
-		}
-
-		site := handler.Site{ID: agent.Site}
-		err = site.Get(r.DB)
-		if err != nil {
-			log.Error(err)
-			return c.Redirect("/home")
-		}
-
-		//todo handle if already installed
-
-		return c.Render("agent_install", fiber.Map{
-			"title":        "agent install",
-			"siteSelected": true,
-			"siteId":       agent.Site.Hex(),
-			"siteName":     site.Name,
-			"firstName":    user.FirstName,
-			"lastName":     user.LastName,
-			"email":        user.Email,
-			"agentPin":     agent.Pin,
-		},
-			"layouts/main")
+		return c.SendStatus(fiber.StatusOK)
 	})
 }

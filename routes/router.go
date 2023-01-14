@@ -3,7 +3,7 @@ package routes
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
-	"github.com/netwatcherio/netwatcher-control/handler"
+	"github.com/netwatcherio/netwatcher-control/handler/agent/checks"
 	"github.com/netwatcherio/netwatcher-control/workers"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -16,7 +16,7 @@ type Router struct {
 }
 
 func (r *Router) Init() {
-	checkCreateWorker := make(chan handler.CheckData)
+	checkCreateWorker := make(chan checks.Data)
 
 	log.Info("Loading routes for:")
 
@@ -37,14 +37,10 @@ func (r *Router) Init() {
 	r.agentInstall()
 	log.Info("AGENTS")
 
-	r.alerts()
-	log.Info("ALERTS")
-
-	r.site()
-	r.sites()
-	r.siteNew()
-	r.siteMembers()
-	r.siteAddMember()
+	r.addSiteMember()
+	r.getSite()
+	r.getSites()
+	r.newSite()
 	log.Info("SITES")
 
 	r.login()

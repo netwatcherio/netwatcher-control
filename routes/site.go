@@ -1,338 +1,112 @@
 package routes
 
 import (
-	"encoding/json"
 	"github.com/gofiber/fiber/v2"
-	"github.com/netwatcherio/netwatcher-control/handler"
-	log "github.com/sirupsen/logrus"
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/netwatcherio/netwatcher-control/handler/auth"
+	"github.com/netwatcherio/netwatcher-control/handler/site"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"html"
 )
 
 // TODO authenticate & verify that the user is infact apart of the site etc.
 
-func (r *Router) siteAddMember() {
-	r.App.Get("/site/:siteid?/members/add", func(c *fiber.Ctx) error {
-		// Render index within layouts/main
-		_, err2 := validateUser(r, c)
-		if err2 != nil {
-			return err2
-		}
-
-		if c.Params("siteid") == "" {
-			return c.Redirect("/home")
-		}
-		objId, err := primitive.ObjectIDFromHex(c.Params("siteid"))
-		if err != nil {
-			return c.Redirect("/home")
-		}
-
-		site := handler.Site{ID: objId}
-		err = site.Get(r.DB)
-		if err != nil {
-			log.Error(err)
-			return c.Redirect("/home")
-		}
-
-		user, err := handler.GetUserFromSession(c, r.Session, r.DB)
-		if err != nil {
-			return c.Redirect("/auth")
-		}
-
-		user.Password = ""
-
-		//todo get agent count
-
-		// convert to json for testing
-		//siteJs, err := json.Marshal(sitesList)
-		if err != nil {
-			// todo handle properly
-			return c.Redirect("/auth")
-		}
-
-		//log.Infof("%s", siteJs)
-
-		// TODO process if they are logged in or not, otherwise send them to registration/login
-		return c.Render("site_member_add", fiber.Map{
-			"title":        "add member",
-			"firstName":    user.FirstName,
-			"lastName":     user.LastName,
-			"email":        user.Email,
-			"siteSelected": true,
-			"siteName":     site.Name,
-			"siteId":       site.ID.Hex(),
-			//"sites":     html.UnescapeString(string(siteJs)),
-		},
-			"layouts/main")
-	})
+func (r *Router) addSiteMember() {
 	r.App.Post("/site/:siteid?/members/add", func(c *fiber.Ctx) error {
-		c.Accepts("application/x-www-form-urlencoded") // "Application/json"
-		_, err2 := validateUser(r, c)
-		if err2 != nil {
-			return err2
-		}
-
-		if c.Params("siteid") == "" {
-			return c.Redirect("/home")
-		}
-		objId, err := primitive.ObjectIDFromHex(c.Params("siteid"))
+		c.Accepts("application/json") // "Application/json"
+		t := c.Locals("user").(*jwt.Token)
+		_, err := auth.GetUser(t, r.DB)
 		if err != nil {
-			return c.Redirect("/home")
+			return c.JSON(err)
 		}
 
-		site := handler.Site{ID: objId}
-		err = site.Get(r.DB)
+		m := new(site.AddSiteMember)
+		if err := c.BodyParser(m); err != nil {
+			return c.JSON(err)
+		}
+
+		mU := auth.User{Email: m.Email}
+		email, err := mU.FromEmail(r.DB)
 		if err != nil {
-			log.Error(err)
-			return c.Redirect("/home")
+			return c.JSON(err)
 		}
 
-		user, err := handler.GetUserFromSession(c, r.Session, r.DB)
+		siteId, err := primitive.ObjectIDFromHex(c.Params("siteid"))
 		if err != nil {
-			return c.Redirect("/auth")
+			return c.JSON(err)
 		}
 
-		user.Password = ""
-
-		newMember := new(handler.AddSiteMember)
-		if err := c.BodyParser(newMember); err != nil {
-			//todo
-			//return err
-		}
-
-		if newMember.Role > 2 {
-			// check if data has been tampered to make a new member the owner
-			log.Warnf(" %s", "someone is trying to tamper with the roles when adding")
-			// TODO support owner transferring
-			return c.Redirect("/site/" + site.ID.Hex() + "/members")
-		}
-
-		var usrTmp = handler.User{Email: newMember.Email}
-
-		usr, err := usrTmp.GetUserFromEmail(r.DB)
+		s := site.Site{ID: siteId}
+		err = s.Get(r.DB)
 		if err != nil {
-			log.Errorf("12 %s", err)
-			//TODO handle error correctly
-			return c.Redirect("/site/" + site.ID.Hex() + "")
+			return c.JSON(err)
 		}
 
-		b, err := site.AddMember(usr.ID, newMember.Role, r.DB)
+		err = s.AddMember(email.ID, m.Role, r.DB)
 		if err != nil {
-			log.Errorf("2 %s", err)
-			//todo handle better
-			return c.Redirect("/site/" + site.ID.Hex() + "")
+			return c.JSON(err)
 		}
 
-		if !b {
-			log.Errorf("something went wrong adding member to site")
-			return c.Redirect("/site/" + site.ID.Hex() + "")
-		}
-		addSite, err := usr.AddSite(site.ID, r.DB)
+		err = email.AddSite(s.ID, r.DB)
 		if err != nil {
-			return err
+			return c.JSON(err)
 		}
-		if !addSite {
-			log.Infof("%s", "somethiung went wrongies")
-			return c.Redirect("/site/" + site.ID.Hex() + "")
-		}
-		log.Infof("%s", "added member to site successfully")
 
-		// todo handle error/success and return to home
-		return c.Redirect("/site/" + site.ID.Hex() + "/members")
+		return c.SendStatus(fiber.StatusOK)
 	})
 }
 
-func (r *Router) siteMembers() {
-	r.App.Get("/site/:siteid?/members", func(c *fiber.Ctx) error {
-		// Render index within layouts/main
-		_, err2 := validateUser(r, c)
-		if err2 != nil {
-			return err2
-		}
-
-		if c.Params("siteid") == "" {
-			return c.Redirect("/home")
-		}
-		objId, err := primitive.ObjectIDFromHex(c.Params("siteid"))
-		if err != nil {
-			return c.Redirect("/home")
-		}
-
-		site := handler.Site{ID: objId}
-		err = site.Get(r.DB)
-		if err != nil {
-			log.Error(err)
-			return c.Redirect("/home")
-		}
-
-		user, err := handler.GetUserFromSession(c, r.Session, r.DB)
-		if err != nil {
-			return c.Redirect("/auth")
-		}
-
-		user.Password = ""
-
-		var siteMembers []handler.SiteMember
-		for _, mem := range site.Members {
-			siteMembers = append(siteMembers, mem)
-		}
-
-		var siteUsers []*handler.User
-		for _, usr := range siteMembers {
-			c2 := &handler.User{ID: usr.User}
-			u, err := c2.GetUserFromID(r.DB)
-			if err != nil {
-				log.Errorf("%s %s", "0 Error processing users in site id", site.ID.Hex())
-			}
-			siteUsers = append(siteUsers, u)
-		}
-
-		siteMem, err := json.Marshal(siteMembers)
-		if err != nil {
-			log.Errorf("%s %s", " Error processing members in site id", site.ID.Hex())
-		}
-		siteUsr, err := json.Marshal(siteUsers)
-		if err != nil {
-			log.Errorf("%s %s", "2 Error processing users in site id", site.ID.Hex())
-		}
-
-		//todo get agent count
-
-		// convert to json for testing
-		//siteJs, err := json.Marshal(sitesList)
-		if err != nil {
-			// todo handle properly
-			return c.Redirect("/auth")
-		}
-
-		//log.Infof("%s", siteJs)
-
-		// TODO process if they are logged in or not, otherwise send them to registration/login
-		return c.Render("site_members", fiber.Map{
-			"title":        "members",
-			"firstName":    user.FirstName,
-			"lastName":     user.LastName,
-			"email":        user.Email,
-			"siteSelected": true,
-			"siteName":     site.Name,
-			"siteId":       site.ID.Hex(),
-			"siteMem":      html.UnescapeString(string(siteMem)),
-			"siteUsr":      html.UnescapeString(string(siteUsr)),
-			//"sites":     html.UnescapeString(string(siteJs)),
-		},
-			"layouts/main")
-	})
-}
-
-func (r *Router) siteNew() {
-	r.App.Get("/site/new", func(c *fiber.Ctx) error {
-		// Render index within layouts/main
-		user, err := validateUser(r, c)
-		if err != nil {
-			return err
-		}
-
-		// TODO process if they are logged in or not, otherwise send them to registration/login
-		return c.Render("site_new", fiber.Map{
-			"title":     "new site",
-			"firstName": user.FirstName,
-			"lastName":  user.LastName,
-			"email":     user.Email,
-		},
-			"layouts/main")
-	})
+func (r *Router) newSite() {
 	r.App.Post("/site/new", func(c *fiber.Ctx) error {
-		c.Accepts("application/x-www-form-urlencoded") // "Application/json"
-		user, err2 := validateUser(r, c)
-		if err2 != nil {
-			return err2
-		}
-
-		site := new(handler.Site)
-		if err := c.BodyParser(site); err != nil {
-			log.Warnf("4 %s", err)
-			return err
-		}
-
-		s, err := site.CreateSite(user.ID, r.DB)
+		c.Accepts("application/json") // "Application/json"
+		t := c.Locals("user").(*jwt.Token)
+		u, err := auth.GetUser(t, r.DB)
 		if err != nil {
-			//todo handle error??
-			return c.Redirect("/sites")
+			return c.JSON(err)
 		}
 
-		_, err = user.AddSite(s, r.DB)
+		s := new(site.Site)
+		if err := c.BodyParser(s); err != nil {
+			return c.JSON(err)
+		}
+
+		err = s.Create(u.ID, r.DB)
 		if err != nil {
-			// todo handle error
-			return c.Redirect("/sites")
+			return c.JSON(err)
 		}
-
-		// todo handle error/success and return to home
-		return c.Redirect("/sites")
+		return c.SendStatus(fiber.StatusOK)
 	})
 }
-func (r *Router) site() {
+func (r *Router) getSite() {
 	r.App.Get("/site/:siteid?", func(c *fiber.Ctx) error {
-		user, err2 := validateUser(r, c)
-		if err2 != nil {
-			return err2
-		}
-		if c.Params("siteid") == "" {
-			return c.Redirect("/home")
-		}
-		objId, err := primitive.ObjectIDFromHex(c.Params("siteid"))
+		c.Accepts("application/json") // "Application/json"
+		t := c.Locals("user").(*jwt.Token)
+		_, err := auth.GetUser(t, r.DB)
 		if err != nil {
-			return c.Redirect("/home")
+			return c.JSON(err)
 		}
 
-		site := handler.Site{ID: objId}
-		err = site.Get(r.DB)
+		siteId, err := primitive.ObjectIDFromHex(c.Params("siteid"))
 		if err != nil {
-			log.Error(err)
-			return c.Redirect("/home")
+			return c.JSON(err)
 		}
 
-		/*var agentStatList models.AgentStatsList
-
-		stats, err := getAgentStatsForSite(objId, db)
+		s := site.Site{ID: siteId}
+		err = s.Get(r.DB)
 		if err != nil {
-			//todo handle error
-			//return err
+			return c.JSON(err)
 		}
-		agentStatList.List = stats
-
-		var hasData = true
-		if len(agentStatList.List) == 0 {
-			hasData = false
-		}
-
-		doc, err := json.Marshal(agentStatList)
-		if err != nil {
-			log.Errorf("1 %s", err)
-		}*/
-
-		// Render index within layouts/main
-		// TODO process if they are logged in or not, otherwise send them to registration/login
-
-		return c.Render("site", fiber.Map{
-			"title":        "site dashboard",
-			"siteSelected": true,
-			"siteName":     site.Name,
-			"siteId":       site.ID.Hex(),
-			"firstName":    user.FirstName,
-			"lastName":     user.LastName,
-			"email":        user.Email,
-			/*"agents":       html.UnescapeString(string(doc)),
-			"hasData":      hasData,*/
-		},
-			"layouts/main")
+		return c.JSON(s)
 	})
 }
 
-func (r *Router) sites() {
+// get braden
+func (r *Router) getSites() {
 	r.App.Get("/sites", func(c *fiber.Ctx) error {
-		user, err2 := validateUser(r, c)
-		if err2 != nil {
-			return err2
+		c.Accepts("application/json") // "Application/json"
+		t := c.Locals("user").(*jwt.Token)
+		user, err := auth.GetUser(t, r.DB)
+		if err != nil {
+			return c.JSON(err)
 		}
 
 		type AgentCountInfo struct {
@@ -341,57 +115,31 @@ func (r *Router) sites() {
 		}
 
 		var sitesList struct {
-			Sites          []*handler.Site  `json:"sites"`
-			AgentCountInfo []AgentCountInfo `json:"agentCountInfo"`
+			Sites          []*site.Site     `json:"sites"`
+			AgentCountInfo []AgentCountInfo `json:"agent_counts"`
 		}
 
 		for _, sid := range user.Sites {
-			site := handler.Site{ID: sid}
-			err := site.Get(r.DB)
+			s := site.Site{ID: sid}
+			err := s.Get(r.DB)
 			if err != nil {
-				log.Error(err)
-				return c.Redirect("/home")
+				return c.JSON(err)
 			}
 
-			count, err := site.AgentCount(r.DB)
+			count, err := s.AgentCount(r.DB)
 			if err != nil {
-				//todo handle error
+				return c.JSON(err)
 			}
 
 			tempCount := AgentCountInfo{
-				SiteID: site.ID,
+				SiteID: s.ID,
 				Count:  count,
 			}
 
-			sitesList.Sites = append(sitesList.Sites, &site)
+			sitesList.Sites = append(sitesList.Sites, &s)
 			sitesList.AgentCountInfo = append(sitesList.AgentCountInfo, tempCount)
 		}
 
-		var hasSites = true
-		if len(user.Sites) == 0 {
-			hasSites = false
-		}
-
-		//todo get agent count
-
-		// convert to json for testing
-		siteJs, err := json.Marshal(sitesList)
-		if err != nil {
-			// todo handle properly
-			return c.Redirect("/auth")
-		}
-
-		log.Infof("%s", siteJs)
-
-		// TODO process if they are logged in or not, otherwise send them to registration/login
-		return c.Render("sites", fiber.Map{
-			"title":     "sites",
-			"firstName": user.FirstName,
-			"lastName":  user.LastName,
-			"email":     user.Email,
-			"hasSites":  hasSites,
-			"sites":     html.UnescapeString(string(siteJs)),
-		},
-			"layouts/main")
+		return c.JSON(sitesList)
 	})
 }

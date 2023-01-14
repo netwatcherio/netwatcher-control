@@ -13,17 +13,17 @@ import (
 )
 
 type Check struct {
-	Type            Type               `json:"type"bson:"type,omitempty"`
-	Target          string             `json:"target,omitempty"bson:"target,omitempty"`
-	ID              primitive.ObjectID `json:"id"bson:"_id,omitempty"`
-	AgentID         primitive.ObjectID `json:"agent"bson:"agent,omitempty"`
-	Duration        int                `json:"duration,omitempty'"bson:"duration"`
-	Count           int                `json:"count,omitempty"bson:"count,omitempty"`
-	Triggered       bool               `json:"triggered"bson:"triggered,omitempty"`
-	Server          bool               `json:"server,omitempty"bson:"server,omitempty"`
-	Pending         bool               `json:"pending,omitempty"bson:"pending"`
-	Interval        int                `json:"interval"bson:"interval,omitempty"`
-	CreateTimestamp time.Time          `bson:"create_timestamp"json:"create_timestamp,omitempty"`
+	Type            Type               `json:"type"bson:"type"`
+	Target          string             `json:"target"bson:"target"`
+	ID              primitive.ObjectID `json:"id"bson:"_id"`
+	AgentID         primitive.ObjectID `json:"agent"bson:"agent"`
+	Duration        int                `json:"duration'"bson:"duration"`
+	Count           int                `json:"count"bson:"count"`
+	Triggered       bool               `json:"triggered"bson:"triggered"`
+	Server          bool               `json:"server"bson:"server"`
+	Pending         bool               `json:"pending"bson:"pending"`
+	Interval        int                `json:"interval"bson:"interval"`
+	CreateTimestamp time.Time          `bson:"create_timestamp"json:"create_timestamp"`
 }
 
 func (ac *Check) GetData(limit int64, justCheckId bool, recent bool, timeStart time.Time, timeEnd time.Time, db *mongo.Database) ([]*Data, error) {

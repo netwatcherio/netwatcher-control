@@ -20,7 +20,7 @@ type Data struct {
 	AgentID   primitive.ObjectID `json:"agent"bson:"agent"`
 	Triggered bool               `json:"triggered"bson:"triggered"`
 	Timestamp time.Time          `bson:"timestamp"json:"timestamp"`
-	Result    interface{}        `json:"result"bson:"result,omitempty"`
+	Result    interface{}        `json:"result,omitempty"bson:"result,omitempty"`
 	Type      Type               `bson:"type"json:"type"`
 }
 
@@ -35,9 +35,7 @@ func (cd *Data) Create(db *mongo.Database) error {
 	}
 
 	cd.Type = agentC.Type
-
 	crM := cd.Result.(string)
-
 	// load types
 	if agentC.Type == CtNetworkInfo {
 		var r NetResult

@@ -16,18 +16,6 @@ import (
 
 func (r *Router) agent() {
 	r.App.Get("/agent/:agent?", func(c *fiber.Ctx) error {
-		user, err := validateUser(r, c)
-		if err != nil {
-			return err
-		}
-
-		if c.Params("agent") == "" {
-			return c.RedirectBack("/home")
-		}
-		objId, err := primitive.ObjectIDFromHex(c.Params("agent"))
-		if err != nil {
-			return c.RedirectBack("/home")
-		}
 
 		agent := handler.Agent{ID: objId}
 		err = agent.Get(r.DB)

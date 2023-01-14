@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/netwatcherio/netwatcher-control/handler"
+	"github.com/netwatcherio/netwatcher-control/handler/agent"
+	"github.com/netwatcherio/netwatcher-control/handler/agent/checks"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -20,7 +22,7 @@ func (r *Router) apiGetConfig() {
 			respB.Error = "500"
 		}
 
-		var agentSearch handler.Agent
+		var agentSearch agent.Agent
 		if dataRequest.ID != "000000000000000000000000" && dataRequest.PIN != "" {
 			agentSearch.Pin = dataRequest.PIN
 			hexId, err := primitive.ObjectIDFromHex(dataRequest.ID)
@@ -45,7 +47,7 @@ func (r *Router) apiGetConfig() {
 			respB.PIN = agentSearch.Pin
 			//todo add checks to be processed
 
-			agentCheck := handler.AgentCheck{
+			agentCheck := checks.Check{
 				AgentID: agentSearch.ID,
 			}
 
@@ -65,7 +67,7 @@ func (r *Router) apiGetConfig() {
 	})
 }
 
-func (r *Router) apiDataPush(ch chan handler.CheckData) {
+func (r *Router) apiDataPush(ch chan checks.Data) {
 	r.App.Post("/api/v2/agent/push", func(c *fiber.Ctx) error {
 		c.Accepts("Application/json") // "Application/json"
 		respB := handler.ApiRequest{}
@@ -77,7 +79,7 @@ func (r *Router) apiDataPush(ch chan handler.CheckData) {
 			respB.Error = "500"
 		}
 
-		var agentSearch handler.Agent
+		var agentSearch agent.Agent
 		if dataRequest.ID != "000000000000000000000000" && dataRequest.PIN != "" {
 			agentSearch.Pin = dataRequest.PIN
 			hexId, err := primitive.ObjectIDFromHex(dataRequest.ID)
@@ -102,7 +104,7 @@ func (r *Router) apiDataPush(ch chan handler.CheckData) {
 			respB.PIN = agentSearch.Pin
 			//todo add checks to be processed
 
-			var checkD []handler.CheckData
+			var checkD []checks.Data
 			err = json.Unmarshal([]byte(dataRequest.Data.(string)), &checkD)
 			if err != nil {
 				log.Error(err)

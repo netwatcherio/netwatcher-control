@@ -16,6 +16,7 @@ type User struct {
 	Email           string               `bson:"email"json:"email"` // email, will be used as username
 	FirstName       string               `bson:"first_name"json:"first_name"`
 	LastName        string               `bson:"last_name"json:"last_name"`
+	Company         string               `bson:"company"json:"company"`
 	Admin           bool                 `bson:"admin" default:"false"json:"admin"`
 	Password        string               `bson:"password"json:"password"` // password in sha256?
 	Sites           []primitive.ObjectID `bson:"sites"json:"sites"`       // _id's of mongo objects

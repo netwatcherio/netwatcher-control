@@ -1,35 +1,24 @@
 package routes
 
 import (
+	"encoding/json"
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v4"
-	"time"
+	"github.com/netwatcherio/netwatcher-control/handler/auth"
+	log "github.com/sirupsen/logrus"
 )
 
 func (r *Router) login() {
-	r.App.Get("/login", func(c *fiber.Ctx) error {
-		user := c.FormValue("user")
-		pass := c.FormValue("pass")
+	r.App.Post("/auth/login", func(c *fiber.Ctx) error {
+		c.Accepts("Application/json") // "Application/json"
 
-		// Throws Unauthorized error
-		if user != "john" || pass != "doe" {
-			return c.SendStatus(fiber.StatusUnauthorized)
-		}
-
-		// Create the Claims
-		claims := jwt.MapClaims{
-			"name":  "John Doe",
-			"admin": true,
-			"exp":   time.Now().Add(time.Hour * 72).Unix(),
-		}
-
-		// Create token
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-		// Generate encoded token and send it as response.
-		t, err := token.SignedString([]byte("secret"))
+		var l auth.Login
+		err := json.Unmarshal(c.Body(), &l)
 		if err != nil {
-			return c.SendStatus(fiber.StatusInternalServerError)
+			log.Error(err)
+		}
+		t, err := l.Login(r.DB)
+		if err != nil {
+			return err
 		}
 
 		return c.JSON(fiber.Map{"token": t})
@@ -37,42 +26,19 @@ func (r *Router) login() {
 }
 
 func (r *Router) register() {
-	r.App.Get("/register", func(c *fiber.Ctx) error {
-		user := c.FormValue("username")
-		pass := c.FormValue("password")
+	r.App.Post("/auth/register", func(c *fiber.Ctx) error {
+		c.Accepts("Application/json") // "Application/json"
 
-		// Throws Unauthorized error
-		if user != "john" || pass != "doe" {
-			return c.SendStatus(fiber.StatusUnauthorized)
-		}
-
-		// Create the Claims
-		claims := jwt.MapClaims{
-			"name":  "John Doe",
-			"admin": true,
-			"exp":   time.Now().Add(time.Hour * 72).Unix(),
-		}
-
-		// Create token
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-		// Generate encoded token and send it as response.
-		t, err := token.SignedString([]byte("secret"))
+		var reg auth.Register
+		err := json.Unmarshal(c.Body(), &reg)
 		if err != nil {
-			return c.SendStatus(fiber.StatusInternalServerError)
+			log.Error(err)
+		}
+		t, err := reg.Register(r.DB)
+		if err != nil {
+			return err
 		}
 
 		return c.JSON(fiber.Map{"token": t})
 	})
-}
-
-func accessible(c *fiber.Ctx) error {
-	return c.SendString("Accessible")
-}
-
-func restricted(c *fiber.Ctx) error {
-	user := c.Locals("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-	name := claims["name"].(string)
-	return c.SendString("Welcome " + name)
 }

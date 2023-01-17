@@ -1,10 +1,12 @@
 package auth
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/golang-jwt/jwt/v4"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
+	"os"
 	"time"
 )
 
@@ -16,7 +18,6 @@ type Login struct {
 // Login returns error on fail, nil on success
 func (r *Login) Login(db *mongo.Database) (string, error) {
 	if r.Email == "" {
-		// todo validate email
 		return "", errors.New("invalid email address")
 	}
 
@@ -26,18 +27,15 @@ func (r *Login) Login(db *mongo.Database) (string, error) {
 		return "", err
 	}
 
-	pwd, err := bcrypt.GenerateFromPassword([]byte(r.Password), 15)
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(r.Password))
 	if err != nil {
-		return "", err
-	}
-
-	if string(pwd) == user.Password {
 		return "", errors.New("invalid password, please ensure passwords match")
 	}
 
 	session := Session{
 		UserID: user.ID,
 	}
+
 	err = session.Create(db)
 	if err != nil {
 		return "", err
@@ -53,12 +51,22 @@ func (r *Login) Login(db *mongo.Database) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	// Generate encoded token and send it as response.
-	t, err := token.SignedString([]byte("ping pong")) // TODO lol
+	t, err := token.SignedString([]byte(os.Getenv("KEY")))
 	if err != nil {
 		return "", err
 	}
 
-	return t, nil
+	out := map[string]any{
+		"token": t,
+		"user":  *user,
+	}
+
+	bytes, err := json.Marshal(out)
+	if err != nil {
+		return "", err
+	}
+
+	return string(bytes), nil
 }
 
 type Register struct {
@@ -85,7 +93,7 @@ func (r *Register) Register(db *mongo.Database) (string, error) {
 		return "", errors.New("invalid password, please ensure passwords match")
 	}
 
-	pwd, err := bcrypt.GenerateFromPassword([]byte(r.Password), 15)
+	pwd, err := bcrypt.GenerateFromPassword([]byte(r.Password), 10)
 	if err != nil {
 		return "", err
 	}
@@ -115,6 +123,10 @@ func (r *Register) Register(db *mongo.Database) (string, error) {
 		return "", err
 	}
 
+	out, err := user.FromID(db)
+	if err != nil {
+		return "", err
+	}
 	// Create the Claims
 	claims := jwt.MapClaims{
 		"user_id":    session.UserID.Hex(),
@@ -125,10 +137,20 @@ func (r *Register) Register(db *mongo.Database) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	// Generate encoded token and send it as response.
-	t, err := token.SignedString([]byte("ping pong")) // TODO lol
+	t, err := token.SignedString([]byte(os.Getenv("KEY")))
 	if err != nil {
 		return "", err
 	}
 
-	return t, nil
+	outMap := map[string]any{
+		"token": t,
+		"user":  *out,
+	}
+
+	bytes, err := json.Marshal(outMap)
+	if err != nil {
+		return "", err
+	}
+
+	return string(bytes), nil
 }

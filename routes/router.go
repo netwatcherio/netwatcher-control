@@ -3,10 +3,12 @@ package routes
 import (
 	"crypto/rand"
 	"crypto/rsa"
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/session"
 	jwtware "github.com/gofiber/jwt/v3"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/netwatcherio/netwatcher-control/handler/agent"
 	"github.com/netwatcherio/netwatcher-control/workers"
 	log "github.com/sirupsen/logrus"
@@ -27,6 +29,20 @@ func NewRouter(store *mongo.Database) *Router {
 	}
 	return &router
 }
+func secretKey() jwt.Keyfunc {
+	return func(t *jwt.Token) (interface{}, error) {
+		// Always check the signing method
+		if t.Method.Alg() != jwtware.HS256 {
+			return nil, fmt.Errorf("Unexpected jwt signing method=%v", t.Header["alg"])
+		}
+
+		signingKey := os.Getenv("KEY")
+
+		return []byte(signingKey), nil
+	}
+}
+
+var privateKey *rsa.PrivateKey
 
 func (r *Router) Init() {
 	checkCreateWorker := make(chan agent.Data)
@@ -35,22 +51,21 @@ func (r *Router) Init() {
 		log.Warning("Cross Origin requests allowed (ENV::DEBUG)")
 		r.App.Use(cors.New())
 	}
-
-	log.Info("AUTH")
-	// Initialize the auth routes before using JWT
-	r.login()
-	r.register()
-
+	var err error
 	rng := rand.Reader
-	privateKey, err := rsa.GenerateKey(rng, 2048)
+	privateKey, err = rsa.GenerateKey(rng, 2048)
 	if err != nil {
 		log.Fatalf("rsa.GenerateKey: %v", err)
 	}
 
+	log.Info("AUTH")
+	// Initialize the auth routes before using JWT
+	r.login(privateKey)
+	r.register(privateKey)
+
 	// JWT Middleware
 	r.App.Use(jwtware.New(jwtware.Config{
-		SigningMethod: "RS256",
-		SigningKey:    privateKey.Public(),
+		KeyFunc: secretKey(),
 	}))
 
 	log.Info("Loading routes for:")
@@ -69,11 +84,18 @@ func (r *Router) Init() {
 	r.getGeneralAgentStats()
 	log.Info("AGENTS")
 
+	r.agentNew()
+	r.getAgent()
+	r.getGeneralAgentStats()
+	log.Info("AGENTS")
+
 	r.addSiteMember()
 	r.getSite()
 	r.getSites()
 	r.newSite()
 	log.Info("SITES")
+
+	r.getProfile()
 
 	workers.CreateCheckWorker(checkCreateWorker, r.DB)
 }

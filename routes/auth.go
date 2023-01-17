@@ -1,46 +1,50 @@
 package routes
 
 import (
+	"crypto/rsa"
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/netwatcherio/netwatcher-control/handler/auth"
-	log "github.com/sirupsen/logrus"
+	"net/http"
 )
 
-func (r *Router) login() {
+func (r *Router) login(key *rsa.PrivateKey) {
 	r.App.Post("/auth/login", func(c *fiber.Ctx) error {
-		c.Accepts("Application/json") // "Application/json"
+		c.Accepts("application/json") // "Application/json"
 
 		var l auth.Login
 		err := json.Unmarshal(c.Body(), &l)
 		if err != nil {
-			log.Error(err)
-		}
-		t, err := l.Login(r.DB)
-		if err != nil {
-			return err
+			c.Status(http.StatusBadRequest)
+			return nil
 		}
 
-		return c.JSON(fiber.Map{"token": t})
+		t, err := l.Login(r.DB)
+		if err != nil {
+			c.Status(http.StatusUnauthorized)
+			return nil
+		}
+
+		return c.Send([]byte(t))
 	})
 }
 
-func (r *Router) register() {
+func (r *Router) register(key *rsa.PrivateKey) {
 	r.App.Post("/auth/register", func(c *fiber.Ctx) error {
 		c.Accepts("Application/json") // "Application/json"
 
 		var reg auth.Register
 		err := json.Unmarshal(c.Body(), &reg)
 		if err != nil {
-			log.Error("unmarshal", err)
+			c.Status(http.StatusBadRequest)
 			return err
 		}
 		t, err := reg.Register(r.DB)
 		if err != nil {
-			log.Error("register", err)
+			c.Status(http.StatusConflict)
 			return err
 		}
 
-		return c.JSON(fiber.Map{"token": t})
+		return c.Send([]byte(t))
 	})
 }

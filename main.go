@@ -1,10 +1,6 @@
 package main
 
 import (
-	"crypto/rand"
-	"crypto/rsa"
-	"github.com/gofiber/fiber/v2"
-	jwtware "github.com/gofiber/jwt/v3"
 	"github.com/joho/godotenv"
 	"github.com/netwatcherio/netwatcher-control/handler"
 	"github.com/netwatcherio/netwatcher-control/routes"
@@ -17,13 +13,6 @@ import (
 
 var (
 	Debug = false
-)
-
-var (
-	// Obviously, this is just a test example. Do not do this in production.
-	// In production, you would have the private key and public key pair generated
-	// in advance. NEVER add a private key to any GitHub repo.
-	privateKey *rsa.PrivateKey
 )
 
 func main() {
@@ -59,33 +48,9 @@ func main() {
 		os.Exit(1)
 	}()
 
-	app := fiber.New()
-
-	// Just as a demo, generate a new private/public key pair on each run. See note above.
-	rng := rand.Reader
-	privateKey, err = rsa.GenerateKey(rng, 2048)
-	if err != nil {
-		log.Fatalf("rsa.GenerateKey: %v", err)
-	}
-
-	// JWT Middleware
-	app.Use(jwtware.New(jwtware.Config{
-		SigningMethod: "RS256",
-		SigningKey:    privateKey.Public(),
-	}))
-
-	//createAgent(mongoData.db)
-	//createSite(mongoData.db)
-
-	router := routes.Router{
-		App: app,
-		DB:  mongoData.Db,
-	}
-
+	router := routes.NewRouter(mongoData.Db)
 	router.Init()
-
-	// Listen website
-	app.Listen(os.Getenv("LISTEN"))
+	router.Listen(os.Getenv("LISTEN"))
 }
 
 func shutdown() {

@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/netwatcherio/netwatcher-control/handler"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
@@ -29,8 +30,8 @@ func (u *User) Create(db *mongo.Database) error {
 	u.ID = primitive.NewObjectID()
 
 	_, err := u.FromEmail(db)
-	if err != nil {
-		return err
+	if err == nil {
+		return fmt.Errorf("user exists")
 	}
 
 	mar, err := bson.Marshal(u)

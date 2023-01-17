@@ -81,7 +81,7 @@ func (r *Register) Register(db *mongo.Database) (string, error) {
 		// todo validate email
 		return "", errors.New("invalid email name")
 	}
-	if r.Password != "" {
+	if r.Password == "" {
 		return "", errors.New("invalid password, please ensure passwords match")
 	}
 

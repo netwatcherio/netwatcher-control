@@ -32,10 +32,12 @@ func (r *Router) register() {
 		var reg auth.Register
 		err := json.Unmarshal(c.Body(), &reg)
 		if err != nil {
-			log.Error(err)
+			log.Error("unmarshal", err)
+			return err
 		}
 		t, err := reg.Register(r.DB)
 		if err != nil {
+			log.Error("register", err)
 			return err
 		}
 

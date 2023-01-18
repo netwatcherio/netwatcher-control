@@ -66,7 +66,7 @@ func (r *Router) getAgents() {
 }
 
 func (r *Router) getGeneralAgentStats() {
-	r.App.Get("/agent/:agent?", func(c *fiber.Ctx) error {
+	r.App.Get("/agent_stats/:agent?", func(c *fiber.Ctx) error {
 		c.Accepts("application/json") // "Application/json"
 		t := c.Locals("user").(*jwt.Token)
 		_, err := auth.GetUser(t, r.DB)

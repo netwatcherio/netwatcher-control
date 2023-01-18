@@ -44,10 +44,11 @@ func (s *Site) Create(owner primitive.ObjectID, db *mongo.Database) error {
 	}
 
 	u := auth.User{ID: member.User}
-	_, err = u.FromID(db)
+	usr, err := u.FromID(db)
 	if err != nil {
 		return errors.New("unable to get user from id")
 	}
+	u = *usr
 	err = u.AddSite(s.ID, db)
 	if err != nil {
 		return errors.New("unable to add site to user")

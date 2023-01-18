@@ -80,11 +80,7 @@ func (r *Router) Init() {
 	log.Info("CHECKS")
 
 	r.agentNew()
-	r.getAgent()
-	r.getGeneralAgentStats()
-	log.Info("AGENTS")
-
-	r.agentNew()
+	r.getAgents()
 	r.getAgent()
 	r.getGeneralAgentStats()
 	log.Info("AGENTS")

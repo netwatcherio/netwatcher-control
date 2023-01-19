@@ -33,7 +33,7 @@ func secretKey() jwt.Keyfunc {
 	return func(t *jwt.Token) (interface{}, error) {
 		// Always check the signing method
 		if t.Method.Alg() != jwtware.HS256 {
-			return nil, fmt.Errorf("Unexpected jwt signing method=%v", t.Header["alg"])
+			return nil, fmt.Errorf("unexpected jwt signing method=%v", t.Header["alg"])
 		}
 
 		signingKey := os.Getenv("KEY")

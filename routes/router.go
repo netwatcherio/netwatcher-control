@@ -62,17 +62,16 @@ func (r *Router) Init() {
 	// Initialize the auth routes before using JWT
 	r.login(privateKey)
 	r.register(privateKey)
-
+	r.apiGetConfig()
+	r.apiDataPush(checkCreateWorker)
+	workers.CreateCheckWorker(checkCreateWorker, r.DB)
+	log.Info("API")
 	// JWT Middleware
 	r.App.Use(jwtware.New(jwtware.Config{
 		KeyFunc: secretKey(),
 	}))
 
 	log.Info("Loading routes for:")
-
-	r.apiGetConfig()
-	r.apiDataPush(checkCreateWorker)
-	log.Info("API")
 
 	r.getCheck()
 	r.getCheckData()
@@ -93,7 +92,6 @@ func (r *Router) Init() {
 
 	r.getProfile()
 
-	workers.CreateCheckWorker(checkCreateWorker, r.DB)
 }
 
 func (r *Router) Listen(host string) {

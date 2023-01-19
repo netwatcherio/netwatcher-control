@@ -288,3 +288,16 @@ func (a *Agent) Update(db *mongo.Database) error {
 
 	return nil
 }
+
+// Delete data based on provided agent ID in checkData struct
+func (a *Agent) Delete(db *mongo.Database) error {
+	// filter based on check ID
+	var filter = bson.D{{"_id", a.ID}}
+
+	_, err := db.Collection("agent").DeleteOne(context.TODO(), filter)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

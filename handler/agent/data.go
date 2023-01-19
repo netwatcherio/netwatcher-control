@@ -110,3 +110,19 @@ func (cd *Data) Create(db *mongo.Database) error {
 	fmt.Printf("created check data with id: %v\n", result.InsertedID)
 	return nil
 }
+
+// Delete data based on provided agent ID in checkData struct
+func (cd *Data) Delete(db *mongo.Database) error {
+	// filter based on check ID
+	var filter = bson.D{{"check", cd.CheckID}}
+	if (cd.AgentID != primitive.ObjectID{}) {
+		filter = bson.D{{"agent", cd.AgentID}}
+	}
+
+	_, err := db.Collection("check_data").DeleteMany(context.TODO(), filter)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

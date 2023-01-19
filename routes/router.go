@@ -76,18 +76,21 @@ func (r *Router) Init() {
 	r.getCheck()
 	r.getCheckData()
 	r.checkNew()
+	r.deleteCheck()
 	log.Info("CHECKS")
 
 	r.agentNew()
 	r.getAgents()
 	r.getAgent()
 	r.getGeneralAgentStats()
+	r.deleteAgent()
 	log.Info("AGENTS")
 
 	r.addSiteMember()
 	r.getSite()
 	r.getSites()
 	r.newSite()
+	r.deleteSite()
 	log.Info("SITES")
 
 	r.getProfile()

@@ -33,12 +33,12 @@ type CheckRequest struct {
 	Recent         bool      `json:"recent"`
 }
 
-func (ac *Check) GetData(req CheckRequest, db *mongo.Database) ([]*Data, error) {
+func (c *Check) GetData(req CheckRequest, db *mongo.Database) ([]*Data, error) {
 	opts := options.Find().SetLimit(req.Limit)
 
-	var filter = bson.D{{"check", ac.ID}}
-	if ac.AgentID != (primitive.ObjectID{0}) {
-		filter = bson.D{{"agent", ac.AgentID}, {"type", ac.Type}}
+	var filter = bson.D{{"check", c.ID}}
+	if c.AgentID != (primitive.ObjectID{0}) {
+		filter = bson.D{{"agent", c.AgentID}, {"type", c.Type}}
 	}
 
 	var timeFilter bson.M
@@ -46,16 +46,16 @@ func (ac *Check) GetData(req CheckRequest, db *mongo.Database) ([]*Data, error) 
 	if req.Recent {
 		opts = opts.SetSort(bson.D{{"timestamp", -1}})
 	} else {
-		if ac.Type == CtRPerf {
+		if c.Type == CtRPerf {
 			timeFilter = bson.M{
-				"check": ac.ID,
+				"check": c.ID,
 				"result.stop_timestamp": bson.M{
 					"$gt": req.StartTimestamp,
 					"$lt": req.EndTimestamp,
 				}}
 		} else {
 			timeFilter = bson.M{
-				"check": ac.ID,
+				"check": c.ID,
 				"timestamp": bson.M{
 					"$gt": req.StartTimestamp,
 					"$lt": req.EndTimestamp,
@@ -111,10 +111,10 @@ func (ac *Check) GetData(req CheckRequest, db *mongo.Database) ([]*Data, error) 
 	return checkData, nil
 }
 
-func (ac *Check) Create(db *mongo.Database) error {
-	ac.ID = primitive.NewObjectID()
+func (c *Check) Create(db *mongo.Database) error {
+	c.ID = primitive.NewObjectID()
 
-	mar, err := bson.Marshal(ac)
+	mar, err := bson.Marshal(c)
 	if err != nil {
 		log.Errorf("error marshalling agent check when creating: %s", err)
 		return err
@@ -136,11 +136,11 @@ func (ac *Check) Create(db *mongo.Database) error {
 	return nil
 }
 
-func (ac *Check) Get(db *mongo.Database) ([]*Check, error) {
-	var filter = bson.D{{"_id", ac.ID}}
+func (c *Check) Get(db *mongo.Database) ([]*Check, error) {
+	var filter = bson.D{{"_id", c.ID}}
 
-	if ac.AgentID != (primitive.ObjectID{0}) {
-		filter = bson.D{{"agent", ac.AgentID}}
+	if c.AgentID != (primitive.ObjectID{0}) {
+		filter = bson.D{{"agent", c.AgentID}}
 	}
 
 	cursor, err := db.Collection("agent_check").Find(context.TODO(), filter)
@@ -154,7 +154,7 @@ func (ac *Check) Get(db *mongo.Database) ([]*Check, error) {
 
 	//fmt.Println(results)
 
-	if ac.AgentID == (primitive.ObjectID{0}) {
+	if c.AgentID == (primitive.ObjectID{0}) {
 		if len(results) > 1 {
 			return nil, errors.New("multiple sites match when using id")
 		}
@@ -176,14 +176,14 @@ func (ac *Check) Get(db *mongo.Database) ([]*Check, error) {
 			return nil, err
 		}
 
-		ac.AgentID = agentCheck.AgentID
-		ac.Type = agentCheck.Type
-		ac.Duration = agentCheck.Duration
-		ac.Server = agentCheck.Server
-		ac.Triggered = agentCheck.Triggered
-		ac.Count = agentCheck.Count
-		ac.Pending = agentCheck.Pending
-		ac.Target = agentCheck.Target
+		c.AgentID = agentCheck.AgentID
+		c.Type = agentCheck.Type
+		c.Duration = agentCheck.Duration
+		c.Server = agentCheck.Server
+		c.Triggered = agentCheck.Triggered
+		c.Count = agentCheck.Count
+		c.Pending = agentCheck.Pending
+		c.Target = agentCheck.Target
 
 		return nil, nil
 	} else {
@@ -212,10 +212,10 @@ func (ac *Check) Get(db *mongo.Database) ([]*Check, error) {
 }
 
 // GetAll get all checks based on id, and &/or type
-func (ac *Check) GetAll(db *mongo.Database) ([]*Check, error) {
-	var filter = bson.D{{"agent", ac.AgentID}}
-	if ac.Type != "" {
-		filter = bson.D{{"agent", ac.AgentID}, {"type", ac.Type}}
+func (c *Check) GetAll(db *mongo.Database) ([]*Check, error) {
+	var filter = bson.D{{"agent", c.AgentID}}
+	if c.Type != "" {
+		filter = bson.D{{"agent", c.AgentID}, {"type", c.Type}}
 	}
 
 	cursor, err := db.Collection("agent_check").Find(context.TODO(), filter)
@@ -244,10 +244,10 @@ func (ac *Check) GetAll(db *mongo.Database) ([]*Check, error) {
 	return agentCheck, nil
 }
 
-func (ac *Check) Update(db *mongo.Database) error {
-	var filter = bson.D{{"_id", ac.ID}}
+func (c *Check) Update(db *mongo.Database) error {
+	var filter = bson.D{{"_id", c.ID}}
 
-	marshal, err := bson.Marshal(ac)
+	marshal, err := bson.Marshal(c)
 	if err != nil {
 		return err
 	}
@@ -262,6 +262,22 @@ func (ac *Check) Update(db *mongo.Database) error {
 	update := bson.D{{"$set", b}}
 
 	_, err = db.Collection("agent_check").UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Delete check based on provided agent ID in check struct
+func (c *Check) Delete(db *mongo.Database) error {
+	// filter based on check ID
+	var filter = bson.D{{"_id", c.ID}}
+	if (c.AgentID != primitive.ObjectID{}) {
+		filter = bson.D{{"agent", c.AgentID}}
+	}
+
+	_, err := db.Collection("agent_check").DeleteMany(context.TODO(), filter)
 	if err != nil {
 		return err
 	}

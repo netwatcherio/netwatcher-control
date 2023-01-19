@@ -11,6 +11,31 @@ import (
 
 // TODO authenticate & verify that the user is infact apart of the site etc.
 
+func (r *Router) deleteCheck() {
+	r.App.Get("/delete_check/:check?", func(c *fiber.Ctx) error {
+		c.Accepts("application/json") // "Application/json"
+		t := c.Locals("user").(*jwt.Token)
+		_, err := auth.GetUser(t, r.DB)
+		if err != nil {
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+
+		aId, err := primitive.ObjectIDFromHex(c.Params("check"))
+		if err != nil {
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+
+		// delete check data
+		acc := agent.Check{ID: aId}
+		err = acc.Delete(r.DB)
+		if err != nil {
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+
+		return c.SendStatus(fiber.StatusOK)
+	})
+}
+
 func (r *Router) getCheckData() {
 	r.App.Post("/check/:check?", func(c *fiber.Ctx) error {
 		c.Accepts("application/json") // "Application/json"

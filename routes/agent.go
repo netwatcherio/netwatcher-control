@@ -12,6 +12,45 @@ import (
 
 // TODO authenticate & verify that the user is infact apart of the site etc.
 
+func (r *Router) deleteAgent() {
+	r.App.Get("/delete_agent/:agent?", func(c *fiber.Ctx) error {
+		c.Accepts("application/json") // "Application/json"
+		t := c.Locals("user").(*jwt.Token)
+		_, err := auth.GetUser(t, r.DB)
+		if err != nil {
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+
+		aId, err := primitive.ObjectIDFromHex(c.Params("agent"))
+		if err != nil {
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+
+		// delete agent
+		a := agent.Agent{ID: aId}
+		err = a.Delete(r.DB)
+		if err != nil {
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+
+		// delete data
+		ac := agent.Data{AgentID: aId}
+		err = ac.Delete(r.DB)
+		if err != nil {
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+
+		// delete check data
+		acc := agent.Check{AgentID: aId}
+		err = acc.Delete(r.DB)
+		if err != nil {
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+
+		return c.SendStatus(fiber.StatusOK)
+	})
+}
+
 func (r *Router) getAgent() {
 	r.App.Get("/agent/:agent?", func(c *fiber.Ctx) error {
 		c.Accepts("application/json") // "Application/json"

@@ -144,6 +144,19 @@ func (s *Site) Get(db *mongo.Database) error {
 	return nil
 }
 
+// Delete data based on provided agent ID in checkData struct
+func (s *Site) Delete(db *mongo.Database) error {
+	// filter based on check ID
+	var filter = bson.D{{"_id", s.ID}}
+
+	_, err := db.Collection("sites").DeleteOne(context.TODO(), filter)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *Site) SiteStats(db *mongo.Database) ([]*agent.Stats, error) {
 	var agentStats []*agent.Stats
 

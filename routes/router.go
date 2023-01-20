@@ -51,6 +51,7 @@ func (r *Router) Init() {
 		log.Warning("Cross Origin requests allowed (ENV::DEBUG)")
 		r.App.Use(cors.New())
 	}
+
 	var err error
 	rng := rand.Reader
 	privateKey, err = rsa.GenerateKey(rng, 2048)
@@ -64,7 +65,9 @@ func (r *Router) Init() {
 	r.register(privateKey)
 	r.apiGetConfig()
 	r.apiDataPush(checkCreateWorker)
+	
 	workers.CreateCheckWorker(checkCreateWorker, r.DB)
+
 	log.Info("API")
 	// JWT Middleware
 	r.App.Use(jwtware.New(jwtware.Config{

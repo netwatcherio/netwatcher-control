@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/joho/godotenv"
 	"github.com/netwatcherio/netwatcher-control/handler"
 	"github.com/netwatcherio/netwatcher-control/routes"
@@ -11,24 +12,17 @@ import (
 	"syscall"
 )
 
-var (
-	Debug = false
-)
-
 func main() {
 	var err error
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	runtime.GOMAXPROCS(4)
 
 	log.SetFormatter(&log.TextFormatter{})
 
 	// Load .env
-	godotenv.Load()
-	if os.Getenv("DEBUG") == "true" {
-		Debug = true
+	err = godotenv.Load()
+	if err != nil {
+		return
 	}
 
 	// connect to database
@@ -37,22 +31,30 @@ func main() {
 	var mongoData *handler.MongoDatastore
 	mongoData = handler.NewDatastore(os.Getenv("MAIN_DB"), log.New())
 
-	// Signal Termination if using CLI
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, syscall.SIGTERM)
-	signal.Notify(signals, syscall.SIGKILL)
-	go func() {
-		s := <-signals
-		log.Fatal("Received Signal: %s", s)
-		shutdown()
-		os.Exit(1)
-	}()
-
+	handleSignals()
+	
 	router := routes.NewRouter(mongoData.Db)
 	router.Init()
 	router.Listen(os.Getenv("LISTEN"))
 }
 
+func handleSignals() {
+	// Signal Termination if using CLI
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGINT)
+	signal.Notify(signals, syscall.SIGTERM)
+	signal.Notify(signals, syscall.SIGKILL)
+	go func() {
+		for _ = range signals {
+			shutdown()
+		}
+	}()
+
+}
+
 func shutdown() {
-	log.Fatal("Shutting down NetWatcher Agent...")
+	fmt.Println()
+	log.Warnf("%d threads at exit.", runtime.NumGoroutine())
+	log.Warn("Shutting down NetWatcher Agent...")
+	os.Exit(1)
 }

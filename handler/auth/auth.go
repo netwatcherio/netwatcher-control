@@ -83,7 +83,7 @@ func (r *Register) Register(db *mongo.Database) (string, error) {
 		return "", errors.New("invalid first name")
 	}
 	if r.LastName == "" {
-		return "", errors.New("invalid first name")
+		return "", errors.New("invalid last name")
 	}
 	if r.Email == "" {
 		// todo validate email

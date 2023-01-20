@@ -196,6 +196,32 @@ func (r *Router) getCheck() {
 	})
 }
 
+func (r *Router) getChecks() {
+	r.App.Get("/checks/:agent?", func(c *fiber.Ctx) error {
+		c.Accepts("application/json") // "Application/json"
+		t := c.Locals("user").(*jwt.Token)
+		_, err := auth.GetUser(t, r.DB)
+		if err != nil {
+			return c.JSON(err)
+		}
+
+		cId, err := primitive.ObjectIDFromHex(c.Params("agent"))
+		if err != nil {
+			return c.JSON(err)
+		}
+
+		// todo handle edge cases? the user *could* break their install if not... hmmm...
+
+		check := agent.Check{AgentID: cId}
+		cc, err := check.Get(r.DB)
+		if err != nil {
+			return c.JSON(err)
+		}
+
+		return c.JSON(cc)
+	})
+}
+
 // agentChecks := handler.AgentCheck{AgentID: agent.ID}
 //		all, err := agentagent.GetAll(r.DB)
 //		if err != nil {

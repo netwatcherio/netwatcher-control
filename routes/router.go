@@ -77,6 +77,7 @@ func (r *Router) Init() {
 	log.Info("Loading routes for:")
 
 	r.getCheck()
+	r.getChecks()
 	r.getCheckData()
 	r.checkNew()
 	r.deleteCheck()

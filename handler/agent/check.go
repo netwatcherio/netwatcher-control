@@ -33,6 +33,9 @@ type CheckRequest struct {
 	Recent         bool      `json:"recent"`
 }
 
+// GetData requires a checkrequest to be sent, if agent id is set,
+// it will require the type to be sent in check, otherwise
+// the check id will be used
 func (c *Check) GetData(req CheckRequest, db *mongo.Database) ([]*Data, error) {
 	opts := options.Find().SetLimit(req.Limit)
 

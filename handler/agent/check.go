@@ -17,7 +17,7 @@ type Check struct {
 	Target          string             `json:"target"bson:"target"`
 	ID              primitive.ObjectID `json:"id"bson:"_id"`
 	AgentID         primitive.ObjectID `json:"agent"bson:"agent"`
-	Duration        int                `json:"duration'"bson:"duration"`
+	Duration        int                `json:"duration"bson:"duration"`
 	Count           int                `json:"count"bson:"count"`
 	Triggered       bool               `json:"triggered"bson:"triggered"`
 	Server          bool               `json:"server"bson:"server"`

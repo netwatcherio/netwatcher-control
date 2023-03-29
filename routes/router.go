@@ -65,7 +65,7 @@ func (r *Router) Init() {
 	r.register(privateKey)
 	r.apiGetConfig()
 	r.apiDataPush(checkCreateWorker)
-	
+
 	workers.CreateCheckWorker(checkCreateWorker, r.DB)
 
 	log.Info("API")
@@ -88,6 +88,7 @@ func (r *Router) Init() {
 	r.getAgent()
 	r.getGeneralAgentStats()
 	r.deleteAgent()
+	r.getAgentTargets()
 	log.Info("AGENTS")
 
 	r.addSiteMember()

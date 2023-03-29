@@ -133,6 +133,39 @@ func (r *Router) getGeneralAgentStats() {
 	})
 }
 
+func (r *Router) getAgentTargets() {
+	r.App.Get("/agent/targets/:agent", func(c *fiber.Ctx) error {
+		c.Accepts("application/json") // "Application/json"
+		t := c.Locals("user").(*jwt.Token)
+		_, err := auth.GetUser(t, r.DB)
+		if err != nil {
+			return c.JSON(err)
+		}
+
+		aId, err := primitive.ObjectIDFromHex(c.Params("agent"))
+		if err != nil {
+			return c.JSON(err)
+		}
+
+		a := agent.Agent{ID: aId}
+		err = a.Get(r.DB)
+		if err != nil {
+			return c.JSON(err)
+		}
+
+		// todo process the target field and match with others, if they match the correct type of check
+		// then add them to the list of targets
+
+		check := agent.Check{AgentID: aId}
+		get, err := check.Get(r.DB)
+		if err != nil {
+			return err
+		}
+
+		return c.JSON(get)
+	})
+}
+
 func (r *Router) agentNew() {
 	r.App.Post("/agent/new/:siteid?", func(c *fiber.Ctx) error {
 		c.Accepts("application/json") // "Application/json"

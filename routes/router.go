@@ -88,7 +88,7 @@ func (r *Router) Init() {
 	r.getAgent()
 	r.getGeneralAgentStats()
 	r.deleteAgent()
-	r.getAgentTargets()
+
 	log.Info("AGENTS")
 
 	r.addSiteMember()

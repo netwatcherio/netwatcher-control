@@ -2,26 +2,28 @@ package agent
 
 import (
 	"context"
+	"crypto/rand"
 	"errors"
 	"fmt"
-	"github.com/netwatcherio/netwatcher-control/handler"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"io"
 	"time"
 )
 
 type Agent struct {
-	ID          primitive.ObjectID `bson:"_id, omitempty"json:"id"`
-	Name        string             `bson:"name"json:"name"form:"name"`
-	Site        primitive.ObjectID `bson:"site"json:"site"` // _id of mongo object
-	Pin         string             `bson:"pin"json:"pin"`   // used for registration & authentication
-	Heartbeat   time.Time          `bson:"heartbeat,omitempty"json:"heartbeat"`
-	Initialized bool               `bson:"initialized"json:"initialized"`
-	Longitude   float64            `bson:"longitude"json:"longitude"form:"longitude"'`
-	Latitude    float64            `bson:"latitude"json:"latitude"form:"latitude"`
-	Timestamp   time.Time          `bson:"timestamp"json:"timestamp"`
+	ID           primitive.ObjectID `bson:"_id, omitempty"json:"id"`
+	Name         string             `bson:"name"json:"name"form:"name"`
+	Site         primitive.ObjectID `bson:"site"json:"site"` // _id of mongo object
+	Pin          string             `bson:"pin"json:"pin"`   // used for registration & authentication
+	Heartbeat    time.Time          `bson:"heartbeat,omitempty"json:"heartbeat"`
+	Initialized  bool               `bson:"initialized"json:"initialized"`
+	Longitude    float64            `bson:"longitude"json:"longitude"form:"longitude"'`
+	Latitude     float64            `bson:"latitude"json:"latitude"form:"latitude"`
+	Timestamp    time.Time          `bson:"timestamp"json:"timestamp"`
+	LokiDataPath string             `bson:"loki_data_path"json:"loki_data_path"`
 	// pin can be regenerated, by setting hash blank, and when registering agents, it checks for blank hashs.
 }
 
@@ -121,7 +123,7 @@ func (a *Agent) GetLatestStats(db *mongo.Database) (*Stats, error) {
 
 func (a *Agent) Create(db *mongo.Database) error {
 	// todo handle to check if agent id is set and all that...
-	a.Pin = handler.GeneratePin(9)
+	a.Pin = GeneratePin(9)
 	a.ID = primitive.NewObjectID()
 	a.Initialized = false
 	a.Timestamp = time.Now()
@@ -189,6 +191,7 @@ func (a *Agent) Get(db *mongo.Database) error {
 	a.Site = agent.Site
 	a.Heartbeat = agent.Heartbeat
 	a.Initialized = agent.Initialized
+	a.LokiDataPath = agent.LokiDataPath
 
 	return nil
 }
@@ -300,4 +303,17 @@ func (a *Agent) Delete(db *mongo.Database) error {
 	}
 
 	return nil
+}
+
+func GeneratePin(max int) string {
+	var table = [...]byte{'1', '2', '3', '4', '5', '6', '7', '8', '9', '0'}
+	b := make([]byte, max)
+	n, err := io.ReadAtLeast(rand.Reader, b, max)
+	if n != max {
+		panic(err)
+	}
+	for i := 0; i < len(b); i++ {
+		b[i] = table[int(b[i])%len(table)]
+	}
+	return string(b)
 }

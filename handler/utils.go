@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/json"
+	_ "github.com/netwatcherio/netwatcher-control/handler/agent"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"io"
 	"strings"

@@ -5,15 +5,16 @@ go 1.18
 require (
 	github.com/gofiber/fiber/v2 v2.40.1
 	github.com/gofiber/jwt/v3 v3.3.4
+	github.com/golang-jwt/jwt/v4 v4.4.2
+	github.com/ic2hrmk/promtail v0.0.5
 	github.com/joho/godotenv v1.4.0
 	github.com/sirupsen/logrus v1.9.0
-	go.mongodb.org/mongo-driver v1.11.1
+	go.mongodb.org/mongo-driver v1.11.7
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
 )
 
 require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
-	github.com/golang-jwt/jwt/v4 v4.4.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/klauspost/compress v1.15.9 // indirect

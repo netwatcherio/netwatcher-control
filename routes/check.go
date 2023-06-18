@@ -179,6 +179,8 @@ func (r *Router) getCheck() {
 			return c.JSON(err)
 		}
 
+		log.Info(c.Params("check"))
+
 		cId, err := primitive.ObjectIDFromHex(c.Params("check"))
 		if err != nil {
 			return c.JSON(err)
@@ -187,12 +189,16 @@ func (r *Router) getCheck() {
 		// todo handle edge cases? the user *could* break their install if not... hmmm...
 
 		check := agent.Check{ID: cId}
-		cc, err := check.Get(r.DB)
+
+		// .Get will update it self instead of returning a list with a first object
+		_, err = check.Get(r.DB)
 		if err != nil {
 			return c.JSON(err)
 		}
 
-		return c.JSON(cc)
+		log.Info(check)
+
+		return c.JSON(check)
 	})
 }
 

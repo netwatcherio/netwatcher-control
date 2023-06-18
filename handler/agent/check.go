@@ -155,11 +155,11 @@ func (c *Check) Get(db *mongo.Database) ([]*Check, error) {
 		return nil, err
 	}
 
-	//fmt.Println(results)
+	fmt.Println(results)
 
 	if c.AgentID == (primitive.ObjectID{0}) {
 		if len(results) > 1 {
-			return nil, errors.New("multiple sites match when using id")
+			return nil, errors.New("multiple check match when using id")
 		}
 
 		if len(results) == 0 {

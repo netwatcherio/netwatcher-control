@@ -35,7 +35,7 @@ func Push2Loki(cd *agent.Data, db *mongo.Database) error {
 		"agentID":     agent.ID.Hex(),
 		"siteID":      agent.Site.Hex(),
 		"siteName":    site2.Name,
-		"checkType":   string(cd.Type),
+		"checkType":   cd.Type,
 		"checkTarget": cd.Target,
 	}
 

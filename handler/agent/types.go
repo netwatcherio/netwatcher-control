@@ -148,7 +148,7 @@ type PingResult struct {
 	// PacketsRecv is the number of packets received.
 	PacketsRecv int `json:"packets_recv"bson:"packets_recv"`
 	// PacketsSent is the number of packets sent.
-	PacketsSent int `bson:"packets_sent"bson:"packets_sent"`
+	PacketsSent int `json:"packets_sent"bson:"packets_sent"`
 	// PacketsRecvDuplicates is the number of duplicate responses there were to a sent packet.
 	PacketsRecvDuplicates int `json:"packets_recv_duplicates"bson:"packets_recv_duplicates"`
 	// PacketLoss is the percentage of packets lost.
